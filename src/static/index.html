@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candlestick Chart with Trade Management</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .controls { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+        .chart-container { width: 100%; height: 500px; background-color: #1a202c; border-radius: 6px; overflow: hidden; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            color: white;
+        }
+        #buyButton { background-color: #4CAF50; } /* Green */
+        #buyButton:hover { background-color: #45a049; }
+        #sellButton { background-color: #f44336; } /* Red */
+        #sellButton:hover { background-color: #da190b; }
+        select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Charting and Trade Management</h1>
+
+        <div class="controls">
+            <label for="symbolSelect">Select Symbol:</label>
+            <select id="symbolSelect">
+                </select>
+            <button id="buyButton">Buy</button>
+            <button id="sellButton">Sell</button>
+        </div>
+
+        <div class="chart-container" id="chartContainer"></div>
+    </div>
+
+    <script>
+        const chartContainer = document.getElementById('chartContainer');
+        const symbolSelect = document.getElementById('symbolSelect');
+        const buyButton = document.getElementById('buyButton');
+        const sellButton = document.getElementById('sellButton');
+
+        // Create the chart
+        const chart = LightweightCharts.createChart(chartContainer, {
+            width: chartContainer.clientWidth,
+            height: chartContainer.clientHeight,
+            layout: {
+                background: { type: 'solid', color: '#1a202c' },
+                textColor: '#d1d4dc',
+            },
+            grid: {
+                vertLines: { color: '#2b2b43', },
+                horzLines: { color: '#2b2b43', },
+            },
+            timeScale: {
+                borderColor: '#48587b',
+                timeVisible: true,
+                secondsVisible: false, // Hide seconds for minute charts
+            },
+            rightPriceScale: {
+                borderColor: '#48587b',
+            }
+        });
+
+        const candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#4CAF50', // Green for up candles
+            downColor: '#f44336', // Red for down candles
+            borderVisible: false,
+            wickUpColor: '#4CAF50',
+            wickDownColor: '#f44336',
+        });
+
+        // Function to fetch and display chart data
+        async function fetchAndDisplayChart(symbol) {
+            try {
+                const response = await fetch(`/api/candlesticks/${symbol}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                candlestickSeries.setData(data); // Set chart data
+                chart.timeScale().fitContent(); // Zoom to fit all data
+            } catch (error) {
+                console.error("Error fetching candlestick data:", error);
+                alert("Failed to load chart data for " + symbol + ". Please check console.");
+            }
+        }
+
+        // Function to fetch available symbols and populate the dropdown
+        async function populateSymbols() {
+            try {
+                const response = await fetch('/api/symbols');
+                const symbols = await response.json();
+                symbols.forEach(symbol => {
+                    const option = document.createElement('option');
+                    option.value = symbol;
+                    option.textContent = symbol;
+                    symbolSelect.appendChild(option);
+                });
+                // Load chart for the first symbol by default
+                if (symbols.length > 0) {
+                    symbolSelect.value = symbols[0];
+                    fetchAndDisplayChart(symbols[0]);
+                }
+            } catch (error) {
+                console.error("Error fetching symbols:", error);
+            }
+        }
+
+        // Event listener for symbol selection
+        symbolSelect.addEventListener('change', (event) => {
+            const selectedSymbol = event.target.value;
+            fetchAndDisplayChart(selectedSymbol);
+        });
+
+        // Event listener for Buy button
+        buyButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/trade/buy', { method: 'POST' });
+                const result = await response.json();
+                alert(result.message);
+                // Optionally update UI based on trade result
+            } catch (error) {
+                console.error("Error placing buy order:", error);
+                alert("Failed to place buy order.");
+            }
+        });
+
+        // Event listener for Sell button
+        sellButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/trade/sell', { method: 'POST' });
+                const result = await response.json();
+                alert(result.message);
+                // Optionally update UI based on trade result
+            } catch (error) {
+                console.error("Error placing sell order:", error);
+                alert("Failed to place sell order.");
+            }
+        });
+
+        // Initialize on page load
+        populateSymbols();
+
+        // Handle chart resizing (important for responsive charts)
+        new ResizeObserver(entries => {
+            if (entries.length === 0 || entries[0].borderBoxSize.length === 0) {
+                return;
+            }
+            const newRect = entries[0].contentRect;
+            chart.applyOptions({ height: newRect.height, width: newRect.width });
+        }).observe(chartContainer);
+    </script>
+</body>
+</html>
