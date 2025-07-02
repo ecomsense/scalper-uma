@@ -1,6 +1,6 @@
 from traceback import print_exc
 from importlib import import_module
-from constants import O_CNFG, logging
+from src.constants import O_CNFG, logging
 
 
 def login():
@@ -17,11 +17,14 @@ def login():
     BrokerClass = getattr(broker_module, broker_name.capitalize())
 
     # Initialize API with config
+    print(O_CNFG)
     broker_object = BrokerClass(**O_CNFG)
     if broker_object.authenticate():
         logging.info("api connected")
+        print("connected")
         return broker_object
     else:
+        print("failed to connect, exiting")
         __import__("sys").exit(1)
 
 
@@ -158,5 +161,5 @@ class Helper:
 
 if __name__ == "__main__":
     Helper.api()
-    resp = Helper._api.finvasia.get_order_book()
+    resp = Helper._api.broker.get_order_book()
     print(resp)

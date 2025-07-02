@@ -1,162 +1,309 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candlestick Chart with Trade Management</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
+    <title>Live Candlestick Chart with Trade Management</title>
     <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; }
-        .container { max-width: 900px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .controls { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-        .chart-container { width: 100%; height: 500px; background-color: #1a202c; border-radius: 6px; overflow: hidden; }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            color: white;
-        }
-        #buyButton { background-color: #4CAF50; } /* Green */
-        #buyButton:hover { background-color: #45a049; }
-        #sellButton { background-color: #f44336; } /* Red */
-        #sellButton:hover { background-color: #da190b; }
-        select { padding: 8px; border-radius: 4px; border: 1px solid #ccc; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+      }
+      .container {
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 0 20px 20px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .controls {
+        height: 60px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .controls h4 {
+        margin-right: auto;
+      }
+      .chart-container {
+        height: calc(100vh - 80px);
+        border-radius: 6px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        color: white;
+      }
+      #buyButton {
+        background-color: #4caf50;
+      } /* Green */
+      #buyButton:hover {
+        background-color: #45a049;
+      }
+      #sellButton {
+        background-color: #f44336;
+      } /* Red */
+      #sellButton:hover {
+        background-color: #da190b;
+      }
+      select {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>Stock Charting and Trade Management</h1>
-
-        <div class="controls">
-            <label for="symbolSelect">Select Symbol:</label>
-            <select id="symbolSelect">
-                </select>
-            <button id="buyButton">Buy</button>
-            <button id="sellButton">Sell</button>
-        </div>
-
-        <div class="chart-container" id="chartContainer"></div>
+      <div class="controls">
+        <h4>DUMMY</h4>
+        <label for="symbolSelect">Select Symbol:</label>
+        <select id="symbolSelect"></select>
+        <button id="buyButton">Buy</button>
+        <button id="sellButton">Sell</button>
+      </div>
+      <div class="chart-container" id="chartContainer"></div>
     </div>
 
     <script>
-        const chartContainer = document.getElementById('chartContainer');
-        const symbolSelect = document.getElementById('symbolSelect');
-        const buyButton = document.getElementById('buyButton');
-        const sellButton = document.getElementById('sellButton');
+      window.addEventListener("DOMContentLoaded", () => {
+        const chartContainer = document.getElementById("chartContainer");
+        const symbolSelect = document.getElementById("symbolSelect");
+        const buyButton = document.getElementById("buyButton");
+        const sellButton = document.getElementById("sellButton");
 
-        // Create the chart
+        let eventSource = null;
+        let currentSymbol = null;
+
         const chart = LightweightCharts.createChart(chartContainer, {
-            width: chartContainer.clientWidth,
-            height: chartContainer.clientHeight,
-            layout: {
-                background: { type: 'solid', color: '#1a202c' },
-                textColor: '#d1d4dc',
-            },
-            grid: {
-                vertLines: { color: '#2b2b43', },
-                horzLines: { color: '#2b2b43', },
-            },
-            timeScale: {
-                borderColor: '#48587b',
-                timeVisible: true,
-                secondsVisible: false, // Hide seconds for minute charts
-            },
-            rightPriceScale: {
-                borderColor: '#48587b',
-            }
+          width: chartContainer.clientWidth,
+          height: chartContainer.clientHeight,
+          layout: {
+            background: { type: "solid", color: "#1a202c" },
+            textColor: "#d1d4dc",
+          },
+          grid: {
+            vertLines: { color: "#2b2b43" },
+            horzLines: { color: "#2b2b43" },
+          },
+          timeScale: {
+            borderColor: "#48587b",
+            timeVisible: true,
+            secondsVisible: false,
+          },
+          rightPriceScale: {
+            borderColor: "#48587b",
+          },
         });
 
-        const candlestickSeries = chart.addCandlestickSeries({
-            upColor: '#4CAF50', // Green for up candles
-            downColor: '#f44336', // Red for down candles
+        const candlestickSeries = chart.addSeries(
+          LightweightCharts.CandlestickSeries,
+          {
+            upColor: "#4CAF50",
+            downColor: "#f44336",
             borderVisible: false,
-            wickUpColor: '#4CAF50',
-            wickDownColor: '#f44336',
+            wickUpColor: "#4CAF50",
+            wickDownColor: "#f44336",
+          },
+        );
+
+        const buyLineSeries = chart.addSeries(LightweightCharts.LineSeries, {
+          color: "#00FF00",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          crosshairMarkerVisible: false,
+          lastValueVisible: false,
+          priceLineVisible: false,
         });
 
-        // Function to fetch and display chart data
-        async function fetchAndDisplayChart(symbol) {
-            try {
-                const response = await fetch(`/api/candlesticks/${symbol}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                candlestickSeries.setData(data); // Set chart data
-                chart.timeScale().fitContent(); // Zoom to fit all data
-            } catch (error) {
-                console.error("Error fetching candlestick data:", error);
-                alert("Failed to load chart data for " + symbol + ". Please check console.");
-            }
+        const sellLineSeries = chart.addSeries(LightweightCharts.LineSeries, {
+          color: "#FF0000",
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          crosshairMarkerVisible: false,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
+
+        let currentSymbolOrders = {
+          buy: [],
+          sell: [],
+        };
+
+        function updateOrderLines() {
+          buyLineSeries.setData(currentSymbolOrders.buy);
+          sellLineSeries.setData(currentSymbolOrders.sell);
         }
 
-        // Function to fetch available symbols and populate the dropdown
+        function connectSSE(symbol) {
+          if (eventSource) {
+            eventSource.close();
+          }
+          currentSymbol = symbol;
+          eventSource = new EventSource(`/sse/candlesticks/${symbol}`);
+
+          eventSource.onopen = () => {
+            console.log(`SSE connection opened for ${symbol}`);
+          };
+
+          eventSource.addEventListener("initial_data", (event) => {
+            const data = JSON.parse(event.data);
+            candlestickSeries.setData(data);
+            chart.timeScale().fitContent();
+            console.log(
+              `Received initial historical data for ${symbol}: ${data.length} candles`,
+            );
+          });
+
+          eventSource.addEventListener("live_update", (event) => {
+            const data = JSON.parse(event.data);
+            candlestickSeries.update(data);
+          });
+
+          eventSource.onerror = (error) => {
+            console.error(`SSE error for ${symbol}:`, error);
+          };
+        }
+
         async function populateSymbols() {
-            try {
-                const response = await fetch('/api/symbols');
-                const symbols = await response.json();
-                symbols.forEach(symbol => {
-                    const option = document.createElement('option');
-                    option.value = symbol;
-                    option.textContent = symbol;
-                    symbolSelect.appendChild(option);
-                });
-                // Load chart for the first symbol by default
-                if (symbols.length > 0) {
-                    symbolSelect.value = symbols[0];
-                    fetchAndDisplayChart(symbols[0]);
-                }
-            } catch (error) {
-                console.error("Error fetching symbols:", error);
+          let symbols = [];
+
+          try {
+            const response = await fetch("/api/symbols");
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            const data = await response.json();
+            if (Array.isArray(data) && data.length > 0) {
+              symbols = data;
+            } else {
+              console.warn("API returned empty or non-array. Using fallback.");
+            }
+          } catch (error) {
+            console.error("Error fetching or parsing symbols from API:", error);
+          }
+
+          // Fallback only if no symbols returned or error occurred
+          if (symbols.length === 0) {
+            symbols = ["DUMMY"];
+          }
+
+          // Populate select dropdown
+          symbolSelect.innerHTML = ""; // Clear existing options
+          symbols.forEach((symbol) => {
+            const option = document.createElement("option");
+            option.value = symbol;
+            option.textContent = symbol;
+            symbolSelect.appendChild(option);
+          });
+
+          const defaultSymbol = symbols[0];
+          symbolSelect.value = defaultSymbol;
+          connectSSE(defaultSymbol);
         }
 
-        // Event listener for symbol selection
-        symbolSelect.addEventListener('change', (event) => {
-            const selectedSymbol = event.target.value;
-            fetchAndDisplayChart(selectedSymbol);
+        symbolSelect.addEventListener("change", (event) => {
+          const selectedSymbol = event.target.value;
+          candlestickSeries.setData([]);
+          currentSymbolOrders.buy = [];
+          currentSymbolOrders.sell = [];
+          updateOrderLines();
+          connectSSE(selectedSymbol);
+
+          document.querySelector(".controls h4").textContent = selectedSymbol;
         });
 
-        // Event listener for Buy button
-        buyButton.addEventListener('click', async () => {
-            try {
-                const response = await fetch('/api/trade/buy', { method: 'POST' });
-                const result = await response.json();
-                alert(result.message);
-                // Optionally update UI based on trade result
-            } catch (error) {
-                console.error("Error placing buy order:", error);
-                alert("Failed to place buy order.");
+        buyButton.addEventListener("click", async () => {
+          if (!currentSymbol) {
+            alert("Please select a symbol first.");
+            return;
+          }
+          const lastCandle = candlestickSeries.dataByIndex(
+            candlestickSeries.data().length - 1,
+          );
+          const currentPrice = lastCandle ? lastCandle.close : 0.0;
+
+          try {
+            const response = await fetch("/api/trade/buy", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                symbol: currentSymbol,
+                price: currentPrice,
+              }),
+            });
+            const result = await response.json();
+            alert(result.message);
+
+            if (result.status === "success" && result.order) {
+              currentSymbolOrders.buy.push({
+                time: result.order.time,
+                value: result.order.price,
+              });
+              updateOrderLines();
+              chart.timeScale().fitContent();
             }
+          } catch (error) {
+            console.error("Error placing buy order:", error);
+            alert("Failed to place buy order.");
+          }
         });
 
-        // Event listener for Sell button
-        sellButton.addEventListener('click', async () => {
-            try {
-                const response = await fetch('/api/trade/sell', { method: 'POST' });
-                const result = await response.json();
-                alert(result.message);
-                // Optionally update UI based on trade result
-            } catch (error) {
-                console.error("Error placing sell order:", error);
-                alert("Failed to place sell order.");
+        sellButton.addEventListener("click", async () => {
+          if (!currentSymbol) {
+            alert("Please select a symbol first.");
+            return;
+          }
+          const lastCandle = candlestickSeries.dataByIndex(
+            candlestickSeries.data().length - 1,
+          );
+          const currentPrice = lastCandle ? lastCandle.close : 0.0;
+
+          try {
+            const response = await fetch("/api/trade/sell", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                symbol: currentSymbol,
+                price: currentPrice,
+              }),
+            });
+            const result = await response.json();
+            alert(result.message);
+
+            if (result.status === "success" && result.order) {
+              currentSymbolOrders.sell.push({
+                time: result.order.time,
+                value: result.order.price,
+              });
+              updateOrderLines();
+              chart.timeScale().fitContent();
             }
+          } catch (error) {
+            console.error("Error placing sell order:", error);
+            alert("Failed to place sell order.");
+          }
         });
 
         // Initialize on page load
         populateSymbols();
 
         // Handle chart resizing (important for responsive charts)
-        new ResizeObserver(entries => {
-            if (entries.length === 0 || entries[0].borderBoxSize.length === 0) {
-                return;
-            }
-            const newRect = entries[0].contentRect;
-            chart.applyOptions({ height: newRect.height, width: newRect.width });
+        new ResizeObserver((entries) => {
+          if (entries.length === 0 || entries[0].borderBoxSize.length === 0) {
+            return;
+          }
+          const newRect = entries[0].contentRect;
+          chart.applyOptions({ height: newRect.height, width: newRect.width });
         }).observe(chartContainer);
+      }); // End of DOMContentLoaded listener
     </script>
-</body>
+  </body>
 </html>
