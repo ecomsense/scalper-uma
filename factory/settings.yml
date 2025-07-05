@@ -7,3 +7,12 @@ program:
 trade:
   start: "9:30"
   stop: "15:00"
+  base: NIFTY
+NIFTY:
+  base: NIFTY
+  option_exchange: NFO
+  expiry: 10JUL25
+  quantity: 75
+  depth: 5
+  profit: 2
+

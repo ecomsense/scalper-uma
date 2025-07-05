@@ -13,20 +13,32 @@ from toolkit.fileutils import Fileutils
 
 O_FUTL = Fileutils()
 S_DATA = "./data/"
-S_LOG = S_DATA + "log.txt"
 
-if not O_FUTL.is_file_exists(S_LOG):
-    """
-    description:
-        create data dir and log file
-        if did not if file did not exists
-    input:
-         file name with full path
-    """
-    print("creating data dir")
-    O_FUTL.add_path(S_LOG)
-elif O_FUTL.is_file_not_2day(S_LOG):
-    O_FUTL.nuke_file(S_LOG)
+S_LOG = S_DATA + "log.txt"
+TICK_CSV_PATH = S_DATA + "ticks.csv"
+TRADE_JSON = S_DATA + "trade.json"
+
+SERVER = "localhost:8000"
+
+
+def factory(file_in_data_dir):
+    if not O_FUTL.is_file_exists(file_in_data_dir):
+        """
+        description:
+            create data dir and log file
+            if did not if file did not exists
+        input:
+            file name with full path
+        """
+        print("creating data dir")
+        O_FUTL.add_path(file_in_data_dir)
+    elif O_FUTL.is_file_not_2day(file_in_data_dir):
+        O_FUTL.nuke_file(file_in_data_dir)
+
+
+lst = [S_LOG, TICK_CSV_PATH]
+for item in lst:
+    factory(item)
 
 
 def yml_to_obj(arg=None):

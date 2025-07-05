@@ -1,8 +1,11 @@
 # main.py
+from src.api import Helper
+from src.constants import O_SETG, logging, O_FUTL, TICK_CSV_PATH, TRADE_JSON
+from src.sse_order_client import get_orders
 from functools import lru_cache
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Body
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
@@ -11,19 +14,14 @@ import json
 import uvicorn
 
 from sse_starlette.sse import EventSourceResponse
-from fastapi.responses import FileResponse
 
-# --- Configuration ---
-# Adjusted path assuming 'data' is a sibling directory to 'main.py' if run from project root.
-# If 'main.py' is in a subdirectory (e.g., 'app/main.py') and 'data' is in 'project_root/data',
-# then "../data/ticks.csv" would be correct for 'main.py'. Please confirm your directory structure.
-TICK_CSV_PATH = (
-    "./data/ticks.csv"  # Changed back to "data/ticks.csv" for typical structure
-)
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
 
-current_orders = []  # Simple in-memory store for trade orders
+
+if O_FUTL.is_file_exists(TRADE_JSON):
+    logging.info("deleting trade json")
+    O_FUTL.del_file(TRADE_JSON)
 
 
 # --- Helper Functions for Candlestick Aggregation ---
@@ -87,6 +85,31 @@ async def get_all_candlesticks_for_symbol(symbol: str) -> list[dict]:
         raise HTTPException(status_code=500, detail=f"Error processing data: {e}")
 
 
+@lru_cache(maxsize=1)
+def get_settings():
+    # return json response from dictionary
+    base = O_SETG["trade"]["base"]
+    return O_SETG[base]
+
+
+@lru_cache(maxsize=1)
+def get_symbols() -> list[str]:
+    df = pd.read_csv(TICK_CSV_PATH, names=["timestamp", "symbol", "price", "volume"])
+    return df["symbol"].drop_duplicates().tolist()
+
+
+def nullify():
+    try:
+        # nullify orders
+        orders = get_orders()
+        for item in orders:
+            if item and item["status"] == "open":
+                print("modify to close")
+        Helper.close_positions()
+    except Exception as e:
+        logging.error(f"Error in nullify: {e}")
+
+
 # --- FastAPI App Initialization ---
 app = FastAPI()
 
@@ -96,18 +119,11 @@ async def serve_root():
     return FileResponse(STATIC_DIR / "index.html")
 
 
-@lru_cache(maxsize=1)
-def get_symbols() -> list[str]:
-    df = pd.read_csv(TICK_CSV_PATH, names=["timestamp", "symbol", "price", "volume"])
-    return df["symbol"].drop_duplicates().tolist()
-
-
 # --- API Endpoints (MUST be defined BEFORE static files mount at root) ---
 @app.get("/api/symbols")
 async def get_available_symbols() -> JSONResponse:
     """
     Returns a list of available symbols.
-    For this example, we'll hardcode "DUMMY" as the primary available symbol.
     """
     symbols = get_symbols()
     return JSONResponse(content=symbols)
@@ -115,56 +131,53 @@ async def get_available_symbols() -> JSONResponse:
 
 @app.post("/api/trade/buy")
 async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
-    symbol = payload.get("symbol", "UNKNOWN").upper()
-    current_time_s = int(time.time())
+    nullify()
+    symbol = payload.get("symbol", "DUMMY").upper()
+    if symbol != "DUMMY":
+        settings = get_settings()
+        order_details = {
+            "symbol": symbol,
+            "quantity": settings["quantity"],
+            "exchange": settings["option_exchange"],
+            "tag": "uma_scalper",
+            "side": "B",
+            "price": payload["high"],
+            "trigger_price": payload["high"] + 0.05,
+            "order_type": "SL",
+        }
+        order_id = Helper.api().order_place(**order_details)
+        if order_id:
+            order_details["order_id"] = order_id
+            order_details["exit_price"] = payload["low"]
+            order_details["target_price"] = payload["high"] + settings["profit"]
+            blacklist = ["side", "price", "trigger_price", "order_type"]
+            for key in blacklist:
+                del order_details[key]
+            O_FUTL.write_file(filepath=TRADE_JSON, content=order_details)
+            return JSONResponse(
+                content={
+                    "message": f"Buy order initiated for {symbol}",
+                    "status": "success",
+                    "order": order_details,
+                }
+            )
 
-    # Attempt to get a current price from the latest candle
-    all_candles = await get_all_candlesticks_for_symbol(symbol)
-    latest_price = (
-        all_candles[-1]["close"] if all_candles else 100.0
-    )  # Fallback if no candles
-
-    order_details = {
-        "symbol": symbol,
-        "time": current_time_s,
-        "price": latest_price,
-        "type": "BUY",
-    }
-    current_orders.append(order_details)
-    print(f"[{time.time()}] Buy order placed for {symbol} at {latest_price:.2f}")
     return JSONResponse(
         content={
-            "message": f"Buy order initiated for {symbol}",
-            "status": "success",
+            "message": "error while buy order",
+            "status": "failed",
             "order": order_details,
         }
     )
 
 
-@app.post("/api/trade/sell")
-async def place_sell_order(payload: dict = Body(...)) -> JSONResponse:
-    symbol = payload.get("symbol", "DUMMY").upper()
-    current_time_s = int(time.time())
-
-    # Attempt to get a current price from the latest candle
-    all_candles = await get_all_candlesticks_for_symbol(symbol)
-    latest_price = (
-        all_candles[-1]["close"] if all_candles else 100.0
-    )  # Fallback if no candles
-
-    order_details = {
-        "symbol": symbol,
-        "time": current_time_s,
-        "price": latest_price,
-        "type": "SELL",
-    }
-    current_orders.append(order_details)
-    print(f"[{time.time()}] Sell order placed for {symbol} at {latest_price:.2f}")
+@app.get("/api/trade/sell")
+async def reset():
+    nullify()
     return JSONResponse(
         content={
-            "message": f"Sell order initiated for {symbol}",
+            "message": "reset completed",
             "status": "success",
-            "order": order_details,
         }
     )
 
@@ -172,6 +185,7 @@ async def place_sell_order(payload: dict = Body(...)) -> JSONResponse:
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
 async def sse_candlestick_endpoint(symbol: str):
+    nullify()
     symbol = symbol.upper()
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
@@ -229,6 +243,33 @@ async def sse_candlestick_endpoint(symbol: str):
                 print(f"[{time.time()}] SSE event generator error for {symbol}: {e}")
                 # Log error and continue, don't crash the stream
                 await asyncio.sleep(1)  # Prevent tight loop on error
+
+    return EventSourceResponse(event_generator())
+
+
+@app.get("/sse/orders")
+async def stream_all_orders():
+    api = Helper.api()
+    last_snapshot = []
+
+    async def event_generator():
+        nonlocal last_snapshot
+        while True:
+            await asyncio.sleep(1)  # obey rate limits
+            try:
+                all_orders = api.orders
+
+                # Optional: avoid flooding frontend with same data
+                if all_orders != last_snapshot:
+                    last_snapshot = all_orders
+                    yield {"event": "order_update", "data": json.dumps(all_orders)}
+
+            except Exception as e:
+                print("Order SSE error:", e)
+                yield {
+                    "event": "order_update",
+                    "data": json.dumps([]),
+                }
 
     return EventSourceResponse(event_generator())
 
