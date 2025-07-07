@@ -19,6 +19,7 @@ TICK_CSV_PATH = S_DATA + "ticks.csv"
 TRADE_JSON = S_DATA + "trade.json"
 
 SERVER = "localhost:8000"
+orders_cache = []
 
 
 def factory(file_in_data_dir):

@@ -1,7 +1,13 @@
 # main.py
 from src.api import Helper
-from src.constants import O_SETG, logging, O_FUTL, TICK_CSV_PATH, TRADE_JSON
-from src.sse_order_client import get_orders
+from src.constants import (
+    O_SETG,
+    logging,
+    O_FUTL,
+    TICK_CSV_PATH,
+    TRADE_JSON,
+    orders_cache,
+)
 from functools import lru_cache
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Body
@@ -11,7 +17,8 @@ from pathlib import Path
 import asyncio
 import time
 import json
-from pprint import pprint
+from src.tickrunner import get_tokens, TickRunner
+from src.wserver import Wserver
 
 from sse_starlette.sse import EventSourceResponse
 
@@ -252,24 +259,21 @@ async def sse_candlestick_endpoint(symbol: str):
 @app.get("/sse/orders")
 async def stream_all_orders():
     api = Helper.api()
-    last_snapshot = []
 
     async def event_generator():
-        yield {"event": "keepalive", "data": "ping"}
-        nonlocal last_snapshot
+        global orders_cache
         while True:
             await asyncio.sleep(1.5)  # obey rate limits
             try:
-                all_orders = api.orders
+                orders_cache = api.orders
+                yield {"event": "order_update", "data": json.dumps(orders_cache)}
 
                 # Optional: avoid flooding frontend with same data
                 """
-                if all_orders != last_snapshot:
-                    last_snapshot = all_orders
+                if all_orders != orders_cache:
+                    orders_cache = all_orders
                     yield {"event": "order_update", "data": json.dumps(all_orders)}
                 """
-                print(all_orders)
-                yield {"event": "order_update", "data": json.dumps(all_orders)}
 
             except Exception as e:
                 print("Order SSE error:", e)
@@ -279,6 +283,19 @@ async def stream_all_orders():
                 }
 
     return EventSourceResponse(event_generator())
+
+
+@app.on_event("startup")
+async def start_tick_runner():
+    try:
+        tokens_map = get_tokens()
+        tokens = list(tokens_map.keys())
+        ws = Wserver(Helper.api(), tokens)
+        runner = TickRunner(tokens_map, ws)
+        asyncio.create_task(runner.run())
+        print("✅ TickRunner started.")
+    except Exception as e:
+        logging.error(f"Failed to start TickRunner: {e}")
 
 
 STATIC_DIR = Path(__file__).parent / "static"

@@ -104,7 +104,17 @@ window.addEventListener("DOMContentLoaded", () => {
       let added = false;
 
       for (const order of allOrders) {
-        console.log(order);
+        // Ensure all required properties exist and are not null/undefined
+        if (
+          !order?.symbol ||
+          !order?.order_id ||
+          !order?.price ||
+          !order?.exchange_timestamp ||
+          !order?.side
+        ) {
+          console.warn("Skipping invalid order:");
+          continue;
+        }
         if (order.symbol !== currentSymbol) continue;
         if (renderedOrderIds.has(order.order_id)) continue;
         const line = {
