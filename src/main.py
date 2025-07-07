@@ -11,17 +11,12 @@ from pathlib import Path
 import asyncio
 import time
 import json
-import uvicorn
+from pprint import pprint
 
 from sse_starlette.sse import EventSourceResponse
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
-
-
-if O_FUTL.is_file_exists(TRADE_JSON):
-    logging.info("deleting trade json")
-    O_FUTL.del_file(TRADE_JSON)
 
 
 # --- Helper Functions for Candlestick Aggregation ---
@@ -31,31 +26,34 @@ def aggregate_ticks_to_candlesticks(
     """
     Aggregates a DataFrame of ticks into OHLCV candlesticks using pandas.
     """
-    if df.empty:
-        return []
+    try:
+        if df.empty:
+            return []
 
-    # Ensure timestamp is a DatetimeIndex
-    if not isinstance(df.index, pd.DatetimeIndex):
-        df.index = pd.to_datetime(df.index)
+        # Ensure timestamp is a DatetimeIndex
+        if not isinstance(df.index, pd.DatetimeIndex):
+            df.index = pd.to_datetime(df.index)
 
-    ohlc = df["price"].resample(timeframe_str).ohlc()
-    volume = df["volume"].resample(timeframe_str).sum()
+        ohlc = df["price"].resample(timeframe_str).ohlc()
+        volume = df["volume"].resample(timeframe_str).sum()
 
-    candlesticks = pd.DataFrame(
-        {
-            "open": ohlc["open"],
-            "high": ohlc["high"],
-            "low": ohlc["low"],
-            "close": ohlc["close"],
-            "volume": volume,
-        }
-    )
-    candlesticks = candlesticks.dropna()
-    candlesticks["time"] = (
-        candlesticks.index.astype(int) // 10**9
-    )  # Unix timestamp in seconds
+        candlesticks = pd.DataFrame(
+            {
+                "open": ohlc["open"],
+                "high": ohlc["high"],
+                "low": ohlc["low"],
+                "close": ohlc["close"],
+                "volume": volume,
+            }
+        )
+        candlesticks = candlesticks.dropna()
+        candlesticks["time"] = (
+            candlesticks.index.astype(int) // 10**9
+        )  # Unix timestamp in seconds
 
-    return candlesticks.reset_index(drop=True).to_dict(orient="records")
+        return candlesticks.reset_index(drop=True).to_dict(orient="records")
+    except Exception as e:
+        print(f"{e} in aggregating")
 
 
 async def get_all_candlesticks_for_symbol(symbol: str) -> list[dict]:
@@ -101,11 +99,15 @@ def get_symbols() -> list[str]:
 def nullify():
     try:
         # nullify orders
+        ...
+        """
         orders = get_orders()
-        for item in orders:
-            if item and item["status"] == "open":
-                print("modify to close")
-        Helper.close_positions()
+        if orders and isinstance(orders, dict):
+            for item in orders:
+                if item and item["status"] == "open":
+                    print("modify to close")
+            Helper.close_positions()
+        """
     except Exception as e:
         logging.error(f"Error in nullify: {e}")
 
@@ -140,14 +142,14 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "quantity": settings["quantity"],
             "exchange": settings["option_exchange"],
             "tag": "uma_scalper",
-            "side": "B",
+            "side": "BUY",
             "price": payload["high"],
             "trigger_price": payload["high"] + 0.05,
             "order_type": "SL",
         }
         order_id = Helper.api().order_place(**order_details)
         if order_id:
-            order_details["order_id"] = order_id
+            order_details["entry_id"] = order_id
             order_details["exit_price"] = payload["low"]
             order_details["target_price"] = payload["high"] + settings["profit"]
             blacklist = ["side", "price", "trigger_price", "order_type"]
@@ -185,7 +187,7 @@ async def reset():
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
 async def sse_candlestick_endpoint(symbol: str):
-    nullify()
+    # todo
     symbol = symbol.upper()
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
@@ -253,16 +255,21 @@ async def stream_all_orders():
     last_snapshot = []
 
     async def event_generator():
+        yield {"event": "keepalive", "data": "ping"}
         nonlocal last_snapshot
         while True:
-            await asyncio.sleep(1)  # obey rate limits
+            await asyncio.sleep(1.5)  # obey rate limits
             try:
                 all_orders = api.orders
 
                 # Optional: avoid flooding frontend with same data
+                """
                 if all_orders != last_snapshot:
                     last_snapshot = all_orders
                     yield {"event": "order_update", "data": json.dumps(all_orders)}
+                """
+                print(all_orders)
+                yield {"event": "order_update", "data": json.dumps(all_orders)}
 
             except Exception as e:
                 print("Order SSE error:", e)
@@ -276,6 +283,3 @@ async def stream_all_orders():
 
 STATIC_DIR = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static")
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)

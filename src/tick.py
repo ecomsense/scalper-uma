@@ -13,7 +13,7 @@ from os import path
 TICK_CSV_PATH = "./data/ticks.csv"
 
 
-def main():
+def get_tokens():
     try:
         Helper.api()
         # initialize
@@ -41,7 +41,7 @@ def main():
         tokens_of_all_trading_symbols.update(sym.get_tokens(values["atm"]))
         return tokens_of_all_trading_symbols
     except Exception as e:
-        logging.error(f"{e} in main")
+        logging.error(f"{e} in get_tokens")
         print_exc()
 
 
@@ -66,6 +66,15 @@ def new(res, token_ltp):
         logging.error(f"{e} in new")
 
 
+def get_dict_from_list(order_id: str):
+    orders = get_orders()
+    if orders:
+        for item in orders:
+            if item["order_id"] == order_id:
+                return item
+    return {}
+
+
 class Manager:
 
     def __init__(self):
@@ -76,6 +85,7 @@ class Manager:
         self.exchange = ""
         self.tag = ""
         self.entry_id = ""
+        self.exit_id = ""
         self.exit_price = None
         self.target_price = None
 
@@ -91,38 +101,84 @@ class Manager:
             "target_price": 2372.75
         }
         """
-        if path.exists(TRADE_JSON):
-            dict_fm_file = O_FUTL.read_file(TRADE_JSON)
-            if dict_fm_file["entry_id"] != self.entry_id:
-                for key, value in dict_fm_file.items():
-                    setattr(self, key, value)
-                self.fn = "exit_trade"
+        try:
+            if path.exists(TRADE_JSON):
+                dict_fm_file = O_FUTL.read_file(TRADE_JSON)
+                if dict_fm_file["entry_id"] != self.entry_id:
+                    for key, value in dict_fm_file.items():
+                        setattr(self, key, value)
+                    self.fn = "is_trade"
+        except Exception as e:
+            logging.error(f"{e} while creating")
 
-    def _is_target(self):
-        return False
+    def is_trade(self):
+        try:
+            item = get_dict_from_list(self.entry_id)
+            if item:
+                if item["status"] == "COMPLETE":
+                    order_args = dict(
+                        symbol=self.symbol,
+                        exchange=self.exchange,
+                        quantity=self.quantity,
+                        side="SELL",
+                        order_type="SL",
+                        price=self.exit_price,
+                        trigger_price=self.exit_price + 0.05,
+                        tag=self.tag,
+                    )
+                    exit_id = Helper.api().order_place(**order_args)
+                    if exit_id:
+                        self.exit_id = exit_id
+
+                elif item["status"] == "REJECTED" or item["status"] == "CANCELED":
+                    self.fn = "create"
+        except Exception as e:
+            logging.error(f"{e} while is trade")
 
     def _is_stopped(self):
-        return False
+        try:
+            item = get_dict_from_list(self.exit_id)
+            lst = ["COMPLETE", "REJECTED", "CANCELED"]
+            return next((status for status in lst and item["status"] == status), None)
+        except Exception as e:
+            logging.error(f"{e} in is_stopped")
+
+    def _is_beyond_band(self):
+        try:
+            ltp = self.ltps.get(self.symbol, None)
+            return ltp > self.target_price or ltp < self.exit_price
+        except Exception as e:
+            logging.error(f"{e} is beyond band")
 
     def exit_trade(self):
-        if self._is_stopped():
-            self.fn = "create"
-        elif self._is_target():
-            self.fn = "create"
+        try:
+            if self._is_stopped():
+                self.fn = "create"
+            elif self._is_beyond_band():
+                Helper.api().order_modify(
+                    symbol=self.symbol,
+                    order_id=self.exit_id,
+                    quantity=self.quantity,
+                    exchange=self.exchange,
+                    order_type="MKT",
+                    price=0,
+                )
+                self.fn = "create"
+        except Exception as e:
+            logging.error(f"{e} exit trade")
 
     def run(self, ltps):
-        self.ltps = ltps
-        # get sse orders
-        orders = get_orders()
-        if orders:
-            self.orders = orders
-        getattr(self, self.fn)()
+        try:
+            self.ltps = ltps
+            getattr(self, self.fn)()
+        except Exception as e:
+            logging.error(f"{e} run")
 
 
 if __name__ == "__main__":
     try:
-        O_FUTL.nuke_file(TICK_CSV_PATH)
-        res = main()
+        # O_FUTL.nuke_file(TICK_CSV_PATH)
+        res = get_tokens()
         tokens = list(res.keys())
         ws = Wserver(Helper.api(), tokens)
         print(res)

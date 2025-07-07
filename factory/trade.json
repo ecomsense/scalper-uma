@@ -1,7 +1,3 @@
 {
-  "symbol": "symbol",
-  "quantity": 75,
-  "entry_order": "",
-  "exit_price": 245,
-  "target_price": 210
+  "entry_order": ""
 }

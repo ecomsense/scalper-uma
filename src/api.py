@@ -55,48 +55,6 @@ class Helper:
             print_exc()
 
     @classmethod
-    def one_side(cls, symbol, ltp, quantity, stop):
-        try:
-            bargs = dict(
-                symbol=symbol,
-                quantity=int(quantity / 2),
-                product="M",
-                side="B",
-                price=0,
-                trigger_price=ltp + stop,
-                order_type="SLM",
-                exchange="NFO",
-                tag="stop",
-            )
-            logging.error(str(bargs))
-            sl1 = cls._api.order_place(**bargs)
-            logging.debug(f"api responded with {sl1}")
-
-            if sl1:
-                sl2 = cls._api.order_place(**bargs)
-                logging.debug(f"api responded with {sl2}")
-                if sl2:
-                    sargs = dict(
-                        symbol=symbol,
-                        quantity=quantity,
-                        product="M",
-                        side="S",
-                        price=0,
-                        trigger_price=0,
-                        order_type="MKT",
-                        exchange="NFO",
-                        tag="enter",
-                    )
-                    logging.debug(str(sargs))
-                    resp = cls._api.order_place(**sargs)
-                    logging.debug(f"api responded with {resp}")
-                    return [sl1, sl2], bargs
-        except Exception as e:
-            message = f"helper error {e} while placing order"
-            logging.error(message)
-            print_exc()
-
-    @classmethod
     def close_positions(cls, half=False):
         for pos in cls._api.positions:
             if pos and pos["quantity"] == 0:
@@ -159,6 +117,9 @@ class Helper:
 
 
 if __name__ == "__main__":
+    from pprint import pprint
+
     Helper.api()
-    resp = Helper._api.broker.get_order_book()
-    print(resp)
+    # resp = Helper._api.broker.get_order_book()
+    resp = Helper.api().orders
+    pprint(resp)

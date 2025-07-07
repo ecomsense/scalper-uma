@@ -40,6 +40,9 @@ lst = [S_LOG, TICK_CSV_PATH]
 for item in lst:
     factory(item)
 
+if not O_FUTL.is_file_exists(TRADE_JSON):
+    O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+
 
 def yml_to_obj(arg=None):
     """
