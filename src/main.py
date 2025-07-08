@@ -21,6 +21,7 @@ from src.tickrunner import get_tokens, TickRunner
 from src.wserver import Wserver
 
 from sse_starlette.sse import EventSourceResponse
+from src.static import get_orders
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
@@ -106,15 +107,22 @@ def get_symbols() -> list[str]:
 def nullify():
     try:
         # nullify orders
-        ...
-        """
         orders = get_orders()
         if orders and isinstance(orders, dict):
             for item in orders:
-                if item and item["status"] == "open":
+                if (item and item["status"] == "OPEN") or (
+                    item and item["TRIGGER_PENDING"]
+                ):
                     print("modify to close")
+                    Helper.api().order_modify(
+                        symbol=item.get("symbol", None),
+                        order_id=item.get("order_id", None),
+                        quantity=item.get("quantity", None),
+                        exchange=item.get("exchange", None),
+                        order_type="MKT",
+                        price=0,
+                    )
             Helper.close_positions()
-        """
     except Exception as e:
         logging.error(f"Error in nullify: {e}")
 
@@ -150,8 +158,8 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "exchange": settings["option_exchange"],
             "tag": "uma_scalper",
             "side": "BUY",
-            "price": payload["high"],
-            "trigger_price": payload["high"] + 0.05,
+            "price": payload["high"] + 0.05,
+            "trigger_price": payload["high"],
             "order_type": "SL",
         }
         order_id = Helper.api().order_place(**order_details)

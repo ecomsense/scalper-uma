@@ -54,6 +54,16 @@ class Helper:
             logging.error(message)
             print_exc()
 
+    def modify_order(self, kwargs):
+        try:
+            if next((v for v in kwargs.values() if v is not None), None):
+                resp = self._api.order_modify(**kwargs)
+                return resp
+        except Exception as e:
+            message = f"helper error {e} while modifying order"
+            logging.warning(message)
+            print_exc()
+
     @classmethod
     def close_positions(cls, half=False):
         for pos in cls._api.positions:

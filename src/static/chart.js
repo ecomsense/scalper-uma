@@ -105,18 +105,23 @@ window.addEventListener("DOMContentLoaded", () => {
 
       for (const order of allOrders) {
         // Ensure all required properties exist and are not null/undefined
-        if (
-          !order?.symbol ||
-          !order?.order_id ||
-          !order?.price ||
-          !order?.exchange_timestamp ||
-          !order?.side
-        ) {
-          console.warn("Skipping invalid order:");
+        if (!order?.order_id) {
+          console.warn("skipping invalid order_id", order);
           continue;
         }
-        if (order.symbol !== currentSymbol) continue;
         if (renderedOrderIds.has(order.order_id)) continue;
+
+        if (!order?.exchange_timestamp) {
+          console.log("Skipping invalid exchange time:", order);
+          renderedOrderIds.add(order.order_id);
+        }
+        if (!order?.symbol || !order?.price || !order?.side) {
+          console.log("Skipping invalid symbol or price or side:", order);
+          renderedOrderIds.add(order.order_id);
+        }
+
+        if (order.symbol !== currentSymbol) continue;
+
         const line = {
           time: Math.floor(new Date(order.exchange_timestamp).getTime() / 1000),
           value: parseFloat(order.price),

@@ -119,7 +119,7 @@ class TickRunner:
             if self._is_stopped():
                 self.fn = "create"
             elif self._is_beyond_band():
-                Helper.api().order_modify(
+                kwargs = dict(
                     symbol=self.symbol,
                     order_id=self.exit_id,
                     quantity=self.quantity,
@@ -127,6 +127,7 @@ class TickRunner:
                     order_type="MKT",
                     price=0,
                 )
+                Helper.api().modify_order(kwargs)
                 self.fn = "create"
         except Exception as e:
             logging.error(f"{e} exit_trade")
