@@ -10,6 +10,8 @@ window.addEventListener("DOMContentLoaded", () => {
   let currentSymbol = null;
   let renderedOrderIds = new Set();
 
+  const orderSeriesMap = new Map(); // order_id → LineSeries
+
   const chart = LightweightCharts.createChart(chartContainer, {
     width: chartContainer.clientWidth,
     height: chartContainer.clientHeight,
@@ -42,34 +44,6 @@ window.addEventListener("DOMContentLoaded", () => {
     },
   );
 
-  const buyLineSeries = chart.addSeries(LightweightCharts.LineSeries, {
-    color: "#00FF00",
-    lineWidth: 2,
-    lineStyle: LightweightCharts.LineStyle.Solid,
-    crosshairMarkerVisible: false,
-    lastValueVisible: false,
-    priceLineVisible: false,
-  });
-
-  const sellLineSeries = chart.addSeries(LightweightCharts.LineSeries, {
-    color: "#FF0000",
-    lineWidth: 2,
-    lineStyle: LightweightCharts.LineStyle.Dashed,
-    crosshairMarkerVisible: false,
-    lastValueVisible: false,
-    priceLineVisible: false,
-  });
-
-  let currentSymbolOrders = {
-    buy: [],
-    sell: [],
-  };
-
-  function updateOrderLines() {
-    buyLineSeries.setData(currentSymbolOrders.buy);
-    sellLineSeries.setData(currentSymbolOrders.sell);
-  }
-
   function connectCandleSSE(symbol) {
     if (candleEventSource) candleEventSource.close();
 
@@ -97,48 +71,40 @@ window.addEventListener("DOMContentLoaded", () => {
     if (orderEventSource) orderEventSource.close();
 
     orderEventSource = new EventSource(`/sse/orders`);
-    renderedOrderIds = new Set(); // 🔁 Reset on new symbol
+    renderedOrderIds = new Set();
 
     orderEventSource.addEventListener("order_update", (event) => {
       const allOrders = JSON.parse(event.data);
-      let added = false;
+      const bars = candlestickSeries.data();
+      if (bars.length < 2) return;
+
+      const firstTime = bars[0].time;
+      const lastTime = bars[bars.length - 1].time;
 
       for (const order of allOrders) {
-        // Ensure all required properties exist and are not null/undefined
-        if (!order?.order_id) {
-          console.warn("skipping invalid order_id", order);
-          continue;
-        }
-        if (renderedOrderIds.has(order.order_id)) continue;
+        if (!order.symbol || order.symbol !== currentSymbol) continue;
+        if (!order?.order_id || renderedOrderIds.has(order.order_id)) continue;
+        if (!order?.exchange_timestamp || !order?.price || !order?.side) continue;
+        if (["CANCELED", "COMPLETE", "REJECTED"].includes(order.status)) continue;
+        if (isNaN(parseFloat(price))) continue;
 
-        if (!order?.exchange_timestamp) {
-          console.log("Skipping invalid exchange time:", order);
-          renderedOrderIds.add(order.order_id);
-        }
-        if (!order?.symbol || !order?.price || !order?.side) {
-          console.log("Skipping invalid symbol or price or side:", order);
-          renderedOrderIds.add(order.order_id);
-        }
+        const segment = [
+          { time: firstTime, value: price },
+          { time: lastTime, value: price },
+        ];
 
-        if (order.symbol !== currentSymbol) continue;
+        const series = chart.addSeries(LightweightCharts.LineSeries, {
+          color: order.side === "B" ? "#00FF00" : "#FF0000",
+          lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          crosshairMarkerVisible: false,
+          lastValueVisible: false,
+          priceLineVisible: false,
+        });
 
-        const line = {
-          time: Math.floor(new Date(order.exchange_timestamp).getTime() / 1000),
-          value: parseFloat(order.price),
-        };
-
-        if (order.side === "B") {
-          currentSymbolOrders.buy.push(line);
-        } else if (order.side === "S") {
-          currentSymbolOrders.sell.push(line);
-        }
-
+        series.setData(segment);
+        orderSeriesMap.set(order.order_id, series);
         renderedOrderIds.add(order.order_id);
-        added = true;
-      }
-
-      if (added) {
-        updateOrderLines();
       }
     });
 
@@ -175,18 +141,22 @@ window.addEventListener("DOMContentLoaded", () => {
     const defaultSymbol = symbols[0];
     symbolSelect.value = defaultSymbol;
     connectCandleSSE(defaultSymbol);
-    connectOrderSSE(); // 🔁 start once, reset on symbol change
+    connectOrderSSE();
   }
 
   symbolSelect.addEventListener("change", (event) => {
     const selectedSymbol = event.target.value;
     currentSymbol = selectedSymbol;
 
+    // Clear chart
     candlestickSeries.setData([]);
-    currentSymbolOrders.buy = [];
-    currentSymbolOrders.sell = [];
-    renderedOrderIds.clear(); // 🔁 reset to avoid dupes
-    updateOrderLines();
+    renderedOrderIds.clear();
+
+    // Remove all previous LineSeries (one per order)
+    for (const series of orderSeriesMap.values()) {
+      chart.removeSeries(series);
+    }
+    orderSeriesMap.clear();
 
     connectCandleSSE(selectedSymbol);
   });

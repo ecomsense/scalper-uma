@@ -8,4 +8,7 @@ pendulum
 pyotp
 git+https://github.com/ecomsense/stock-brokers
 git+https://github.com/pannet1/toolkit
-git+https://github.com/pannet1/NorenRestApiPy
+fastapi[standard]
+sse-starlette
+requests
+websocket-client

@@ -21,7 +21,7 @@ from src.tickrunner import get_tokens, TickRunner
 from src.wserver import Wserver
 
 from sse_starlette.sse import EventSourceResponse
-from src.static import get_orders
+from src.state import get_orders
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
@@ -56,8 +56,9 @@ def aggregate_ticks_to_candlesticks(
         )
         candlesticks = candlesticks.dropna()
         candlesticks["time"] = (
-            candlesticks.index.astype(int) // 10**9
+            candlesticks.index.astype('int64') // 10**9
         )  # Unix timestamp in seconds
+
 
         return candlesticks.reset_index(drop=True).to_dict(orient="records")
     except Exception as e:
