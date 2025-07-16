@@ -5,7 +5,6 @@ from os import path
 from src.api import Helper
 from src.constants import O_SETG, logging, O_FUTL, TRADE_JSON, TICK_CSV_PATH
 from src.symbols import Symbols, dct_sym
-from src.state import get_orders
 
 
 def get_tokens():
@@ -48,7 +47,7 @@ def new_ticks_csv_line(res, token_ltp):
 
 def get_dict_from_list(order_id: str):
     try:
-        orders = get_orders()
+        orders = Helper.get_orders()
         if orders:
             for item in orders:
                 if item["order_id"] == order_id:
@@ -72,12 +71,14 @@ class TickRunner:
         self.exit_id = ""
         self.exit_price = None
         self.target_price = None
+        O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
 
     def create(self):
         try:
             if path.exists(TRADE_JSON):
                 dict_fm_file = O_FUTL.read_file(TRADE_JSON)
                 if dict_fm_file["entry_id"] != self.entry_id:
+                    print(dict_fm_file["entry_id"], "!=", self.entry_id) 
                     for key, value in dict_fm_file.items():
                         setattr(self, key, value)
                     self.fn = "is_trade"
@@ -92,23 +93,30 @@ class TickRunner:
                     symbol=self.symbol,
                     exchange=self.exchange,
                     quantity=self.quantity,
+                    disclosed_quantity=0,
                     side="SELL",
                     order_type="SL",
                     price=self.exit_price,
                     trigger_price=self.exit_price + 0.05,
                     tag=self.tag,
                 )
-                exit_id = Helper.api().order_place(**args)
+                exit_id = Helper.one_side(args)
                 if exit_id:
                     self.exit_id = exit_id
-            elif item.get("status", None) in ["REJECTED", "CANCELED"]:
+                    self.fn = "exit_trade"
+            elif item and item.get("status", None) in ["REJECTED", "CANCELED"]:
+                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
                 self.fn = "create"
+            elif item:
+                logging.info(f"trade status is {item['status']}")
+            else:
+                logging.warning("trade status unknown")
         except Exception as e:
             logging.error(f"{e} while is_trade")
 
     def _is_stopped(self):
         item = get_dict_from_list(self.exit_id)
-        return item and item["status"] in {"COMPLETE", "REJECTED", "CANCELED"}
+        return (item and item["status"] in {"COMPLETE", "REJECTED", "CANCELED"})
 
     def _is_beyond_band(self):
         ltp = self.ltps.get(self.symbol)
@@ -117,6 +125,7 @@ class TickRunner:
     def exit_trade(self):
         try:
             if self._is_stopped():
+                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
                 self.fn = "create"
             elif self._is_beyond_band():
                 kwargs = dict(
@@ -127,7 +136,8 @@ class TickRunner:
                     order_type="MKT",
                     price=0,
                 )
-                Helper.api().modify_order(kwargs)
+                Helper.modify_order(kwargs)
+                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
                 self.fn = "create"
         except Exception as e:
             logging.error(f"{e} exit_trade")

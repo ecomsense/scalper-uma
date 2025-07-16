@@ -30,16 +30,32 @@ def login():
 
 class Helper:
     _api = None
+    _orders = []
 
     @classmethod
     def api(cls):
         if cls._api is None:
             cls._api = login()
         return cls._api
+    
+    @classmethod
+    def one_side(self, bargs):
+        try:
+            resp = self._api.order_place(**bargs)
+            return resp
+        except Exception as e:
+            message = f"helper error {e} while placing order {bargs}"
+            logging.warning(message)
+            print_exc()
 
     @classmethod
     def orders(cls):
-        return cls._api.orders
+        cls._orders = cls._api.orders
+        return cls._orders
+    
+    @classmethod
+    def get_orders(cls):
+        return cls._orders
 
     @classmethod
     def ltp(cls, exchange, token):
@@ -54,10 +70,11 @@ class Helper:
             logging.error(message)
             print_exc()
 
-    def modify_order(self, kwargs):
+    @classmethod
+    def modify_order(cls, kwargs):
         try:
             if next((v for v in kwargs.values() if v is not None), None):
-                resp = self._api.order_modify(**kwargs)
+                resp = cls._api.order_modify(**kwargs)
                 return resp
         except Exception as e:
             message = f"helper error {e} while modifying order"

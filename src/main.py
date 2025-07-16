@@ -6,7 +6,6 @@ from src.constants import (
     O_FUTL,
     TICK_CSV_PATH,
     TRADE_JSON,
-    orders_cache,
 )
 from functools import lru_cache
 import pandas as pd
@@ -21,7 +20,6 @@ from src.tickrunner import get_tokens, TickRunner
 from src.wserver import Wserver
 
 from sse_starlette.sse import EventSourceResponse
-from src.state import get_orders
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
@@ -108,14 +106,14 @@ def get_symbols() -> list[str]:
 def nullify():
     try:
         # nullify orders
-        orders = get_orders()
+        orders = Helper.get_orders()
         if orders and isinstance(orders, dict):
             for item in orders:
                 if (item and item["status"] == "OPEN") or (
                     item and item["TRIGGER_PENDING"]
                 ):
                     print("modify to close")
-                    Helper.api().order_modify(
+                    Helper.api().order_cancel(
                         symbol=item.get("symbol", None),
                         order_id=item.get("order_id", None),
                         quantity=item.get("quantity", None),
@@ -156,6 +154,7 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
         order_details = {
             "symbol": symbol,
             "quantity": settings["quantity"],
+            "disclosed_quantity": 0,
             "exchange": settings["option_exchange"],
             "tag": "uma_scalper",
             "side": "BUY",
@@ -163,7 +162,7 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "trigger_price": payload["high"],
             "order_type": "SL",
         }
-        order_id = Helper.api().order_place(**order_details)
+        order_id = Helper.one_side(order_details)
         if order_id:
             order_details["entry_id"] = order_id
             order_details["exit_price"] = payload["low"]
@@ -267,14 +266,11 @@ async def sse_candlestick_endpoint(symbol: str):
 
 @app.get("/sse/orders")
 async def stream_all_orders():
-    api = Helper.api()
-
     async def event_generator():
-        global orders_cache
         while True:
             await asyncio.sleep(1.5)  # obey rate limits
             try:
-                orders_cache = api.orders
+                orders_cache = Helper.orders()
                 yield {"event": "order_update", "data": json.dumps(orders_cache)}
 
                 # Optional: avoid flooding frontend with same data

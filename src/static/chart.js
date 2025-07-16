@@ -86,8 +86,9 @@ window.addEventListener("DOMContentLoaded", () => {
         if (!order?.order_id || renderedOrderIds.has(order.order_id)) continue;
         if (!order?.exchange_timestamp || !order?.price || !order?.side) continue;
         if (["CANCELED", "COMPLETE", "REJECTED"].includes(order.status)) continue;
-        if (isNaN(parseFloat(price))) continue;
-
+        const price = parseFloat(order.price)
+        if (isNaN(price)) continue;
+        console.log(order)
         const segment = [
           { time: firstTime, value: price },
           { time: lastTime, value: price },
