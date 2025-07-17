@@ -78,7 +78,6 @@ class TickRunner:
             if path.exists(TRADE_JSON):
                 dict_fm_file = O_FUTL.read_file(TRADE_JSON)
                 if dict_fm_file["entry_id"] != self.entry_id:
-                    print(dict_fm_file["entry_id"], "!=", self.entry_id) 
                     for key, value in dict_fm_file.items():
                         setattr(self, key, value)
                     self.fn = "is_trade"
@@ -105,12 +104,12 @@ class TickRunner:
                     self.exit_id = exit_id
                     self.fn = "exit_trade"
             elif item and item.get("status", None) in ["REJECTED", "CANCELED"]:
-                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+                self.entry_id = ""
                 self.fn = "create"
             elif item:
                 logging.info(f"trade status is {item['status']}")
             else:
-                logging.warning("trade status unknown")
+                logging.warning(f"trade status unknown {self.entry_id}")
         except Exception as e:
             logging.error(f"{e} while is_trade")
 
@@ -125,7 +124,7 @@ class TickRunner:
     def exit_trade(self):
         try:
             if self._is_stopped():
-                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+                logging.info(f"STOPPED: {self.exit_id}")
                 self.fn = "create"
             elif self._is_beyond_band():
                 kwargs = dict(
@@ -137,7 +136,7 @@ class TickRunner:
                     price=0,
                 )
                 Helper.modify_order(kwargs)
-                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+                logging.info(f"EXITED BEYOND BAND: {self.exit_id}")
                 self.fn = "create"
         except Exception as e:
             logging.error(f"{e} exit_trade")

@@ -145,8 +145,15 @@ class Helper:
 
 if __name__ == "__main__":
     from pprint import pprint
+    import pandas as pd
+    from src.constants import S_DATA
 
     Helper.api()
     # resp = Helper._api.broker.get_order_book()
     resp = Helper.api().orders
     pprint(resp)
+    if resp and any(resp):
+        pd.DataFrame(resp).to_csv(S_DATA + "orders.csv", index=False)
+        print(pd.DataFrame(resp))
+    else:
+        print("no response from orders")

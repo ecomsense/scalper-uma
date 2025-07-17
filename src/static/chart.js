@@ -145,20 +145,23 @@ window.addEventListener("DOMContentLoaded", () => {
     connectOrderSSE();
   }
 
-  symbolSelect.addEventListener("change", (event) => {
-    const selectedSymbol = event.target.value;
-    currentSymbol = selectedSymbol;
-
-    // Clear chart
-    candlestickSeries.setData([]);
+  function resetOrderLines() {
     renderedOrderIds.clear();
 
-    // Remove all previous LineSeries (one per order)
     for (const series of orderSeriesMap.values()) {
       chart.removeSeries(series);
     }
-    orderSeriesMap.clear();
 
+    orderSeriesMap.clear();
+  }
+
+
+  symbolSelect.addEventListener("change", (event) => {
+    const selectedSymbol = event.target.value;
+    currentSymbol = selectedSymbol;
+    // Clear chart
+    candlestickSeries.setData([]);
+    resetOrderLines()
     connectCandleSSE(selectedSymbol);
   });
 
@@ -166,7 +169,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!currentSymbol) return alert("Select a symbol first.");
     const candles = candlestickSeries.data();
     if (candles.length < 2) return alert("Not enough candle data.");
-
+    
+    resetOrderLines()
     const prevCandle = candles[candles.length - 2];
     const payload = {
       symbol: currentSymbol,
@@ -175,6 +179,7 @@ window.addEventListener("DOMContentLoaded", () => {
     };
 
     try {
+      resetOrderLines()
       const response = await fetch("/api/trade/buy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -189,10 +194,13 @@ window.addEventListener("DOMContentLoaded", () => {
       console.error("Buy order failed:", error);
       alert("Buy order failed.");
     }
+    // added on 17-jul 
+    connectCandleSSE(currentSymbol);
   });
 
   sellButton.addEventListener("click", async () => {
     try {
+      resetOrderLines()
       const response = await fetch("/api/trade/sell");
       const result = await response.json();
       if (result.status !== "success") {
@@ -203,6 +211,8 @@ window.addEventListener("DOMContentLoaded", () => {
       console.error("Sell order failed:", error);
       alert("Sell order failed.");
     }
+    // added on 17-jul 
+    connectCandleSSE(currentSymbol);
   });
 
   // Init

@@ -107,20 +107,16 @@ def nullify():
     try:
         # nullify orders
         orders = Helper.get_orders()
-        if orders and isinstance(orders, dict):
+        if orders:
             for item in orders:
-                if (item and item["status"] == "OPEN") or (
-                    item and item["TRIGGER_PENDING"]
+                if (item["status"] == "OPEN") or (
+                    item["status"] == "TRIGGER_PENDING"
                 ):
-                    print("modify to close")
-                    Helper.api().order_cancel(
-                        symbol=item.get("symbol", None),
-                        order_id=item.get("order_id", None),
-                        quantity=item.get("quantity", None),
-                        exchange=item.get("exchange", None),
-                        order_type="MKT",
-                        price=0,
-                    )
+                    order_id = item.get("order_id", None)
+                    logging.info(f"cancelling open order {order_id}")
+                    Helper.api().order_cancel(order_id)
+                else:
+                    print()
             Helper.close_positions()
     except Exception as e:
         logging.error(f"Error in nullify: {e}")
