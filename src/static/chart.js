@@ -172,10 +172,12 @@ window.addEventListener("DOMContentLoaded", () => {
     
     resetOrderLines()
     const prevCandle = candles[candles.length - 2];
+    const currCandle = candles[candles.length - 1];
     const payload = {
       symbol: currentSymbol,
       high: prevCandle.high,
       low: prevCandle.low,
+      ltp: currCandle.close
     };
 
     try {

@@ -82,20 +82,19 @@ class Helper:
             print_exc()
 
     @classmethod
-    def close_positions(cls, half=False):
+    def close_positions(cls):
         for pos in cls._api.positions:
             if pos and pos["quantity"] == 0:
                 continue
             elif pos:
                 quantity = abs(pos["quantity"])
-                quantity = int(quantity / 2) if half else quantity
 
                 if pos["quantity"] < 0:
                     args = dict(
                         symbol=pos["symbol"],
                         quantity=quantity,
                         disclosed_quantity=quantity,
-                        product="M",
+                        product=pos["prd"],
                         side="B",
                         order_type="MKT",
                         exchange="NFO",
@@ -108,10 +107,10 @@ class Helper:
                         symbol=pos["symbol"],
                         quantity=quantity,
                         disclosed_quantity=quantity,
-                        product="M",
+                        product=pos["prd"],
                         side="S",
                         order_type="MKT",
-                        exchange="NFO",
+                        exchange=pos["exchange"]
                         tag="close",
                     )
                     resp = cls._api.order_place(**args)
@@ -157,3 +156,13 @@ if __name__ == "__main__":
         print(pd.DataFrame(resp))
     else:
         print("no response from orders")
+
+
+    
+    resp = Helper.api().positions
+    pprint(resp)
+    if resp and any(resp):
+        pd.DataFrame(resp).to_csv(S_DATA + "positions.csv", index=False)
+        print(pd.DataFrame(resp))
+    else:
+        print("no response from positions")

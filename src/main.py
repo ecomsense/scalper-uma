@@ -147,6 +147,7 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
     symbol = payload.get("symbol", "DUMMY").upper()
     if symbol != "DUMMY":
         settings = get_settings()
+
         order_details = {
             "symbol": symbol,
             "quantity": settings["quantity"],
@@ -154,15 +155,28 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "exchange": settings["option_exchange"],
             "tag": "uma_scalper",
             "side": "BUY",
-            "price": payload["high"] + 0.05,
-            "trigger_price": payload["high"],
-            "order_type": "SL",
+            "order_type": "SL"
         }
+
+        if payload["ltp"] < payload["low"]:
+            order_details["price"] = payload["low"] + 0.05
+            order_details["trigger_price"] = payload["low"]
+            exit_price = payload["ltp"]
+        elif payload["ltp"] < payload["high"]:
+            order_details["price"] = payload["high"] + 0.05
+            order_details["trigger_price"] = payload["high"]
+            exit_price = payload["low"]
+        else:
+            order_details["price"] = payload["ltp"] + 0.05
+            order_details["order_type"] = "MARKET"
+            exit_price = payload["low"]
+
+
         order_id = Helper.one_side(order_details)
         if order_id:
             order_details["entry_id"] = order_id
-            order_details["exit_price"] = payload["low"]
-            order_details["target_price"] = payload["high"] + settings["profit"]
+            order_details["exit_price"] = exit_price
+            order_details["target_price"] = order_details["price"] + settings["profit"]
             blacklist = ["side", "price", "trigger_price", "order_type"]
             for key in blacklist:
                 del order_details[key]
