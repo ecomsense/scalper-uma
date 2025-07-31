@@ -179,7 +179,7 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             order_details["target_price"] = order_details["price"] + settings["profit"]
             blacklist = ["side", "price", "trigger_price", "order_type"]
             for key in blacklist:
-                del order_details[key]
+                order_details.pop(key, None)
             O_FUTL.write_file(filepath=TRADE_JSON, content=order_details)
             return JSONResponse(
                 content={

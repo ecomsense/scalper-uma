@@ -110,7 +110,7 @@ class Helper:
                         product=pos["prd"],
                         side="S",
                         order_type="MKT",
-                        exchange=pos["exchange"]
+                        exchange=pos["exchange"],
                         tag="close",
                     )
                     resp = cls._api.order_place(**args)
