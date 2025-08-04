@@ -1,7 +1,8 @@
 window.addEventListener("DOMContentLoaded", () => {
   const chartContainer = document.getElementById("chartContainer");
-  const symbolSelect = document.getElementById("symbolSelect");
   const buyButton = document.getElementById("buyButton");
+  const symbolSelect = document.getElementById("symbolSelect");
+  const mktButton = document.getElementById("mktButton");
   const sellButton = document.getElementById("sellButton");
   const symbolHeading = document.querySelector(".controls h4");
 
@@ -155,16 +156,6 @@ window.addEventListener("DOMContentLoaded", () => {
     orderSeriesMap.clear();
   }
 
-
-  symbolSelect.addEventListener("change", (event) => {
-    const selectedSymbol = event.target.value;
-    currentSymbol = selectedSymbol;
-    // Clear chart
-    candlestickSeries.setData([]);
-    resetOrderLines()
-    connectCandleSSE(selectedSymbol);
-  });
-
   buyButton.addEventListener("click", async () => {
     if (!currentSymbol) return alert("Select a symbol first.");
     const candles = candlestickSeries.data();
@@ -172,12 +163,12 @@ window.addEventListener("DOMContentLoaded", () => {
     
     resetOrderLines()
     const prevCandle = candles[candles.length - 2];
-    const currCandle = candles[candles.length - 1];
     const payload = {
       symbol: currentSymbol,
-      high: prevCandle.high,
-      low: prevCandle.low,
-      ltp: currCandle.close
+      price: prevCandle.high + 0.05,
+      trigger_price: prevCandle.high,
+      order_type: "SL",
+      exit_price: prevCandle.low,
     };
 
     try {
@@ -197,6 +188,49 @@ window.addEventListener("DOMContentLoaded", () => {
       alert("Buy order failed.");
     }
     // added on 17-jul 
+    connectCandleSSE(currentSymbol);
+  });
+
+
+  symbolSelect.addEventListener("change", (event) => {
+    const selectedSymbol = event.target.value;
+    currentSymbol = selectedSymbol;
+    // Clear chart
+    candlestickSeries.setData([]);
+    resetOrderLines()
+    connectCandleSSE(selectedSymbol);
+  });
+
+  mktButton.addEventListener("click", async () => {
+    if (!currentSymbol) return alert("Select a symbol first.");
+    const candles = candlestickSeries.data();
+    if (candles.length < 2) return alert("Not enough candle data.");
+    
+    resetOrderLines()
+    const currCandle = candles[candles.length - 1];
+    const payload = {
+      symbol: currentSymbol,
+      price: currCandle.close + 2,
+      order_type: "LIMIT",
+      exit_price: currCandle.low,
+    };
+
+    try {
+      resetOrderLines()
+      const response = await fetch("/api/trade/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (result.status !== "success") {
+        chart.timeScale().fitContent();
+        alert("Mkt order failed.");
+      }
+    } catch (error) {
+      console.error("Mkt order failed:", error);
+      alert("Mt order failed.");
+    }
     connectCandleSSE(currentSymbol);
   });
 

@@ -155,22 +155,9 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "exchange": settings["option_exchange"],
             "tag": "uma_scalper",
             "side": "BUY",
-            "order_type": "SL"
         }
-
-        if payload["ltp"] < payload["low"]:
-            order_details["price"] = payload["low"] + 0.05
-            order_details["trigger_price"] = payload["low"]
-            exit_price = payload["ltp"]
-        elif payload["ltp"] < payload["high"]:
-            order_details["price"] = payload["high"] + 0.05
-            order_details["trigger_price"] = payload["high"]
-            exit_price = payload["low"]
-        else:
-            order_details["price"] = payload["ltp"] + 2
-            order_details["order_type"] = "LIMIT"
-            exit_price = payload["low"]
-
+        exit_price = payload.pop("exit_price")
+        order_details.update(payload)
 
         order_id = Helper.one_side(order_details)
         if order_id:
