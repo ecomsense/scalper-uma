@@ -167,8 +167,8 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             order_details["trigger_price"] = payload["high"]
             exit_price = payload["low"]
         else:
-            order_details["price"] = payload["ltp"] + 0.05
-            order_details["order_type"] = "MARKET"
+            order_details["price"] = payload["ltp"] + 2
+            order_details["order_type"] = "LIMIT"
             exit_price = payload["low"]
 
 
