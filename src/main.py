@@ -157,13 +157,14 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "side": "BUY",
         }
         exit_price = payload.pop("exit_price")
+        cost_price = payload.pop("cost_price")
         order_details.update(payload)
 
         order_id = Helper.one_side(order_details)
         if order_id:
             order_details["entry_id"] = order_id
             order_details["exit_price"] = exit_price
-            order_details["target_price"] = order_details["price"] + settings["profit"]
+            order_details["target_price"] = cost_price + settings["profit"]
             blacklist = ["side", "price", "trigger_price", "order_type"]
             for key in blacklist:
                 order_details.pop(key, None)

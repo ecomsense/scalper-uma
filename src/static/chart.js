@@ -169,6 +169,7 @@ window.addEventListener("DOMContentLoaded", () => {
       trigger_price: prevCandle.high,
       order_type: "SL",
       exit_price: prevCandle.low,
+      cost_price: prevCandle.high + 0.05,
     };
 
     try {
@@ -187,8 +188,7 @@ window.addEventListener("DOMContentLoaded", () => {
       console.error("Buy order failed:", error);
       alert("Buy order failed.");
     }
-    // added on 17-jul 
-    connectCandleSSE(currentSymbol);
+    //connectCandleSSE(currentSymbol);
   });
 
 
@@ -213,6 +213,7 @@ window.addEventListener("DOMContentLoaded", () => {
       price: currCandle.close + 2,
       order_type: "LIMIT",
       exit_price: currCandle.low,
+      cost_price: currCandle.close + 0.05
     };
 
     try {
@@ -231,7 +232,7 @@ window.addEventListener("DOMContentLoaded", () => {
       console.error("Mkt order failed:", error);
       alert("Mt order failed.");
     }
-    connectCandleSSE(currentSymbol);
+    // connectCandleSSE(currentSymbol);
   });
 
   sellButton.addEventListener("click", async () => {
