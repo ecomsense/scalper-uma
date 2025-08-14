@@ -83,38 +83,43 @@ class Helper:
 
     @classmethod
     def close_positions(cls):
-        for pos in cls._api.positions:
-            if pos and pos["quantity"] == 0:
-                continue
-            elif pos:
-                quantity = abs(pos["quantity"])
-
-                if pos["quantity"] < 0:
-                    args = dict(
-                        symbol=pos["symbol"],
-                        quantity=quantity,
-                        disclosed_quantity=quantity,
-                        product=pos["prd"],
-                        side="B",
-                        order_type="MKT",
-                        exchange="NFO",
-                        tag="close",
-                    )
-                    resp = cls._api.order_place(**args)
-                    logging.debug(f"api responded with {resp}")
-                elif quantity > 0:
-                    args = dict(
-                        symbol=pos["symbol"],
-                        quantity=quantity,
-                        disclosed_quantity=quantity,
-                        product=pos["prd"],
-                        side="S",
-                        order_type="MKT",
-                        exchange=pos["exchange"],
-                        tag="close",
-                    )
-                    resp = cls._api.order_place(**args)
-                    logging.debug(f"api responded with {resp}")
+        try:
+            for pos in cls._api.positions:
+                if pos and pos["quantity"] == 0:
+                    continue
+                elif pos:
+                    quantity = abs(pos["quantity"])
+                    if pos["quantity"] < 0:
+                        args = dict(
+                            symbol=pos["symbol"],
+                            quantity=quantity,
+                            disclosed_quantity=quantity,
+                            product=pos["prd"],
+                            side="B",
+                            order_type="MKT",
+                            exchange="NFO",
+                            tag="close",
+                        )
+                        print("product", pos["prd"])
+                        resp = cls._api.order_place(**args)
+                        logging.debug(f"api responded with {resp}")
+                    elif quantity > 0:
+                        args = dict(
+                            symbol=pos["symbol"],
+                            quantity=quantity,
+                            disclosed_quantity=quantity,
+                            product=pos["prd"],
+                            side="S",
+                            order_type="MKT",
+                            exchange=pos["exchange"],
+                            tag="close",
+                        )
+                        print("product", pos["prd"])
+                        resp = cls._api.order_place(**args)
+                        logging.debug(f"api responded with {resp}")
+        except Exception as e:
+            logging.error(f"while closing positions")
+            print_exc()
 
     @classmethod
     def mtm(cls):
@@ -157,8 +162,6 @@ if __name__ == "__main__":
     else:
         print("no response from orders")
 
-
-    
     resp = Helper.api().positions
     pprint(resp)
     if resp and any(resp):

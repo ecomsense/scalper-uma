@@ -3,36 +3,6 @@ import re
 from toolkit.fileutils import Fileutils
 from typing import Dict, Optional
 
-dct_sym = {
-    "NIFTY": {
-        "diff": 50,
-        "index": "Nifty 50",
-        "exchange": "NSE",
-        "token": "26000",
-        "depth": 12,
-    },
-    "BANKNIFTY": {
-        "diff": 100,
-        "index": "Nifty Bank",
-        "exchange": "NSE",
-        "token": "26009",
-        "depth": 25,
-    },
-    "MIDCPNIFTY": {
-        "diff": 100,
-        "index": "NIFTY MID SELECT",
-        "exchange": "NSE",
-        "token": "26074",
-        "depth": 21,
-    },
-    "FINNIFTY": {
-        "diff": 50,
-        "index": "Nifty Fin Services",
-        "exchange": "NSE",
-        "token": "26037",
-        "depth": 16,
-    },
-}
 
 
 class Symbols:

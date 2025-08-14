@@ -16,10 +16,13 @@ from pathlib import Path
 import asyncio
 import time
 import json
-from src.tickrunner import get_tokens, TickRunner
+from src.tickrunner import TickRunner
 from src.wserver import Wserver
 
 from sse_starlette.sse import EventSourceResponse
+from src.strategy import Strategy
+from src.constants import dct_sym
+from traceback import print_exc
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
@@ -94,7 +97,7 @@ async def get_all_candlesticks_for_symbol(symbol: str) -> list[dict]:
 def get_settings():
     # return json response from dictionary
     base = O_SETG["trade"]["base"]
-    return O_SETG[base]
+    return O_SETG[base] | dct_sym[base]
 
 
 @lru_cache(maxsize=1)
@@ -120,6 +123,7 @@ def nullify():
             Helper.close_positions()
     except Exception as e:
         logging.error(f"Error in nullify: {e}")
+        print_exc()
 
 
 # --- FastAPI App Initialization ---
@@ -291,11 +295,24 @@ async def stream_all_orders():
 @app.on_event("startup")
 async def start_tick_runner():
     try:
-        tokens_map = get_tokens()
-        tokens = list(tokens_map.keys())
-        ws = Wserver(Helper.api(), tokens)
-        runner = TickRunner(tokens_map, ws)
-        asyncio.create_task(runner.run())
+        api = Helper.api()
+        user_settings = get_settings()
+        ltp_of_underlying = Helper.ltp(user_settings["exchange"], user_settings["token"])
+        sgy = Strategy(user_settings, ltp_of_underlying)
+        tokens = list(sgy.tokens_for_all_trading_symbols.keys())
+        ws = Wserver(api, tokens)
+        while not ws.ltp:
+            await asyncio.sleep(0.5)
+        symbol_nearest_to_premium = []
+        for ce_or_pe in ["CE", "PE"]:
+            res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
+            symbol_nearest_to_premium.append(res)
+
+        tokens_nearest = sgy.sym.find_wstoken_from_tradingsymbol(symbol_nearest_to_premium)
+        runner = TickRunner(sgy.tokens_for_all_trading_symbols, ws)
+        print(sgy.tokens_for_all_trading_symbols, "sgy quotes", "\n")
+        asyncio.create_task(runner.run(tokens_nearest))
+        print(tokens_nearest, "nearest")
         print("✅ TickRunner started.")
     except Exception as e:
         logging.error(f"Failed to start TickRunner: {e}")

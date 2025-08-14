@@ -3,46 +3,30 @@ from datetime import datetime
 from os import path
 
 from src.api import Helper
-from src.constants import O_SETG, logging, O_FUTL, TRADE_JSON, TICK_CSV_PATH
-from src.symbols import Symbols, dct_sym
+from src.constants import logging, O_FUTL, TRADE_JSON, TICK_CSV_PATH
+from src.symbol import Symbol
 
-
-def get_tokens():
-    Helper.api()  # ensure API initialized
-    tokens_of_all_trading_symbols = {}
-
-    base = O_SETG["trade"]["base"]
-    values = O_SETG[base] | dct_sym[base]
-
-    sym = Symbols(
-        option_exchange=values["option_exchange"],
-        base=base,
-        expiry=values["expiry"],
-    )
-    sym.get_exchange_token_map_finvasia()
-
-    ltp_for_underlying = Helper.ltp(values["exchange"], values["token"])
-    values["atm"] = sym.get_atm(ltp_for_underlying)
-
-    tokens_of_all_trading_symbols.update(sym.get_tokens(values["atm"]))
-    return tokens_of_all_trading_symbols
 
 
 def new_ticks_csv_line(res, token_ltp):
-    buffer = []
-    ltps = {}
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        buffer = []
+        ltps = {}
 
-    for token, quote in token_ltp.items():
-        symbol = res[token]
-        ltp = round(float(quote), 2)
-        ltps[symbol] = ltp
-        buffer.append(f"{timestamp},{symbol},{ltp},0\n")
+        for token, quote in token_ltp.items():
+            symbol = res.get(token, None)
+            if symbol:
+                ltp = round(float(quote), 2)
+                ltps[symbol] = ltp
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                buffer.append(f"{timestamp},{symbol},{ltp},0\n")
 
-    with open(TICK_CSV_PATH, "a") as f:
-        f.writelines(buffer)
+        with open(TICK_CSV_PATH, "a") as f:
+            f.writelines(buffer)
 
-    return ltps
+        return ltps
+    except Exception as e:
+        logging.error(f"{e} in new ticks csv line")
 
 
 def get_dict_from_list(order_id: str):
@@ -60,7 +44,7 @@ def get_dict_from_list(order_id: str):
 class TickRunner:
     def __init__(self, tokens_map, ws):
         self.ws = ws
-        self.res = tokens_map  # token => symbol
+        #self.res = tokens_map  # token => symbol
         self.fn = "create"
         self.ltps = {}
         self.symbol = ""
@@ -148,10 +132,10 @@ class TickRunner:
         except Exception as e:
             logging.error(f"{e} run_state_machine")
 
-    async def run(self):
+    async def run(self, filtered_token_symbol):
         while True:
             try:
-                ltps = new_ticks_csv_line(self.res, self.ws.ltp)
+                ltps = new_ticks_csv_line(filtered_token_symbol, self.ws.ltp)
                 self.run_state_machine(ltps)
                 await asyncio.sleep(0.5)
             except Exception as e:

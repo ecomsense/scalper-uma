@@ -113,3 +113,21 @@ def set_logger():
 
 
 logging = set_logger()
+
+
+dct_sym = {
+    "NIFTY": {
+        "diff": 50,
+        "index": "Nifty 50",
+        "exchange": "NSE",
+        "token": "26000",
+        "depth": 12,
+    },
+    "BANKNIFTY": {
+        "diff": 100,
+        "index": "Nifty Bank",
+        "exchange": "NSE",
+        "token": "26009",
+        "depth": 25,
+    },
+}
