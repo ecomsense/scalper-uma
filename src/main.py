@@ -23,6 +23,7 @@ from sse_starlette.sse import EventSourceResponse
 from src.strategy import Strategy
 from src.constants import dct_sym
 from traceback import print_exc
+from contextlib import asynccontextmanager
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
@@ -126,9 +127,61 @@ def nullify():
         print_exc()
 
 
-# --- FastAPI App Initialization ---
-app = FastAPI()
+# --- Application Lifespan Event ---
+# We use asynccontextmanager to define the startup and shutdown logic.
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # This block runs on application startup
+    try:
+        api = Helper.api()
+        user_settings = get_settings()
+        ltp_of_underlying = Helper.ltp(user_settings["exchange"], user_settings["token"])
+        sgy = Strategy(user_settings, ltp_of_underlying)
+        tokens = list(sgy.tokens_for_all_trading_symbols.keys())
+        ws = Wserver(api, tokens)
 
+        while not ws.ltp:
+            await asyncio.sleep(0.5)
+
+        symbol_nearest_to_premium = []
+        for ce_or_pe in ["CE", "PE"]:
+            res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
+            symbol_nearest_to_premium.append(res)
+
+        tokens_nearest = sgy.sym.find_wstoken_from_tradingsymbol(symbol_nearest_to_premium)
+        runner = TickRunner(sgy.tokens_for_all_trading_symbols, ws)
+        print(sgy.tokens_for_all_trading_symbols, "sgy quotes", "\n")
+        
+        # Start the runner task and hold a reference if needed for shutdown
+        task = asyncio.create_task(runner.run(tokens_nearest))
+        app.state.runner_task = task # Store task on app.state to manage later
+
+        print(tokens_nearest, "nearest")
+        print("✅ TickRunner started.")
+
+        # This `yield` is essential! It tells FastAPI that the startup is complete
+        # and it can begin serving requests.
+        yield
+
+    # This block runs on application shutdown
+    finally:
+        print("Shutting down...")
+        if hasattr(app.state, 'runner_task'):
+            app.state.runner_task.cancel() # Cancel the task
+            try:
+                await app.state.runner_task # Wait for it to finish canceling
+            except asyncio.CancelledError:
+                print("✅ TickRunner task cancelled.")
+        Helper.close_positions() # A good place to close any open positions
+        print("✅ Shutdown complete.")
+
+
+# --- FastAPI App Initialization ---
+# Pass the lifespan function to the FastAPI constructor
+app = FastAPI(lifespan=lifespan)
+
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static")
 
 @app.get("/", include_in_schema=False)
 async def serve_root():
@@ -291,32 +344,3 @@ async def stream_all_orders():
 
     return EventSourceResponse(event_generator())
 
-
-@app.on_event("startup")
-async def start_tick_runner():
-    try:
-        api = Helper.api()
-        user_settings = get_settings()
-        ltp_of_underlying = Helper.ltp(user_settings["exchange"], user_settings["token"])
-        sgy = Strategy(user_settings, ltp_of_underlying)
-        tokens = list(sgy.tokens_for_all_trading_symbols.keys())
-        ws = Wserver(api, tokens)
-        while not ws.ltp:
-            await asyncio.sleep(0.5)
-        symbol_nearest_to_premium = []
-        for ce_or_pe in ["CE", "PE"]:
-            res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
-            symbol_nearest_to_premium.append(res)
-
-        tokens_nearest = sgy.sym.find_wstoken_from_tradingsymbol(symbol_nearest_to_premium)
-        runner = TickRunner(sgy.tokens_for_all_trading_symbols, ws)
-        print(sgy.tokens_for_all_trading_symbols, "sgy quotes", "\n")
-        asyncio.create_task(runner.run(tokens_nearest))
-        print(tokens_nearest, "nearest")
-        print("✅ TickRunner started.")
-    except Exception as e:
-        logging.error(f"Failed to start TickRunner: {e}")
-
-
-STATIC_DIR = Path(__file__).parent / "static"
-app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static")
