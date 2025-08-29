@@ -31,7 +31,7 @@ def factory(file_in_data_dir):
         """
         print("creating data dir")
         O_FUTL.add_path(file_in_data_dir)
-    elif O_FUTL.is_file_not_2day(file_in_data_dir):
+    else:
         O_FUTL.nuke_file(file_in_data_dir)
 
 

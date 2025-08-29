@@ -1,90 +1,146 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
-    <title>Live Candlestick Chart with Trade Management</title>
-    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
-    <script src="/static/chart.js" defer></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-      }
-      .container {
-        margin: 0 auto;
-        background-color: #fff;
-        padding: 0 20px 20px 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-      .controls {
-        height: 60px;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-      .controls h4 {
-        margin-right: auto;
-      }
-      .chart-container {
-        height: calc(100vh - 80px);
-        border-radius: 6px;
-      }
-      button {
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        color: white;
-      }
-      #openButton {
-        background-color: #4caf50;
-      } /* Green */
-      #openButton:hover {
-        background-color: #45a049;
-      }
-      #buyButton {
-        background-color: #4caf50;
-      } /* Green */
-      #buyButton:hover {
-        background-color: #45a049;
-      }
-      #mktButton {
-        background-color: #4806ee;
-      } /* Blue */
-      #mktButton:hover {
-        background-color: #180154;
 
-      }
-      #sellButton {
-        background-color: #f44336;
-      } /* Red */
-      #sellButton:hover {
-        background-color: #da190b;
-      }
-      select {
-        padding: 8px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-      }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Scalping Charts</title>
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #d1d4dc;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chart-grid {
+            display: flex;
+            flex-grow: 1;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+
+        .chart-container {
+            height: 100%;
+            flex: 1 1 45vw;
+            background-color: #262626;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            max-width: 49vw;
+            /* Key change: Use flex-grow to fill vertical space */
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+/* The key fix: make the chart div itself flexible */
+        .chart-container > div[id^="chart-"] {
+            flex-grow: 1;
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .left-buttons, .right-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chart-title {
+            font-size: 1em;
+            text-align: center;
+            color: #d1d1d1;
+            flex-grow: 1;
+        }
+        
+        .controls {
+            margin: 10px;
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 8px 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+        .buy-btn { background-color: #4CAF50; }
+        .sell-btn { background-color: #f44336; }
+        .mkt-btn { background-color: #2196F3; }
+        .sl-btn { background-color: #FF9800; }
+
+        @media (max-width: 900px) {
+            .chart-grid {
+                flex-direction: column;
+            }
+            .chart-container {
+                max-width: 95vw;
+                flex: 1 1 95vw;
+            }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <div class="controls">
-        <h4>DUMMY</h4>
-        <button id="openButton">Open</button>
-        <button id="buyButton">High</button>
-        <label for="symbolSelect">Select Symbol:</label>
-        <select id="symbolSelect"></select>
-        <button id="mktButton">Mkt</button>
-        <button id="sellButton">Rst</button>
-      </div>
-      <div class="chart-container" id="chartContainer"></div>
+        <div class="chart-grid">
+            <div class="chart-container" id="ceChartContainer">
+                <div class="chart-header">
+                    <div class="left-buttons">
+                        <button class="buy-btn" id="buy-btn-CE">High</button>
+                        <button class="buy-btn sl-btn" id="open-btn-CE">Open</button>
+                    </div>
+                    <div class="chart-title" id="chart-title-CE">Call Option</div>
+                    <div class="right-buttons">
+                        <button class="sell-btn" id="sell-btn-CE">Cncl</button>
+                        <button class="buy-btn mkt-btn" id="mkt-btn-CE">Mrkt</button>
+                    </div>
+                </div>
+                <div id="chart-CE"></div>
+            </div>
+            
+            <div class="chart-container" id="peChartContainer">
+                <div class="chart-header">
+                    <div class="left-buttons">
+                        <button class="buy-btn mkt-btn" id="mkt-btn-PE">Mrkt</button>
+                        <button class="sell-btn" id="sell-btn-PE">Cncl</button>
+                    </div>
+                    <div class="chart-title" id="chart-title-PE">Put Option</div>
+                    <div class="right-buttons">
+                        <button class="buy-btn sl-btn" id="open-btn-PE">Open</button>
+                        <button class="buy-btn" id="buy-btn-PE">High</button>
+                    </div>
+                </div>
+                <div id="chart-PE"></div>
+            </div>
+        </div>
     </div>
-  </body>
+    <script src="/static/chart.js"></script>
+</body>
 </html>
