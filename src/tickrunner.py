@@ -31,11 +31,13 @@ def new_ticks_csv_line(res, token_ltp):
 
 def get_dict_from_list(order_id: str):
     try:
-        orders = Helper.get_orders()
+        orders = Helper.orders()
         if orders:
             for item in orders:
                 if item["order_id"] == order_id:
                     return item
+        else:
+            logging.warning(f"orders is {orders}")
         return {}
     except Exception as e:
         print(f"{e} in get dict from list")
@@ -72,6 +74,7 @@ class TickRunner:
         try:
             item = get_dict_from_list(self.entry_id)
             if item and item.get("status", None) == "COMPLETE":
+                logging.info(f"attempting to exit trade {self.entry_id}")
                 args = dict(
                     symbol=self.symbol,
                     exchange=self.exchange,

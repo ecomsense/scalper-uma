@@ -128,7 +128,16 @@ window.addEventListener("DOMContentLoaded", () => {
         };
 
         document.getElementById(buttonIds.reset).onclick = async () => {
-            tradeLogic("/api/trade/sell");
+            try {
+                const response = await fetch("/api/trade/sell", { method: "GET"});
+                const result = await response.json();
+                if (result.status !== "success") {
+                    alert("Reset failed.");
+                }
+            } catch (error) {
+                console.error("Reset failed:", error);
+                alert("Reset failed.");
+            }
         };
 
         new ResizeObserver((entries) => {

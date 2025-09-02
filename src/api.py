@@ -39,9 +39,9 @@ class Helper:
         return cls._api
     
     @classmethod
-    def one_side(self, bargs):
+    def one_side(cls, bargs):
         try:
-            resp = self._api.order_place(**bargs)
+            resp = cls._api.order_place(**bargs)
             return resp
         except Exception as e:
             message = f"helper error {e} while placing order {bargs}"
@@ -50,7 +50,7 @@ class Helper:
 
     @classmethod
     def orders(cls):
-        cls._orders = cls._api.orders
+        cls._orders = cls.api().orders
         return cls._orders
     
     @classmethod
@@ -154,14 +154,14 @@ if __name__ == "__main__":
 
     Helper.api()
     # resp = Helper._api.broker.get_order_book()
-    resp = Helper.api().orders
+    resp = Helper.orders()
     pprint(resp)
     if resp and any(resp):
         pd.DataFrame(resp).to_csv(S_DATA + "orders.csv", index=False)
         print(pd.DataFrame(resp))
     else:
         print("no response from orders")
-
+    """
     resp = Helper.api().positions
     pprint(resp)
     if resp and any(resp):
@@ -169,3 +169,4 @@ if __name__ == "__main__":
         print(pd.DataFrame(resp))
     else:
         print("no response from positions")
+    """
