@@ -7,7 +7,7 @@ from src.constants import logging, O_FUTL, TRADE_JSON, TICK_CSV_PATH
 from src.symbol import Symbol
 
 
-
+"""
 def new_ticks_csv_line(res, token_ltp):
     try:
         buffer = []
@@ -27,7 +27,7 @@ def new_ticks_csv_line(res, token_ltp):
         return ltps
     except Exception as e:
         logging.error(f"{e} in new ticks csv line")
-
+"""
 
 def get_dict_from_list(order_id: str):
     try:
@@ -44,9 +44,9 @@ def get_dict_from_list(order_id: str):
 
 
 class TickRunner:
-    def __init__(self, tokens_map, ws):
+    def __init__(self, ws, tokens_nearest: dict):
         self.ws = ws
-        #self.res = tokens_map  # token => symbol
+        self.tokens_nearest = tokens_nearest
         self.fn = "create"
         self.ltps = {}
         self.symbol = ""
@@ -128,18 +128,19 @@ class TickRunner:
         except Exception as e:
             logging.error(f"{e} exit_trade")
 
-    def run_state_machine(self, ltps):
+    def run_state_machine(self):
         try:
-            self.ltps = ltps
+            ltps = self.ws.ltps
+            ltps = {k: v for k, v in ltps.items() if k in self.tokens_nearest.keys()}
+            self.ltps = {self.tokens_nearest[k]: v for k, v in ltps.items()}
             getattr(self, self.fn)()
         except Exception as e:
             logging.error(f"{e} run_state_machine")
 
-    async def run(self, filtered_token_symbol):
+    async def run(self):
         while True:
             try:
-                ltps = new_ticks_csv_line(filtered_token_symbol, self.ws.ltp)
-                self.run_state_machine(ltps)
+                self.run_state_machine()
                 await asyncio.sleep(0.5)
             except Exception as e:
                 logging.error(f"TickRunner.run failed: {e}")

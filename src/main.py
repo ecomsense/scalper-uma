@@ -9,7 +9,7 @@ from src.constants import (
 )
 from functools import lru_cache
 import pandas as pd
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI, HTTPException, Body, Request
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
@@ -24,10 +24,10 @@ from src.strategy import Strategy
 from src.constants import dct_sym
 from traceback import print_exc
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
-
 
 # --- Helper Functions for Candlestick Aggregation ---
 def aggregate_ticks_to_candlesticks(
@@ -69,8 +69,7 @@ def aggregate_ticks_to_candlesticks(
 
 async def get_all_candlesticks_for_symbol(symbol: str) -> list[dict]:
     """
-    Loads all ticks for a symbol from the CSV and aggregates them into candlesticks.
-    This function will be called for both initial and live data.
+    TO BE REMOVED
     """
     try:
         # Load the entire CSV for aggregation
@@ -92,19 +91,13 @@ async def get_all_candlesticks_for_symbol(symbol: str) -> list[dict]:
     except Exception as e:
         print(f"[{time.time()}] Error loading/aggregating data for {symbol}: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing data: {e}")
-
+    
 
 @lru_cache(maxsize=1)
 def get_settings():
     # return json response from dictionary
     base = O_SETG["trade"]["base"]
     return O_SETG[base] | dct_sym[base]
-
-
-@lru_cache(maxsize=1)
-def get_symbols() -> list[str]:
-    df = pd.read_csv(TICK_CSV_PATH, names=["timestamp", "symbol", "price", "volume"])
-    return df["symbol"].drop_duplicates().tolist()
 
 
 def nullify():
@@ -148,12 +141,15 @@ async def lifespan(app: FastAPI):
             res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
             symbol_nearest_to_premium.append(res)
 
-        tokens_nearest = sgy.sym.find_wstoken_from_tradingsymbol(symbol_nearest_to_premium)
-        runner = TickRunner(sgy.tokens_for_all_trading_symbols, ws)
-        print(sgy.tokens_for_all_trading_symbols, "sgy quotes", "\n")
-        
+        tokens_nearest: dict = sgy.sym.find_wstoken_from_tradingsymbol(symbol_nearest_to_premium)
+
+        # add application state
+        app.state.tokens_nearest = tokens_nearest
+        app.state.ws = ws
+
+        runner = TickRunner(ws, tokens_nearest)
         # Start the runner task and hold a reference if needed for shutdown
-        task = asyncio.create_task(runner.run(tokens_nearest))
+        task = asyncio.create_task(runner.run())
         app.state.runner_task = task # Store task on app.state to manage later
 
         print(tokens_nearest, "nearest")
@@ -188,13 +184,12 @@ async def serve_root():
     return FileResponse(STATIC_DIR / "index.html")
 
 
-# --- API Endpoints (MUST be defined BEFORE static files mount at root) ---
 @app.get("/api/symbols")
-async def get_available_symbols() -> JSONResponse:
+async def get_available_symbols(request: Request) -> JSONResponse:
     """
     Returns a list of available symbols.
     """
-    symbols = get_symbols()
+    symbols = list(request.app.state.tokens_nearest.values())
     return JSONResponse(content=symbols)
 
 
@@ -256,66 +251,57 @@ async def reset():
 
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
-async def sse_candlestick_endpoint(symbol: str):
-    # todo
+async def sse_candlestick_endpoint(symbol: str, request: Request):
     symbol = symbol.upper()
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
+    # Use a dictionary to store the state of the in-progress candlestick
+    last_sent_candle = None
+
     async def event_generator():
-        # 1. Send initial historical data (reads entire CSV)
-        initial_candles = await get_all_candlesticks_for_symbol(symbol)
-
-        yield {"event": "initial_data", "data": json.dumps(initial_candles)}
-        print(
-            f"[{time.time()}] Sent {len(initial_candles)} initial historical candles via SSE for {symbol}"
-        )
-
-        # 2. Stream "live" updates (re-reads and re-aggregates entire CSV periodically)
-        # This is inefficient but adheres to the "no tick_processor" constraint
-        last_sent_candle_time = 0  # To track what we've already sent
-
-        if initial_candles:
-            # If initial data sent, the last one is the latest complete/forming candle
-            last_sent_candle_time = initial_candles[-1]["time"]
-
+        nonlocal last_sent_candle # Allow modifying the outer scope variable
         while True:
+            await asyncio.sleep(0.5)
+            
+            ws = request.app.state.ws
+            token_symbols = request.app.state.tokens_nearest
+            
             try:
-                # Poll the CSV periodically (e.g., every 1 second)
-                await asyncio.sleep(1)
+                token_symbol = [k for k, v in token_symbols.items() if v == symbol][0]
+                price = ws.ltp[token_symbol]
+            except (KeyError, IndexError):
+                # Symbol not found or price not available yet
+                continue
 
-                # Re-read and re-aggregate all data for the symbol
-                current_all_candles = await get_all_candlesticks_for_symbol(symbol)
+            current_time = int(time.time())
+            
+            # Use the start of the current minute as the candle's timestamp
+            candle_time = current_time - (current_time % CANDLESTICK_TIMEFRAME_SECONDS)
+            
+            if last_sent_candle is None or candle_time > last_sent_candle["time"]:
+                # New candle started, send the last one and create a new one
+                if last_sent_candle is not None:
+                    # Send the completed candle for the previous period
+                    yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
-                if not current_all_candles:
-                    continue  # No data yet, wait for next poll
-
-                latest_candle = current_all_candles[-1]
-
-                # Only send an update if there's a new candle or the last candle has changed
-                # This logic is simplified; a robust system would compare open, high, low, close
-                # For now, if the latest candle's time is new, or if it's the same time but updated (via re-aggregation)
-                if latest_candle["time"] > last_sent_candle_time or (
-                    latest_candle["time"] == last_sent_candle_time
-                    and (
-                        latest_candle["close"] != initial_candles[-1]["close"]
-                        if initial_candles
-                        else True
-                    )
-                ):  # A very basic check
-
-                    yield {"event": "live_update", "data": json.dumps(latest_candle)}
-                    last_sent_candle_time = latest_candle["time"]
-                    # To keep initial_candles up-to-date with the latest aggregation if needed for future comparisons
-                    initial_candles = current_all_candles
-
-            except asyncio.CancelledError:
-                print(f"[{time.time()}] SSE event generator for {symbol} cancelled.")
-                break
-            except Exception as e:
-                print(f"[{time.time()}] SSE event generator error for {symbol}: {e}")
-                # Log error and continue, don't crash the stream
-                await asyncio.sleep(1)  # Prevent tight loop on error
-
+                # Initialize the new candle
+                last_sent_candle = {
+                    "open": price,
+                    "high": price,
+                    "low": price,
+                    "close": price,
+                    "volume": 0,
+                    "time": candle_time,
+                }
+            else:
+                # Update the existing candle
+                last_sent_candle["high"] = max(last_sent_candle["high"], price)
+                last_sent_candle["low"] = min(last_sent_candle["low"], price)
+                last_sent_candle["close"] = price
+                # Send the updated candle for the current period
+                yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
+                
+            
     return EventSourceResponse(event_generator())
 
 
@@ -343,4 +329,3 @@ async def stream_all_orders():
                 }
 
     return EventSourceResponse(event_generator())
-
