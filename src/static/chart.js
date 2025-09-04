@@ -44,6 +44,11 @@ window.addEventListener("DOMContentLoaded", () => {
             candlestickOptions,
         );
 
+        // --- THIS IS THE FIX ---
+        chart.timeScale().applyOptions({
+            timeZone: 'Asia/Kolkata',
+        });
+
         const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
         
         candleEventSource.addEventListener("initial_data", (event) => {

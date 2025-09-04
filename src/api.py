@@ -84,7 +84,7 @@ class Helper:
     @classmethod
     def close_positions(cls):
         try:
-            for pos in cls._api.positions:
+            for pos in cls.api().positions:
                 if pos and pos["quantity"] == 0:
                     continue
                 elif pos:
@@ -126,7 +126,7 @@ class Helper:
         try:
             pnl = 0
             positions = [{}]
-            positions = cls._api.positions
+            positions = cls.api().positions
             """
             keys = [
                 "symbol",
@@ -139,7 +139,8 @@ class Helper:
             if any(positions):
                 # calc value
                 for pos in positions:
-                    pnl += pos["urmtom"]
+                    print(pos["urmtom"], pos["rpnl"])
+                    pnl += pos["urmtom"] + pos["rpnl"]
         except Exception as e:
             message = f"while calculating {e}"
             logging.error(f"api responded with {message}")
@@ -170,3 +171,5 @@ if __name__ == "__main__":
     else:
         print("no response from positions")
     """
+    print("m2m", Helper.mtm())
+    

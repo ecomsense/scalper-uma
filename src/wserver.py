@@ -31,7 +31,7 @@ class Wserver:
     def event_handler_quote_update(self, message):
         val = message.get("lp", False)
         if val:
-            self.ltp[message["e"] + "|" + message["tk"]] = val
+            self.ltp[message["e"] + "|" + message["tk"]] = float(val)
 
 
 if __name__ == "__main__":

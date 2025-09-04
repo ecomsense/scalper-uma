@@ -130,7 +130,7 @@ class TickRunner:
 
     def run_state_machine(self):
         try:
-            ltps = self.ws.ltps
+            ltps = self.ws.ltp
             ltps = {k: v for k, v in ltps.items() if k in self.tokens_nearest.keys()}
             self.ltps = {self.tokens_nearest[k]: v for k, v in ltps.items()}
             getattr(self, self.fn)()

@@ -24,10 +24,23 @@ from src.strategy import Strategy
 from src.constants import dct_sym
 from traceback import print_exc
 from contextlib import asynccontextmanager
-from datetime import datetime
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
+from pytz import timezone as tz
+from datetime import datetime, timezone, timedelta
+
+IST = tz("Asia/Kolkata")
+
+# Define the Indian Standard Time (IST) offset
+# IST is UTC+5:30. A timedelta of 5 hours and 30 minutes in seconds is 19800.
+IST_OFFSET_SECONDS = 19800
+
+CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
+CANDLESTICK_TIMEFRAME_STR = "1min"
+
+# Define the Indian Standard Time (IST) offset
+IST_OFFSET = timedelta(hours=5, minutes=30)
 
 # --- Helper Functions for Candlestick Aggregation ---
 def aggregate_ticks_to_candlesticks(
@@ -208,6 +221,7 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "tag": "uma_scalper",
             "side": "BUY",
         }
+        print(payload)
         exit_price = payload.pop("exit_price")
         cost_price = payload.pop("cost_price")
         order_details.update(payload)
@@ -273,11 +287,16 @@ async def sse_candlestick_endpoint(symbol: str, request: Request):
                 # Symbol not found or price not available yet
                 continue
 
-            current_time = int(time.time())
-            
-            # Use the start of the current minute as the candle's timestamp
-            candle_time = current_time - (current_time % CANDLESTICK_TIMEFRAME_SECONDS)
-            
+            #current_time = int(time.time())
+
+            # Calculate the current time in IST
+            ist_now = datetime.now(timezone.utc) + IST_OFFSET
+            # Convert to a Unix timestamp
+            current_timestamp_ist = int(ist_now.timestamp())
+
+            # Round down to the nearest minute to get the candle timestamp
+            candle_time = current_timestamp_ist - (current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS)
+                
             if last_sent_candle is None or candle_time > last_sent_candle["time"]:
                 # New candle started, send the last one and create a new one
                 if last_sent_candle is not None:
