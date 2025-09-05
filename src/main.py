@@ -110,7 +110,7 @@ def get_settings():
 def nullify():
     try:
         # nullify orders
-        orders = Helper.get_orders()
+        orders = Helper.orders()
         if orders:
             for item in orders:
                 if (item["status"] == "OPEN") or (

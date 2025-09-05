@@ -1,6 +1,7 @@
 from traceback import print_exc
 from importlib import import_module
 from src.constants import O_CNFG, logging
+from stock_brokers.finvasia.api_helper import post_order_hook
 
 
 def login():
@@ -30,7 +31,6 @@ def login():
 
 class Helper:
     _api = None
-    _orders = []
 
     @classmethod
     def api(cls):
@@ -50,7 +50,9 @@ class Helper:
 
     @classmethod
     def orders(cls):
-        cls._orders = cls.api().orders
+        #cls._orders = cls.api().broker.get_order_book()
+        order_book = cls.api().orders
+        cls._orders = post_order_hook(*order_book)
         return cls._orders
     
     @classmethod
@@ -163,13 +165,13 @@ if __name__ == "__main__":
     Helper.api()
     # resp = Helper._api.broker.get_order_book()
     resp = Helper.orders()
+    """
     pprint(resp)
     if resp and any(resp):
         pd.DataFrame(resp).to_csv(S_DATA + "orders.csv", index=False)
         print(pd.DataFrame(resp))
     else:
         print("no response from orders")
-    """
     resp = Helper.api().positions
     pprint(resp)
     if resp and any(resp):
@@ -177,6 +179,7 @@ if __name__ == "__main__":
         print(pd.DataFrame(resp))
     else:
         print("no response from positions")
+
     """
     print("m2m", Helper.mtm())
     
