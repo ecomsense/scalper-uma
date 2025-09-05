@@ -25,16 +25,10 @@ from src.constants import dct_sym
 from traceback import print_exc
 from contextlib import asynccontextmanager
 
-CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
-CANDLESTICK_TIMEFRAME_STR = "1min"
 from pytz import timezone as tz
 from datetime import datetime, timezone, timedelta
 
 IST = tz("Asia/Kolkata")
-
-# Define the Indian Standard Time (IST) offset
-# IST is UTC+5:30. A timedelta of 5 hours and 30 minutes in seconds is 19800.
-IST_OFFSET_SECONDS = 19800
 
 CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
 CANDLESTICK_TIMEFRAME_STR = "1min"
@@ -287,8 +281,6 @@ async def sse_candlestick_endpoint(symbol: str, request: Request):
                 # Symbol not found or price not available yet
                 continue
 
-            #current_time = int(time.time())
-
             # Calculate the current time in IST
             ist_now = datetime.now(timezone.utc) + IST_OFFSET
             # Convert to a Unix timestamp
@@ -330,15 +322,8 @@ async def stream_all_orders():
         while True:
             await asyncio.sleep(1.5)  # obey rate limits
             try:
-                orders_cache = Helper.orders()
+                orders_cache = Helper.get_orders()
                 yield {"event": "order_update", "data": json.dumps(orders_cache)}
-
-                # Optional: avoid flooding frontend with same data
-                """
-                if all_orders != orders_cache:
-                    orders_cache = all_orders
-                    yield {"event": "order_update", "data": json.dumps(all_orders)}
-                """
 
             except Exception as e:
                 print("Order SSE error:", e)

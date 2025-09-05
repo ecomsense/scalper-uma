@@ -3,8 +3,9 @@ window.addEventListener("DOMContentLoaded", () => {
     const orderSeriesMap = new Map();
 
     const chartOptions = {
-        width: 500,
-        height: 300,
+
+        // width: 500,
+        // height: 300,
         layout: {
             background: { type: "solid", color: "#1a202c" },
             textColor: "#d1d4dc",
@@ -144,7 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 alert("Reset failed.");
             }
         };
-
+        /*
         new ResizeObserver((entries) => {
             if (entries.length === 0) return;
             const rect = entries[0].contentRect;
@@ -153,6 +154,7 @@ window.addEventListener("DOMContentLoaded", () => {
                 height: rect.height,
             });
         }).observe(chartContainer);
+        */
     }
 
     async function initCharts() {

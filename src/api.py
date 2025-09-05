@@ -55,7 +55,14 @@ class Helper:
     
     @classmethod
     def get_orders(cls):
-        return cls._orders
+        OPEN_ORDERS = []
+        if cls._orders is not None:
+            for item in cls._orders:
+                if item["status"] == "COMPLETE":
+                    OPEN_ORDERS.append(item)
+                    return OPEN_ORDERS
+        return OPEN_ORDERS
+
 
     @classmethod
     def ltp(cls, exchange, token):
