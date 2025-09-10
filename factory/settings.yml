@@ -11,8 +11,8 @@ trade:
 NIFTY:
   base: NIFTY
   option_exchange: NFO
-  expiry: 10JUL25
+  expiry: 16-SEP-2025
   quantity: 75
   depth: 5
-  profit: 2
-
+  profit: 1
+  premium: 100
