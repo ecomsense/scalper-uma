@@ -20,6 +20,7 @@ TRADE_JSON = S_DATA + "trade.json"
 
 SERVER = "localhost:8000"
 
+
 def factory(file_in_data_dir):
     if not O_FUTL.is_file_exists(file_in_data_dir):
         """
@@ -117,7 +118,7 @@ logging = set_logger()
 
 dct_sym = {
     "NIFTY": {
-        "diff": 50,
+        "diff": 100,
         "index": "Nifty 50",
         "exchange": "NSE",
         "token": "26000",
