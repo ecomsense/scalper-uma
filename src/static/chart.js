@@ -90,10 +90,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
         // Connect button listeners using their new unique IDs
         document.getElementById(buttonIds.open).onclick = async () => {
-            const candles = candlestickSeries.data();
-            if (candles.length < 2) return alert("Not enough candle data.");
-            const prevCandle = candles[candles.length - 2];
-            const payload = {
+        const candles = candlestickSeries.data();
+        const prevCandle = candles[candles.length - 2];
+        let payload;
+        if (prevCandle.close < prevCandle.open) {
+            payload = {
                 symbol: symbol,
                 price: prevCandle.open + 0.05,
                 trigger_price: prevCandle.open,
@@ -101,12 +102,23 @@ window.addEventListener("DOMContentLoaded", () => {
                 exit_price: prevCandle.low - 0.05,
                 cost_price: prevCandle.open + 0.05,
             };
-            tradeLogic("/api/trade/buy", payload);
+        } else {
+            // bullish candle
+            const exit_price = prevCandle.open - (prevCandle.high - prevCandle.low);
+            payload = {
+                symbol: symbol,
+                price: prevCandle.open + 0.05,
+                trigger_price: prevCandle.open,
+                order_type: "SL",
+                exit_price: exit_price,
+                cost_price: prevCandle.open + 0.05,
+            };
+        }
+        tradeLogic("/api/trade/buy", payload);
         };
-        
-        document.getElementById(buttonIds.slbuy).onclick = async () => {
+
+        document.getElementById(buttonIds.high).onclick = async () => {
             const candles = candlestickSeries.data();
-            if (candles.length < 2) return alert("Not enough candle data.");
             const prevCandle = candles[candles.length - 2];
             const payload = {
                 symbol: symbol,
@@ -173,7 +185,7 @@ window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("chart-title-CE").textContent = `${ceSymbol}`;
             setupChart("chart-CE", ceSymbol, {
                 open: "open-btn-CE",
-                slbuy: "buy-btn-CE",
+                high: "buy-btn-CE",
                 mktbuy: "mkt-btn-CE",
                 reset: "sell-btn-CE"
             });
@@ -181,7 +193,7 @@ window.addEventListener("DOMContentLoaded", () => {
             document.getElementById("chart-title-PE").textContent = `${peSymbol}`;
             setupChart("chart-PE", peSymbol, {
                 open: "open-btn-PE",
-                slbuy: "buy-btn-PE",
+                high: "buy-btn-PE",
                 mktbuy: "mkt-btn-PE",
                 reset: "sell-btn-PE"
             });
