@@ -1,33 +1,9 @@
 import asyncio
-from datetime import datetime
 from os import path
 
 from src.api import Helper
-from src.constants import logging, O_FUTL, TRADE_JSON, TICK_CSV_PATH
-from src.symbol import Symbol
+from src.constants import logging, O_FUTL, TRADE_JSON
 
-
-"""
-def new_ticks_csv_line(res, token_ltp):
-    try:
-        buffer = []
-        ltps = {}
-
-        for token, quote in token_ltp.items():
-            symbol = res.get(token, None)
-            if symbol:
-                ltp = round(float(quote), 2)
-                ltps[symbol] = ltp
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                buffer.append(f"{timestamp},{symbol},{ltp},0\n")
-
-        with open(TICK_CSV_PATH, "a") as f:
-            f.writelines(buffer)
-
-        return ltps
-    except Exception as e:
-        logging.error(f"{e} in new ticks csv line")
-"""
 
 def get_dict_from_list(order_id: str):
     try:
@@ -102,7 +78,7 @@ class TickRunner:
 
     def _is_stopped(self):
         item = get_dict_from_list(self.exit_id)
-        return (item and item["status"] in {"COMPLETE", "REJECTED", "CANCELED"})
+        return item and item["status"] in {"COMPLETE", "REJECTED", "CANCELED"}
 
     def _is_beyond_band(self):
         ltp = self.ltps.get(self.symbol)

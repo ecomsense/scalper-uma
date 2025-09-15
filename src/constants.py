@@ -36,7 +36,7 @@ def factory(file_in_data_dir):
         O_FUTL.nuke_file(file_in_data_dir)
 
 
-lst = [S_LOG, TICK_CSV_PATH]
+lst = [S_LOG]
 for item in lst:
     factory(item)
 

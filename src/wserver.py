@@ -25,6 +25,9 @@ class Wserver:
         # api.subscribe(['NSE|22', 'BSE|522032'])
 
     def event_handler_order_update(self, message):
+        """
+        {norenordno': '25091500411068', 'tsym': 'NIFTY16SEP25P25100', 'trantype': 'B', 'qty': '75', 'prc': '45.00', 'pcode': 'I', 'rejreason': "RED:'MIS' Orders are disallowed after system square off", 'status': 'REJECTED', 'reporttype': 'Rejected', 'prctyp': 'SL-LMT', 'ret': 'DAY', 'exchordid': '', 'dscqty': '0', 'trgprc': '44.95'}
+        """
         self.order_update["message"] = message
 
     def event_handler_quote_update(self, message):
