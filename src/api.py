@@ -37,7 +37,7 @@ class Helper:
         if cls._api is None:
             cls._api = login()
         return cls._api
-    
+
     @classmethod
     def one_side(cls, bargs):
         try:
@@ -50,11 +50,11 @@ class Helper:
 
     @classmethod
     def orders(cls):
-        #cls._orders = cls.api().broker.get_order_book()
+        # cls._orders = cls.api().broker.get_order_book()
         order_book = cls.api().orders
         cls._orders = post_order_hook(*order_book)
         return cls._orders
-    
+
     @classmethod
     def get_orders(cls):
         OPEN_ORDERS = []
@@ -64,7 +64,6 @@ class Helper:
                     OPEN_ORDERS.append(item)
                     return OPEN_ORDERS
         return OPEN_ORDERS
-
 
     @classmethod
     def ltp(cls, exchange, token):
@@ -109,7 +108,6 @@ class Helper:
                             exchange="NFO",
                             tag="close",
                         )
-                        print("product", pos["prd"])
                         resp = cls._api.order_place(**args)
                         logging.debug(f"api responded with {resp}")
                     elif quantity > 0:
@@ -123,7 +121,6 @@ class Helper:
                             exchange=pos["exchange"],
                             tag="close",
                         )
-                        print("product", pos["prd"])
                         resp = cls._api.order_place(**args)
                         logging.debug(f"api responded with {resp}")
         except Exception as e:
@@ -182,4 +179,3 @@ if __name__ == "__main__":
 
     """
     print("m2m", Helper.mtm())
-    

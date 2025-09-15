@@ -6,6 +6,7 @@ class Wserver:
     # flag to tell us if the websocket is open
     socket_opened = False
     ltp = {}
+    order_update = {}
 
     def __init__(self, session, tokens):
         self.api = session
@@ -23,10 +24,8 @@ class Wserver:
         self.api.broker.subscribe(self.tokens, feed_type="d")
         # api.subscribe(['NSE|22', 'BSE|522032'])
 
-    # application callbacks
     def event_handler_order_update(self, message):
-        # handle order updates here
-        pass
+        self.order_update["message"] = message
 
     def event_handler_quote_update(self, message):
         val = message.get("lp", False)

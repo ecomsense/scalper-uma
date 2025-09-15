@@ -15,7 +15,7 @@ O_FUTL = Fileutils()
 S_DATA = "./data/"
 
 S_LOG = S_DATA + "log.txt"
-TICK_CSV_PATH = S_DATA + "ticks.csv"
+# TICK_CSV_PATH = S_DATA + "ticks.csv"
 TRADE_JSON = S_DATA + "trade.json"
 
 SERVER = "localhost:8000"
@@ -118,11 +118,11 @@ logging = set_logger()
 
 dct_sym = {
     "NIFTY": {
-        "diff": 100,
+        "diff": 50,
         "index": "Nifty 50",
         "exchange": "NSE",
         "token": "26000",
-        "depth": 12,
+        "depth": 5,
     },
     "BANKNIFTY": {
         "diff": 100,
