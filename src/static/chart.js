@@ -88,30 +88,57 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		// Connect button listeners using their new unique IDs
-		document.getElementById(buttonIds.open).onclick = async () => {
+		document.getElementById(buttonIds.h2).onclick = async () => {
 			const candles = candlestickSeries.data();
 			const prevCandle = candles[candles.length - 2];
 			let payload;
 			if (prevCandle.close < prevCandle.open) {
-				const exit_price =
-					prevCandle.close - (prevCandle.high - prevCandle.low);
-				payload = {
-					symbol: symbol,
-					price: prevCandle.close + 0.05,
-					trigger_price: prevCandle.close,
-					order_type: "SL",
-					exit_price: exit_price,
-					cost_price: prevCandle.close + 0.05,
-				};
-			} else {
-				// bullish candle
-				const exit_price = prevCandle.open - (prevCandle.high - prevCandle.low);
 				payload = {
 					symbol: symbol,
 					price: prevCandle.open + 0.05,
 					trigger_price: prevCandle.open,
 					order_type: "SL",
-					exit_price: exit_price,
+					exit_price: prevCandle.low,
+					cost_price: prevCandle.open + 0.05,
+				};
+			} else {
+				// bullish candle
+				payload = {
+					symbol: symbol,
+					price: prevCandle.close + 0.05,
+					trigger_price: prevCandle.close,
+					order_type: "SL",
+					exit_price: prevCandle.low,
+					cost_price: prevCandle.close + 0.05,
+				};
+			}
+			tradeLogic("/api/trade/buy", payload);
+		};
+
+		// Connect button listeners using their new unique IDs
+		document.getElementById(buttonIds.l2).onclick = async () => {
+			const candles = candlestickSeries.data();
+			const prevCandle = candles[candles.length - 2];
+			const high2low = prevCandle.high - prevCandle.low;
+
+			let payload;
+			if (prevCandle.close < prevCandle.open) {
+				payload = {
+					symbol: symbol,
+					price: prevCandle.close + 0.05,
+					trigger_price: prevCandle.close,
+					order_type: "SL",
+					exit_price: prevCandle.close - high2low,
+					cost_price: prevCandle.close + 0.05,
+				};
+			} else {
+				// bullish candle
+				payload = {
+					symbol: symbol,
+					price: prevCandle.open + 0.05,
+					trigger_price: prevCandle.open,
+					order_type: "SL",
+					exit_price: prevCandle.open - high2low,
 					cost_price: prevCandle.open + 0.05,
 				};
 			}
@@ -134,13 +161,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.mktbuy).onclick = async () => {
 			const candles = candlestickSeries.data();
-			if (candles.length < 2) return alert("Not enough candle data.");
 			const currCandle = candles[candles.length - 1];
+			const prevCandle = candles[candles.length - 2];
 			const payload = {
 				symbol: symbol,
 				price: currCandle.close + 2,
 				order_type: "LIMIT",
-				exit_price: currCandle.low,
+				exit_price: prevCandle.low,
 				cost_price: currCandle.close + 0.05,
 			};
 			tradeLogic("/api/trade/buy", payload);
@@ -185,7 +212,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			document.getElementById("chart-title-CE").textContent = `${ceSymbol}`;
 			setupChart("chart-CE", ceSymbol, {
-				open: "open-btn-CE",
+				l2: "l2-btn-CE",
+				h2: "h2-btn-CE",
 				high: "buy-btn-CE",
 				mktbuy: "mkt-btn-CE",
 				reset: "sell-btn-CE",
@@ -193,7 +221,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			document.getElementById("chart-title-PE").textContent = `${peSymbol}`;
 			setupChart("chart-PE", peSymbol, {
-				open: "open-btn-PE",
+				l2: "l2-btn-PE",
+				h2: "h2-btn-PE",
 				high: "buy-btn-PE",
 				mktbuy: "mkt-btn-PE",
 				reset: "sell-btn-PE",
