@@ -122,7 +122,7 @@ dct_sym = {
         "index": "Nifty 50",
         "exchange": "NSE",
         "token": "26000",
-        "depth": 5,
+        "depth": 9,
     },
     "BANKNIFTY": {
         "diff": 100,
