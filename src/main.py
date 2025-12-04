@@ -190,7 +190,7 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             "quantity": settings["quantity"],
             "disclosed_quantity": 0,
             "exchange": settings["option_exchange"],
-            "tag": "uma_scalper",
+            "tag": payload.pop("tag", "no_tag"),
             "side": "BUY",
         }
         # logging.info(payload)
@@ -204,6 +204,8 @@ async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
             order_details["entry_id"] = order_id
             order_details["exit_price"] = exit_price
             order_details["target_price"] = cost_price + settings["profit"]
+            if order_details["tag"] != "no_tag":
+                order_details["target_price"] = cost_price + (cost_price - exit_price)
 
             blacklist = ["side", "price", "trigger_price", "order_type"]
             for key in blacklist:

@@ -100,6 +100,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					order_type: "SL",
 					exit_price: prevCandle.low,
 					cost_price: prevCandle.open + 0.05,
+					tag: "h2",
 				};
 			} else {
 				// bullish candle
@@ -110,6 +111,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					order_type: "SL",
 					exit_price: prevCandle.low,
 					cost_price: prevCandle.close + 0.05,
+					tag: "h2",
 				};
 			}
 			tradeLogic("/api/trade/buy", payload);
@@ -130,6 +132,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					order_type: "SL",
 					exit_price: prevCandle.close - high2low,
 					cost_price: prevCandle.close + 0.05,
+					tag: "l2",
 				};
 			} else {
 				// bullish candle
@@ -140,6 +143,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					order_type: "SL",
 					exit_price: prevCandle.open - high2low,
 					cost_price: prevCandle.open + 0.05,
+					tag: "l2",
 				};
 			}
 			tradeLogic("/api/trade/buy", payload);
