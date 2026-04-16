@@ -1,5 +1,6 @@
 from __future__ import annotations
 import pandas as pd
+from datetime import datetime
 from toolkit.fileutils import Fileutils
 from typing import Dict, Optional, Any
 from src.constants import dct_sym, logging
@@ -61,6 +62,28 @@ class Symbol:
         self._expiry = expiry
         self.csvfile: str = f"./data/{self._exchange}_symbols.csv"
         get_exchange_token_map_flattrade(self.csvfile, exchange)
+
+    def get_next_expiry(self) -> str:
+        df = pd.read_csv(self.csvfile)
+        df_sym = df[df["Symbol"] == self._symbol]
+        expiries = df_sym["Expiry"].unique()
+        
+        today = datetime.now()
+        parsed = []
+        for e in expiries:
+            try:
+                dt = datetime.strptime(e, "%d-%b-%Y")
+                parsed.append((e, dt))
+            except:
+                pass
+        
+        parsed.sort(key=lambda x: x[1])
+        
+        for exp_str, dt in parsed:
+            if dt.date() > today.date():
+                return exp_str
+        
+        return parsed[0][0] if parsed else None
 
     def get_atm(self, ltp: float) -> int:
         try:
