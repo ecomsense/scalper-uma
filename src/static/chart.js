@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	const maColors = { ma1: "#FFA500", ma2: "#00FF00", ma3: "#FF00FF" };
 
-	let chartSettings = { ma_1: null, ma_2: null, ma_3: null, candles: 200 };
+	let chartSettings = { ma_1: null, ma_2: null, ma_3: null, history: 200 };
 
 	fetch("/api/chart/settings")
 		.then(r => r.json())
@@ -76,7 +76,7 @@ window.addEventListener("DOMContentLoaded", () => {
 						throw new Error('No historical data');
 					}
 					const allData = result.data.reverse();
-					candleData = allData.slice(-chartSettings.candles);
+					candleData = allData.slice(-chartSettings.history);
 					candleSeries.setData(candleData);
 					updateMAs();
 				})

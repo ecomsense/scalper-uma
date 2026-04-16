@@ -8,6 +8,11 @@ trade:
   start: "9:30"
   stop: "15:00"
   base: NIFTY
+candles:
+  history: 200
+  ma_1: 20
+  ma_2: 50
+  ma_3: 100
 NIFTY:
   base: NIFTY
   option_exchange: NFO
@@ -15,10 +20,6 @@ NIFTY:
   depth: 5
   profit: 1
   premium: 100
-  ma_1: 20
-  ma_2: 50
-  ma_3: 100
-  candles: 200
 BANKNIFTY:
   base: BANKNIFTY
   option_exchange: NFO
@@ -26,7 +27,3 @@ BANKNIFTY:
   depth: 5
   profit: 1
   premium: 100
-  ma_1: 20
-  ma_2: 50
-  ma_3: 100
-  candles: 200
