@@ -1,23 +1,22 @@
+from __future__ import annotations
 from traceback import print_exc
 from importlib import import_module
+from typing import Dict, List, Optional, Any
 from src.constants import O_CNFG, logging
 from stock_brokers.finvasia.api_helper import post_order_hook
 
 
-def login():
+def login() -> Any:
     broker_name = O_CNFG.get("broker", None)
     if not broker_name:
         raise ValueError("broker not specified in credential file")
 
-    # Dynamically import the broker module
     module_path = f"stock_brokers.{broker_name}.{broker_name}"
     broker_module = import_module(module_path)
 
     logging.info(f"BrokerClass: {broker_module}")
-    # Get the broker class (assuming class name matches the broker name)
     BrokerClass = getattr(broker_module, broker_name.capitalize())
 
-    # Initialize API with config
     print(O_CNFG)
     broker_object = BrokerClass(**O_CNFG)
     if broker_object.authenticate():
@@ -30,16 +29,17 @@ def login():
 
 
 class Helper:
-    _api = None
+    _api: Optional[Any] = None
+    _orders: Optional[List[Dict[str, Any]]] = None
 
     @classmethod
-    def api(cls):
+    def api(cls) -> Any:
         if cls._api is None:
             cls._api = login()
         return cls._api
 
     @classmethod
-    def one_side(cls, bargs):
+    def one_side(cls, bargs: Dict[str, Any]) -> Optional[str]:
         try:
             resp = cls._api.order_place(**bargs)
             return resp
@@ -47,17 +47,17 @@ class Helper:
             message = f"helper error {e} while placing order {bargs}"
             logging.warning(message)
             print_exc()
+            return None
 
     @classmethod
-    def orders(cls):
-        # cls._orders = cls.api().broker.get_order_book()
+    def orders(cls) -> Optional[List[Dict[str, Any]]]:
         order_book = cls.api().orders
         cls._orders = post_order_hook(*order_book)
         return cls._orders
 
     @classmethod
-    def get_orders(cls):
-        OPEN_ORDERS = []
+    def get_orders(cls) -> List[Dict[str, Any]]:
+        OPEN_ORDERS: List[Dict[str, Any]] = []
         if cls._orders is not None:
             for item in cls._orders:
                 if item["status"] == "COMPLETE":
@@ -66,7 +66,7 @@ class Helper:
         return OPEN_ORDERS
 
     @classmethod
-    def ltp(cls, exchange, token):
+    def ltp(cls, exchange: str, token: str) -> float:
         try:
             resp = cls._api.scriptinfo(exchange, token)
             if resp is not None:
@@ -77,9 +77,10 @@ class Helper:
             message = f"{e} while ltp"
             logging.error(message)
             print_exc()
+            return 0.0
 
     @classmethod
-    def modify_order(cls, kwargs):
+    def modify_order(cls, kwargs: Dict[str, Any]) -> Optional[Any]:
         try:
             if next((v for v in kwargs.values() if v is not None), None):
                 resp = cls._api.order_modify(**kwargs)
@@ -88,9 +89,10 @@ class Helper:
             message = f"helper error {e} while modifying order"
             logging.warning(message)
             print_exc()
+        return None
 
     @classmethod
-    def close_positions(cls):
+    def close_positions(cls) -> None:
         try:
             for pos in cls.api().positions:
                 if pos and pos["quantity"] == 0:
@@ -128,22 +130,11 @@ class Helper:
             print_exc()
 
     @classmethod
-    def mtm(cls):
+    def mtm(cls) -> float:
+        pnl: float = 0.0
         try:
-            pnl = 0
-            positions = [{}]
             positions = cls.api().positions
-            """
-            keys = [
-                "symbol",
-                "quantity",
-                "last_price",
-                "urmtom",
-                "rpnl",
-            ]
-            """
             if any(positions):
-                # calc value
                 for pos in positions:
                     print(pos["urmtom"], pos["rpnl"])
                     pnl += pos["urmtom"] + pos["rpnl"]

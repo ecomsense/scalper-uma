@@ -1,4 +1,5 @@
 # main.py
+from __future__ import annotations
 from src.api import Helper
 from src.constants import (
     O_SETG,
@@ -26,28 +27,24 @@ from contextlib import asynccontextmanager
 
 from pytz import timezone as tz
 from datetime import datetime, timezone, timedelta
+from typing import Dict, List, Any, Optional
 
 IST = tz("Asia/Kolkata")
 
-CANDLESTICK_TIMEFRAME_SECONDS = 60  # 1 minute
-CANDLESTICK_TIMEFRAME_STR = "1min"
+CANDLESTICK_TIMEFRAME_SECONDS: int = 60
+CANDLESTICK_TIMEFRAME_STR: str = "1min"
 
-# Define the Indian Standard Time (IST) offset
-IST_OFFSET = timedelta(hours=5, minutes=30)
+IST_OFFSET: timedelta = timedelta(hours=5, minutes=30)
 
 
 # --- Helper Functions for Candlestick Aggregation ---
 def aggregate_ticks_to_candlesticks(
     df: pd.DataFrame, timeframe_str: str = CANDLESTICK_TIMEFRAME_STR
-) -> list[dict]:
-    """
-    Aggregates a DataFrame of ticks into OHLCV candlesticks using pandas.
-    """
+) -> List[Dict[str, Any]]:
     try:
         if df.empty:
             return []
 
-        # Ensure timestamp is a DatetimeIndex
         if not isinstance(df.index, pd.DatetimeIndex):
             df.index = pd.to_datetime(df.index)
 
@@ -66,24 +63,23 @@ def aggregate_ticks_to_candlesticks(
         candlesticks = candlesticks.dropna()
         candlesticks["time"] = (
             candlesticks.index.astype("int64") // 10**9
-        )  # Unix timestamp in seconds
+        )
 
         return candlesticks.reset_index(drop=True).to_dict(orient="records")
     except Exception as e:
         print(f"{e} in aggregating")
+        return []
 
 
 @lru_cache(maxsize=1)
-def get_settings():
-    # return json response from dictionary
+def get_settings() -> Dict[str, Any]:
     base = O_SETG["trade"]["base"]
     return O_SETG[base] | dct_sym[base]
 
 
-def nullify():
+def nullify() -> None:
     try:
-        # read order from broker api
-        orders: list = Helper.orders()
+        orders = Helper.orders()
         if orders:
             for item in orders:
                 if (item["status"] == "OPEN") or (item["status"] == "TRIGGER_PENDING"):
@@ -92,7 +88,6 @@ def nullify():
                     Helper.api().order_cancel(order_id)
                     break
 
-        # close open positions
         Helper.close_positions()
     except Exception as e:
         logging.error(f"Error in nullify: {e}")
@@ -103,7 +98,6 @@ def nullify():
 # We use asynccontextmanager to define the startup and shutdown logic.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # This block runs on application startup
     try:
         api = Helper.api()
         user_settings = get_settings()
@@ -117,41 +111,37 @@ async def lifespan(app: FastAPI):
         while not ws.ltp:
             await asyncio.sleep(0.5)
 
-        symbol_nearest_to_premium = []
+        symbol_nearest_to_premium: List[str] = []
         for ce_or_pe in ["CE", "PE"]:
             res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
-            symbol_nearest_to_premium.append(res)
+            if res:
+                symbol_nearest_to_premium.append(res)
 
-        tokens_nearest: dict = sgy.sym.find_wstoken_from_tradingsymbol(
+        tokens_nearest: Dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
             symbol_nearest_to_premium
         )
 
-        # add application state
         app.state.tokens_nearest = tokens_nearest
         app.state.ws = ws
 
         runner = TickRunner(ws, tokens_nearest)
-        # Start the runner task and hold a reference if needed for shutdown
         task = asyncio.create_task(runner.run())
-        app.state.runner_task = task  # Store task on app.state to manage later
+        app.state.runner_task = task
 
         print(tokens_nearest, "nearest")
         print("✅ TickRunner started.")
 
-        # This `yield` is essential! It tells FastAPI that the startup is complete
-        # and it can begin serving requests.
         yield
 
-    # This block runs on application shutdown
     finally:
         print("Shutting down...")
         if hasattr(app.state, "runner_task"):
-            app.state.runner_task.cancel()  # Cancel the task
+            app.state.runner_task.cancel()
             try:
-                await app.state.runner_task  # Wait for it to finish canceling
+                await app.state.runner_task
             except asyncio.CancelledError:
                 print("✅ TickRunner task cancelled.")
-        Helper.close_positions()  # A good place to close any open positions
+        Helper.close_positions()
         print("✅ Shutdown complete.")
 
 
@@ -178,7 +168,7 @@ async def get_available_symbols(request: Request) -> JSONResponse:
 
 
 @app.post("/api/trade/buy")
-async def place_buy_order(payload: dict = Body(...)) -> JSONResponse:
+async def place_buy_order(payload: Dict[str, Any] = Body(...)) -> JSONResponse:
     nullify()
 
     symbol = payload.get("symbol", "DUMMY").upper()
@@ -241,14 +231,13 @@ async def reset():
 
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
-async def sse_candlestick_endpoint(symbol: str, request: Request):
+async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
-    # Use a dictionary to store the state of the in-progress candlestick
-    last_sent_candle = None
+    last_sent_candle: Optional[Dict[str, Any]] = None
 
     async def event_generator():
-        nonlocal last_sent_candle  # Allow modifying the outer scope variable
+        nonlocal last_sent_candle
         while True:
             await asyncio.sleep(0.5)
 
@@ -259,26 +248,19 @@ async def sse_candlestick_endpoint(symbol: str, request: Request):
                 token_symbol = [k for k, v in token_symbols.items() if v == symbol][0]
                 price = ws.ltp[token_symbol]
             except (KeyError, IndexError):
-                # Symbol not found or price not available yet
                 continue
 
-            # Calculate the current time in IST
             ist_now = datetime.now(timezone.utc) + IST_OFFSET
-            # Convert to a Unix timestamp
             current_timestamp_ist = int(ist_now.timestamp())
 
-            # Round down to the nearest minute to get the candle timestamp
             candle_time = current_timestamp_ist - (
                 current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
             )
 
             if last_sent_candle is None or candle_time > last_sent_candle["time"]:
-                # New candle started, send the last one and create a new one
                 if last_sent_candle is not None:
-                    # Send the completed candle for the previous period
                     yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
-                # Initialize the new candle
                 last_sent_candle = {
                     "open": price,
                     "high": price,
@@ -288,21 +270,19 @@ async def sse_candlestick_endpoint(symbol: str, request: Request):
                     "time": candle_time,
                 }
             else:
-                # Update the existing candle
                 last_sent_candle["high"] = max(last_sent_candle["high"], price)
                 last_sent_candle["low"] = min(last_sent_candle["low"], price)
                 last_sent_candle["close"] = price
-                # Send the updated candle for the current period
                 yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
     return EventSourceResponse(event_generator())
 
 
 @app.get("/sse/orders")
-async def stream_all_orders(request: Request):
+async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
         while True:
-            await asyncio.sleep(1.5)  # obey rate limits
+            await asyncio.sleep(1.5)
             try:
                 ws = request.app.state.ws
                 print(ws.order_update, "/n", "ORDER UPDATE FROM WEBSOCKET")

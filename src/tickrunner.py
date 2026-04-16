@@ -1,11 +1,14 @@
+from __future__ import annotations
 import asyncio
 from os import path
+from typing import Dict, Optional, Any
 
 from src.api import Helper
 from src.constants import logging, O_FUTL, TRADE_JSON
+from src.wserver import Wserver
 
 
-def get_dict_from_list(order_id: str):
+def get_dict_from_list(order_id: str) -> Dict[str, Any]:
     try:
         orders = Helper.orders()
         if orders:
@@ -17,25 +20,26 @@ def get_dict_from_list(order_id: str):
         return {}
     except Exception as e:
         print(f"{e} in get dict from list")
+        return {}
 
 
 class TickRunner:
-    def __init__(self, ws, tokens_nearest: dict):
+    def __init__(self, ws: Wserver, tokens_nearest: Dict[str, str]) -> None:
         self.ws = ws
         self.tokens_nearest = tokens_nearest
-        self.fn = "create"
-        self.ltps = {}
-        self.symbol = ""
-        self.quantity = 0
-        self.exchange = ""
-        self.tag = ""
-        self.entry_id = ""
-        self.exit_id = ""
-        self.exit_price = None
-        self.target_price = None
+        self.fn: str = "create"
+        self.ltps: Dict[str, float] = {}
+        self.symbol: str = ""
+        self.quantity: int = 0
+        self.exchange: str = ""
+        self.tag: str = ""
+        self.entry_id: str = ""
+        self.exit_id: str = ""
+        self.exit_price: Optional[float] = None
+        self.target_price: Optional[float] = None
         O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
 
-    def create(self):
+    def create(self) -> None:
         try:
             if path.exists(TRADE_JSON):
                 dict_fm_file = O_FUTL.read_file(TRADE_JSON)
@@ -46,7 +50,7 @@ class TickRunner:
         except Exception as e:
             logging.error(f"{e} while create")
 
-    def is_trade(self):
+    def is_trade(self) -> None:
         try:
             item = get_dict_from_list(self.entry_id)
             if item and item.get("status", None) == "COMPLETE":
@@ -76,15 +80,15 @@ class TickRunner:
         except Exception as e:
             logging.error(f"{e} while is_trade")
 
-    def _is_stopped(self):
+    def _is_stopped(self) -> bool:
         item = get_dict_from_list(self.exit_id)
-        return item and item["status"] in {"COMPLETE", "REJECTED", "CANCELED"}
+        return bool(item and item["status"] in {"COMPLETE", "REJECTED", "CANCELED"})
 
-    def _is_beyond_band(self):
+    def _is_beyond_band(self) -> bool:
         ltp = self.ltps.get(self.symbol)
-        return ltp and (ltp > self.target_price or ltp < self.exit_price)
+        return bool(ltp and (ltp > self.target_price or ltp < self.exit_price))
 
-    def exit_trade(self):
+    def exit_trade(self) -> None:
         try:
             if self._is_stopped():
                 logging.info(f"STOPPED: {self.exit_id}")
@@ -104,7 +108,7 @@ class TickRunner:
         except Exception as e:
             logging.error(f"{e} exit_trade")
 
-    def run_state_machine(self):
+    def run_state_machine(self) -> None:
         try:
             ltps = self.ws.ltp
             ltps = {k: v for k, v in ltps.items() if k in self.tokens_nearest.keys()}

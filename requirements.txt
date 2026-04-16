@@ -13,3 +13,4 @@ sse-starlette
 requests
 websocket-client
 pip-system-certs --use-feature=truststore
+pytz

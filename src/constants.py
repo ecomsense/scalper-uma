@@ -8,28 +8,21 @@ description:
 from os import path
 from traceback import print_exc
 from pprint import pprint
+from typing import Dict, Any, Optional
 from toolkit.logger import Logger
 from toolkit.fileutils import Fileutils
 
-O_FUTL = Fileutils()
-S_DATA = "./data/"
+O_FUTL: Fileutils = Fileutils()
+S_DATA: str = "./data/"
 
-S_LOG = S_DATA + "log.txt"
-# TICK_CSV_PATH = S_DATA + "ticks.csv"
-TRADE_JSON = S_DATA + "trade.json"
+S_LOG: str = S_DATA + "log.txt"
+TRADE_JSON: str = S_DATA + "trade.json"
 
-SERVER = "localhost:8000"
+SERVER: str = "localhost:8000"
 
 
-def factory(file_in_data_dir):
+def factory(file_in_data_dir: str) -> None:
     if not O_FUTL.is_file_exists(file_in_data_dir):
-        """
-        description:
-            create data dir and log file
-            if did not if file did not exists
-        input:
-            file name with full path
-        """
         print("creating data dir")
         O_FUTL.add_path(file_in_data_dir)
     else:
@@ -44,24 +37,13 @@ if not O_FUTL.is_file_exists(TRADE_JSON):
     O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
 
 
-def yml_to_obj(arg=None):
-    """
-    description:
-        creates empty yml file for credentials
-        and also copies project specific settings
-        to data folder
-    """
+def yml_to_obj(arg: Optional[str] = None) -> Dict[str, Any]:
     if not arg:
-        # return the parent folder name
         parent = path.dirname(path.abspath(__file__))
         print(f"{parent=}")
         grand_parent_path = path.dirname(parent)
         print(f"{grand_parent_path=}")
         folder = path.basename(grand_parent_path)
-        """
-        folder = path.basename(parent)
-        """
-        # reverse the words seperated by -
         lst = folder.split("-")
         file = "_".join(reversed(lst))
         file = "./../" + file + ".yml"
@@ -80,7 +62,7 @@ def yml_to_obj(arg=None):
     return O_FUTL.get_lst_fm_yml(file)
 
 
-def read_yml():
+def read_yml() -> tuple[Dict[str, Any], Dict[str, Any]]:
     try:
         O_CNFG = yml_to_obj()
         O_SETG = yml_to_obj("settings.yml")
@@ -92,6 +74,8 @@ def read_yml():
         return O_CNFG, O_SETG
 
 
+O_CNFG: Dict[str, Any]
+O_SETG: Dict[str, Any]
 O_CNFG, O_SETG = read_yml()
 print("broker credentials" + "\n" + "*****************")
 pprint(O_CNFG)
@@ -100,23 +84,17 @@ print("settings " + "\n" + "*****************")
 pprint(O_SETG)
 
 
-def set_logger():
-    """
-    description:
-        set custom logger's log level
-        display or write to file
-        based on user choice from settings
-    """
+def set_logger() -> Logger:
     level = O_SETG["log"]["level"]
     if O_SETG["log"]["show"]:
         return Logger(level)
     return Logger(level, S_LOG)
 
 
-logging = set_logger()
+logging: Logger = set_logger()
 
 
-dct_sym = {
+dct_sym: Dict[str, Dict[str, Any]] = {
     "NIFTY": {
         "diff": 50,
         "index": "Nifty 50",
