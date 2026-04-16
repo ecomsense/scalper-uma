@@ -91,6 +91,11 @@ window.addEventListener("DOMContentLoaded", () => {
 			if (candleData.length >= 100) {
 				ma3Series.setData(calculateMA(candleData, 100));
 			}
+			if (candleData.length === 0) {
+				ma1Series.setData([]);
+				ma2Series.setData([]);
+				ma3Series.setData([]);
+			}
 		}
 
 		function loadHistoricalData() {
@@ -102,37 +107,45 @@ window.addEventListener("DOMContentLoaded", () => {
 						candlestickSeries.setData(candleData);
 						updateAllMA();
 						chart.timeScale().fitContent();
+						return true;
 					}
+					return false;
 				})
 				.catch((error) => {
 					console.error("Error loading historical data:", error);
+					return false;
 				});
 		}
 
-		loadHistoricalData().then(() => {
+		async function startLiveUpdates() {
 			const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
-
-			candleEventSource.addEventListener("initial_data", (event) => {
-				const data = JSON.parse(event.data);
-				if (data.length > 0 && candleData.length === 0) {
-					candleData = data;
-					candlestickSeries.setData(data);
-					updateAllMA();
-					chart.timeScale().fitContent();
-				}
-			});
+			let lastTime = null;
 
 			candleEventSource.addEventListener("live_update", (event) => {
 				const data = JSON.parse(event.data);
-				candlestickSeries.update(data);
-				candleData.push(data);
+				
+				if (lastTime === null || data.time > lastTime) {
+					if (candleData.length > 0 && candleData[candleData.length - 1].time === lastTime) {
+						candleData[candleData.length - 1] = data;
+					} else {
+						candleData.push(data);
+					}
+					lastTime = data.time;
+					candlestickSeries.setData(candleData);
+				}
 				updateAllMA();
 			});
 
 			candleEventSource.onerror = (error) => {
 				console.error(`Candlestick SSE error for ${symbol}:`, error);
-				candleEventSource.close();
 			};
+		}
+
+		loadHistoricalData().then((hasHistorical) => {
+			if (!hasHistorical) {
+				candleData = [];
+			}
+			startLiveUpdates();
 		});
 
 		const tradeLogic = async (endpoint, payload = null) => {
