@@ -40,25 +40,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
-		const candlestickSeries = chart.addSeries(
-			LightweightCharts.CandlestickSeries,
-			candlestickOptions,
-		);
-
-		const ma1Series = chart.addSeries(LightweightCharts.LineSeries, {
-			color: maColors.ma1,
-			lineWidth: 2,
-		});
-
-		const ma2Series = chart.addSeries(LightweightCharts.LineSeries, {
-			color: maColors.ma2,
-			lineWidth: 2,
-		});
-
-		const ma3Series = chart.addSeries(LightweightCharts.LineSeries, {
-			color: maColors.ma3,
-			lineWidth: 2,
-		});
+		const candlestickSeries = chart.addCandlestickSeries(candlestickOptions);
+		const ma1Series = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
+		const ma2Series = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
+		const ma3Series = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
 
 		chart.timeScale().applyOptions({
 			timeZone: "Asia/Kolkata",
