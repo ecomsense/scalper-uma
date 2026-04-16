@@ -73,12 +73,14 @@ class Symbol:
             logging.error(f"{e} Symbol: in getting atm")
             print_exc()
 
-    def get_tokens(self, strike: int) -> Dict[str, str]:
+    def get_tokens(self, strike: int, depth: Optional[int] = None) -> Dict[str, str]:
         try:
+            if depth is None:
+                depth = dct_sym[self._base]["depth"]
             df = pd.read_csv(self.csvfile)
 
             lst = [strike]
-            for v in range(1, dct_sym[self._base]["depth"]):
+            for v in range(1, depth):
                 lst.append(strike + v * dct_sym[self._base]["diff"])
                 lst.append(strike - v * dct_sym[self._base]["diff"])
 
