@@ -20,7 +20,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	const maColors = { ma1: "#FFA500", ma2: "#00FF00", ma3: "#FF00FF" };
 
-	let chartSettings = { ma_1: 20, ma_2: 50, ma_3: 100 };
+	let chartSettings = { ma_1: null, ma_2: null, ma_3: null, candles: 200 };
 
 	fetch("/api/chart/settings")
 		.then(r => r.json())
@@ -36,11 +36,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
-		const ma1Series = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
-		const ma2Series = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
-		const ma3Series = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
+		const maSeries = {};
 
-		let candleData = [];
+		if (chartSettings.ma_1) maSeries.ma1 = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
+		if (chartSettings.ma_2) maSeries.ma2 = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
+		if (chartSettings.ma_3) maSeries.ma3 = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
+
+		let allCandleData = [];
+		let displayCandleData = [];
 
 		function calculateMA(data, period) {
 			const result = [];
@@ -55,28 +58,33 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 
 		function updateMAs() {
-			if (candleData.length >= chartSettings.ma_1) ma1Series.setData(calculateMA(candleData, chartSettings.ma_1));
-			if (candleData.length >= chartSettings.ma_2) ma2Series.setData(calculateMA(candleData, chartSettings.ma_2));
-			if (candleData.length >= chartSettings.ma_3) ma3Series.setData(calculateMA(candleData, chartSettings.ma_3));
+			if (maSeries.ma1 && displayCandleData.length >= chartSettings.ma_1) {
+				maSeries.ma1.setData(calculateMA(displayCandleData, chartSettings.ma_1));
+			}
+			if (maSeries.ma2 && displayCandleData.length >= chartSettings.ma_2) {
+				maSeries.ma2.setData(calculateMA(displayCandleData, chartSettings.ma_2));
+			}
+			if (maSeries.ma3 && displayCandleData.length >= chartSettings.ma_3) {
+				maSeries.ma3.setData(calculateMA(displayCandleData, chartSettings.ma_3));
+			}
 		}
-
-		let lastHistoricalTime = 0;
 
 		function loadHistorical() {
 			return fetch(`/api/historical/${symbol}`)
 				.then(r => r.json())
 				.then(result => {
-					if (result.data && result.data.length > 0) {
-						candleData = result.data.reverse();
-						lastHistoricalTime = candleData[candleData.length - 1].time;
-						candleSeries.setData(candleData);
-						updateMAs();
+					if (!result.data || result.data.length === 0) {
+						throw new Error('No historical data');
 					}
-					return lastHistoricalTime;
+					allCandleData = result.data.reverse();
+					const keep = Math.min(chartSettings.candles, allCandleData.length);
+					displayCandleData = allCandleData.slice(-keep);
+					candleSeries.setData(displayCandleData);
+					updateMAs();
 				})
 				.catch(e => {
 					console.error('Historical error:', e);
-					return 0;
+					throw e;
 				});
 		}
 
@@ -84,20 +92,25 @@ window.addEventListener("DOMContentLoaded", () => {
 			const es = new EventSource(`/sse/candlesticks/${symbol}`);
 			es.addEventListener("live_update", (e) => {
 				const d = JSON.parse(e.data);
-				const lastTime = candleData.length > 0 ? candleData[candleData.length - 1].time : 0;
+				const lastTime = displayCandleData.length > 0 ? displayCandleData[displayCandleData.length - 1].time : 0;
 				if (d.time > lastTime) {
-					candleData.push(d);
-					candleSeries.setData(candleData);
+					displayCandleData.push(d);
+					allCandleData.push(d);
+					if (displayCandleData.length > chartSettings.candles) {
+						displayCandleData = displayCandleData.slice(-chartSettings.candles);
+					}
+					candleSeries.setData(displayCandleData);
 				} else if (d.time === lastTime) {
-					candleData[candleData.length - 1] = d;
-					candleSeries.setData(candleData);
+					displayCandleData[displayCandleData.length - 1] = d;
+					allCandleData[allCandleData.length - 1] = d;
+					candleSeries.setData(displayCandleData);
 				}
 				updateMAs();
 			});
 			es.onerror = () => console.log('SSE disconnected');
 		}
 
-		loadHistorical().then(() => startLiveUpdates());
+		loadHistorical().then(() => startLiveUpdates()).catch(e => console.error('Chart failed:', e));
 
 		loadHistorical();
 
