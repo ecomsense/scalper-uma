@@ -71,9 +71,7 @@ class Helper:
         cls, exchange: str, token: str, interval: int = 1
     ) -> List[Dict[str, Any]]:
         try:
-            end_time = int(time.time())
-            start_time = end_time - (4 * 60 * 60)
-            resp = cls._api.historical(exchange, token, start_time, end_time, interval)
+            resp = cls._api.broker.get_time_price_series(exchange=exchange, token=token)
             return resp
         except Exception as e:
             logging.error(f"{e} in historical")
