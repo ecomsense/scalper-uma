@@ -62,11 +62,22 @@
         margin-bottom: 5px;
       }
 
-      .footer {
+      .header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 5px;
+        padding: 10px 20px;
+        background-color: #262626;
+        border-bottom: 1px solid #444;
+      }
+
+      .header-title {
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      .footer {
+        display: none;
       }
 
       .left-buttons,
@@ -80,13 +91,6 @@
         text-align: center;
         color: #d1d1d1;
         flex-grow: 1;
-      }
-
-      .controls {
-        margin: 10px;
-        display: flex;
-        gap: 5px;
-        justify-content: center;
       }
 
       .modal {
@@ -135,20 +139,6 @@
         font-family: monospace;
         font-size: 14px;
       }
-      .admin-panel {
-        margin: 10px;
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-      }
-      .api-key-display {
-        background-color: #1a1a1a;
-        padding: 5px 10px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 0.8em;
-        color: #888;
-      }
 
       button {
         padding: 8px 16px;
@@ -185,16 +175,19 @@
   </head>
   <body>
     <div class="container">
+      <div class="header">
+        <div class="header-title">UMA Scalper</div>
+        <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
+      </div>
+
       <div class="chart-grid">
         <div class="chart-container" id="ceChartContainer">
           <div class="chart-header">
             <div class="left-buttons">
               <button class="yellow-btn" id="mkt-btn-CE">MKT</button>
-              <button class="green-btn" id="l2-btn-CE">L2</button>
             </div>
             <div class="chart-title" id="chart-title-CE">Call Option</div>
             <div class="right-buttons">
-              <button class="green-btn" id="h2-btn-CE">H2</button>
               <button class="blue-btn" id="buy-btn-CE">High</button>
               <button class="red-btn" id="sell-btn-CE">CANCEL</button>
             </div>
@@ -207,11 +200,9 @@
             <div class="left-buttons">
               <button class="red-btn" id="sell-btn-PE">CANCEL</button>
               <button class="blue-btn" id="buy-btn-PE">High</button>
-              <button class="green-btn" id="h2-btn-PE">H2</button>
             </div>
             <div class="chart-title" id="chart-title-PE">Put Option</div>
             <div class="right-buttons">
-              <button class="green-btn" id="l2-btn-PE">L2</button>
               <button class="yellow-btn" id="mkt-btn-PE">MKT</button>
             </div>
           </div>
@@ -219,15 +210,7 @@
         </div>
       </div>
 
-      <div class="footer">
-        <div class="left">
-          <span class="api-key-display" id="apiKeyDisplay">API Key: loading...</span>
-        </div>
-        <div class="admin-panel">
-          <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
-        </div>
-        <div class="right"></div>
-      </div>
+      <div class="footer"></div>
     </div>
 
     <!-- Settings Modal -->
@@ -295,43 +278,6 @@
         document.getElementById('settingsModal').style.display = 'none';
         document.getElementById('settingsMessage').innerHTML = '';
       }
-
-      async function stopServer() {
-        if (confirm('Stop the server?')) {
-          try {
-            const response = await fetch('/api/admin/stop', { method: 'POST' });
-            const data = await response.json();
-            alert(data.message);
-          } catch (error) {
-            alert('Error: ' + error);
-          }
-        }
-      }
-
-      async function startServer() {
-        try {
-          const response = await fetch('/api/admin/start', { method: 'POST' });
-          const data = await response.json();
-          alert(data.message);
-        } catch (error) {
-          alert('Error: ' + error);
-        }
-      }
-
-      async function loadApiKey() {
-        try {
-          const response = await fetch('/api/admin/status');
-          const data = await response.json();
-          if (data.api_key) {
-            document.getElementById('apiKeyDisplay').textContent = 
-              'API Key: ' + data.api_key.substring(0, 20) + '...';
-          }
-        } catch (error) {
-          document.getElementById('apiKeyDisplay').textContent = 'API Key: unavailable';
-        }
-      }
-
-      loadApiKey();
     </script>
     <script src="/static/chart.js"></script>
   </body>
