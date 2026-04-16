@@ -67,17 +67,15 @@ window.addEventListener("DOMContentLoaded", () => {
 			return fetch(`/api/historical/${symbol}`)
 				.then(r => r.json())
 				.then(result => {
-					if (!result.data || result.data.length === 0) {
-						throw new Error('No historical data');
+					if (result.data && result.data.length > 0) {
+						const allData = result.data.reverse();
+						candleData = allData.slice(-chartSettings.history);
+						candleSeries.setData(candleData);
+						updateMAs();
 					}
-					const allData = result.data.reverse();
-					candleData = allData.slice(-chartSettings.history);
-					candleSeries.setData(candleData);
-					updateMAs();
 				})
 				.catch(e => {
 					console.error('Historical error:', e);
-					throw e;
 				});
 		}
 
@@ -98,9 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			es.onerror = () => console.log('SSE disconnected');
 		}
 
-		loadHistorical().then(() => startLiveUpdates()).catch(e => console.error('Chart failed:', e));
-
-		loadHistorical();
+		loadHistorical().then(() => startLiveUpdates());
 
 		document.getElementById(buttonIds.high).onclick = () => {
 			const candles = candleSeries.data();
