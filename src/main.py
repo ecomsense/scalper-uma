@@ -339,7 +339,7 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
 
 
 @app.post("/api/admin/restart")
-async def restart_server(_: str = Depends(verify_api_key)) -> JSONResponse:
+async def restart_server() -> JSONResponse:
     """
     Restart the uvicorn server via systemd.
     """
@@ -351,7 +351,7 @@ async def restart_server(_: str = Depends(verify_api_key)) -> JSONResponse:
 
 
 @app.get("/api/admin/settings")
-async def get_settings_file(_: str = Depends(verify_api_key)) -> JSONResponse:
+async def get_settings_file() -> JSONResponse:
     """
     Get current settings.yml content.
     """
@@ -365,7 +365,7 @@ async def get_settings_file(_: str = Depends(verify_api_key)) -> JSONResponse:
 
 
 @app.post("/api/admin/settings")
-async def update_settings(settings_data: Dict[str, Any] = Body(...), _: str = Depends(verify_api_key)) -> JSONResponse:
+async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
     """
     Update settings.yml content.
     """
@@ -380,13 +380,11 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...), _: str = De
 
 
 @app.get("/api/admin/status")
-async def get_status(_: str = Depends(verify_api_key)) -> JSONResponse:
+async def get_status() -> JSONResponse:
     """
     Get server status and credentials info.
     """
     return JSONResponse(content={
         "status": "running",
-        "htpasswd_file": HTPASSWD_FILE,
-        "jwt_token_file": "data/jwt_token.txt",
-        "message": "Use the credentials from console output to access this server"
+        "message": "Server is running. Use admin endpoints to manage settings."
     })
