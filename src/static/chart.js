@@ -5,22 +5,11 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	const chartOptions = {
-		layout: {
-			background: { type: "solid", color: "#1a202c" },
-			textColor: "#d1d4dc",
-		},
-		grid: {
-			vertLines: { color: "#2b2b43" },
-			horzLines: { color: "#2b2b43" },
-		},
-		timeScale: {
-			borderColor: "#48587b",
-			timeVisible: true,
-			secondsVisible: false,
-		},
-		rightPriceScale: {
-			borderColor: "#48587b",
-		},
+		width: 800,
+		height: 400,
+		layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
+		grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
+		timeScale: { timeVisible: true, secondsVisible: false },
 	};
 
 	const candlestickOptions = {
