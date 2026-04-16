@@ -440,6 +440,24 @@ async def get_settings_file() -> JSONResponse:
         return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
 
 
+@app.get("/api/chart/settings")
+async def get_chart_settings() -> JSONResponse:
+    """
+    Get chart settings (MA periods, candles count) from settings.yml.
+    """
+    try:
+        base = O_SETG["trade"]["base"]
+        s = O_SETG[base]
+        return JSONResponse(content={
+            "ma_1": s.get("ma_1", 20),
+            "ma_2": s.get("ma_2", 50),
+            "ma_3": s.get("ma_3", 100),
+            "candles": s.get("candles", 200),
+        })
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
 @app.post("/api/admin/settings")
 async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
     """
