@@ -14,9 +14,33 @@ def get_exchange_token_map_finvasia(csvfile: str, exchange: str) -> None:
         df.to_csv(csvfile, index=False)
 
 
+def get_exchange_token_map_flattrade(csvfile: str, exchange: str) -> None:
+    if Fileutils().is_file_not_2day(csvfile):
+        if exchange.upper() == "NFO":
+            url = "https://flattrade.s3.ap-south-1.amazonaws.com/scripmaster/Nfo_Index_Derivatives.csv"
+        elif exchange.upper() == "BFO":
+            url = "https://flattrade.s3.ap-south-1.amazonaws.com/scripmaster/Bfo_Index_Derivatives.csv"
+        else:
+            url = f"https://flattrade.s3.ap-south-1.amazonaws.com/scripmaster/Commodity.csv"
+
+        print(f"{url}")
+        df = pd.read_csv(url)
+        df.rename(
+            columns={
+                "Optiontype": "OptionType",
+                "Strike": "StrikePrice",
+                "Tradingsymbol": "TradingSymbol",
+                "Lotsize": "LotSize",
+            },
+            inplace=True,
+        )
+        df.StrikePrice = df.StrikePrice.astype(int)
+        df.to_csv(csvfile, index=False)
+
+
 class Symbol:
     """
-    Class to get symbols from finvasia
+    Class to get symbols from flattrade
 
     Parameters
     ----------
@@ -36,7 +60,7 @@ class Symbol:
         self._symbol = symbol
         self._expiry = expiry
         self.csvfile: str = f"./data/{self._exchange}_symbols.csv"
-        get_exchange_token_map_finvasia(self.csvfile, exchange)
+        get_exchange_token_map_flattrade(self.csvfile, exchange)
 
     def get_atm(self, ltp: float) -> int:
         try:

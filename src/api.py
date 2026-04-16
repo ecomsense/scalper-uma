@@ -3,7 +3,7 @@ from traceback import print_exc
 from importlib import import_module
 from typing import Dict, List, Optional, Any
 from src.constants import O_CNFG, logging
-from stock_brokers.finvasia.api_helper import post_order_hook
+from stock_brokers.flattrade.api_helper import post_order_hook
 
 
 def login() -> Any:
