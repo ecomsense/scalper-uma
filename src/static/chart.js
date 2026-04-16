@@ -75,7 +75,8 @@ window.addEventListener("DOMContentLoaded", () => {
 					if (!result.data || result.data.length === 0) {
 						throw new Error('No historical data');
 					}
-					candleData = result.data.reverse();
+					const allData = result.data.reverse();
+					candleData = allData.slice(-chartSettings.candles);
 					candleSeries.setData(candleData);
 					updateMAs();
 				})
