@@ -32,6 +32,13 @@ class Wserver:
         if val:
             self.ltp[message["e"] + "|" + message["tk"]] = float(val)
 
+    def subscribe(self, tokens: List[str]) -> None:
+        if self.socket_opened:
+            self.api.broker.subscribe(tokens, feed_type="d")
+            self.tokens = tokens
+        else:
+            logging.warning("Websocket not opened, cannot subscribe")
+
 
 if __name__ == "__main__":
     from helper import Helper
