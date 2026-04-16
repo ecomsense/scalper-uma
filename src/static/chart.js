@@ -20,6 +20,13 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	const maColors = { ma1: "#FFA500", ma2: "#00FF00", ma3: "#FF00FF" };
 
+	let chartSettings = { ma_1: 20, ma_2: 50, ma_3: 100 };
+
+	fetch("/api/chart/settings")
+		.then(r => r.json())
+		.then(s => { chartSettings = s; })
+		.catch(() => {});
+
 	function setupChart(containerId, symbol, buttonIds) {
 		const chartContainer = document.getElementById(containerId);
 		if (!chartContainer) {
@@ -48,9 +55,9 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 
 		function updateMAs() {
-			if (candleData.length >= 20) ma1Series.setData(calculateMA(candleData, 20));
-			if (candleData.length >= 50) ma2Series.setData(calculateMA(candleData, 50));
-			if (candleData.length >= 100) ma3Series.setData(calculateMA(candleData, 100));
+			if (candleData.length >= chartSettings.ma_1) ma1Series.setData(calculateMA(candleData, chartSettings.ma_1));
+			if (candleData.length >= chartSettings.ma_2) ma2Series.setData(calculateMA(candleData, chartSettings.ma_2));
+			if (candleData.length >= chartSettings.ma_3) ma3Series.setData(calculateMA(candleData, chartSettings.ma_3));
 		}
 
 		let lastHistoricalTime = 0;
