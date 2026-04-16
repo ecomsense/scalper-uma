@@ -70,12 +70,12 @@ class Helper:
         try:
             resp = cls._api.scriptinfo(exchange, token)
             if resp is not None:
-                lp = resp.get("lp") or resp.get("last")
+                lp = resp.get("lp") or resp.get("last") or resp.get("LTP")
                 if lp:
                     return float(lp)
                 else:
-                    logging.warning(f"ltp response: {resp}")
-                    raise ValueError("ltp not found in response")
+                    logging.warning(f"No ltp in response for {exchange}:{token}: {resp}")
+                    return 0.0
             else:
                 raise ValueError("ltp is none")
         except Exception as e:

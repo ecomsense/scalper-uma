@@ -111,14 +111,27 @@ async def lifespan(app: FastAPI):
     try:
         api = Helper.api()
         user_settings = get_settings()
-        ltp_of_underlying = Helper.ltp(
-            user_settings["exchange"], user_settings["token"]
-        )
+
+        # Subscribe to underlying index first via websocket to get LTP
+        index_token = f"{user_settings['exchange']}|{user_settings['token']}"
+        ws_for_index = Wserver(api, [index_token])
+
+        # Wait for websocket to get LTP
+        while not ws_for_index.ltp:
+            await asyncio.sleep(0.5)
+
+        ltp_of_underlying = list(ws_for_index.ltp.values())[0]
+        logging.info(f"Got LTP for {user_settings['base']}: {ltp_of_underlying}")
+
+        # Now create strategy and subscribe to options
         sgy = Strategy(user_settings, ltp_of_underlying)
         tokens = list(sgy.tokens_for_all_trading_symbols.keys())
-        ws = Wserver(api, tokens)
 
-        while not ws.ltp:
+        # Subscribe to both index and options
+        all_tokens = [index_token] + tokens
+        ws = Wserver(api, all_tokens)
+
+        while not ws.ltp or len(ws.ltp) < len(all_tokens):
             await asyncio.sleep(0.5)
 
         symbol_nearest_to_premium: List[str] = []
