@@ -11,8 +11,7 @@ trade:
 NIFTY:
   base: NIFTY
   option_exchange: NFO
-  expiry: 28-APR-2026
-  quantity: 75
+  lots: 1
   depth: 5
   profit: 1
   premium: 100
@@ -23,8 +22,7 @@ NIFTY:
 BANKNIFTY:
   base: BANKNIFTY
   option_exchange: NFO
-  expiry: 28-APR-2026
-  quantity: 30
+  lots: 1
   depth: 5
   profit: 1
   premium: 100

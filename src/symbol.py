@@ -85,6 +85,17 @@ class Symbol:
         
         return parsed[0][0] if parsed else None
 
+    def get_lot_size(self, strike: Optional[int] = None) -> int:
+        df = pd.read_csv(self.csvfile)
+        df_filtered = df[
+            (df["Symbol"] == self._symbol) & (df["Expiry"] == self._expiry)
+        ]
+        if strike:
+            df_filtered = df_filtered[df_filtered["StrikePrice"] == strike]
+        if not df_filtered.empty:
+            return int(df_filtered.iloc[0]["LotSize"])
+        return 1
+
     def get_atm(self, ltp: float) -> int:
         try:
             current_strike = ltp - (ltp % dct_sym[self._base]["diff"])

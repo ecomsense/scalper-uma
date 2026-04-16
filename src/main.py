@@ -85,7 +85,21 @@ def aggregate_ticks_to_candlesticks(
 @lru_cache(maxsize=1)
 def get_settings() -> Dict[str, Any]:
     base = O_SETG["trade"]["base"]
-    return O_SETG[base] | dct_sym[base]
+    settings = O_SETG[base] | dct_sym[base]
+    
+    if "lots" in settings and "quantity" not in settings:
+        from src.symbol import Symbol
+        sym = Symbol(
+            exchange=settings["option_exchange"],
+            base=base,
+            symbol=base,
+            expiry=settings.get("expiry"),
+        )
+        lot_size = sym.get_lot_size()
+        settings["quantity"] = settings["lots"] * lot_size
+        logging.info(f"Calculated quantity: {settings['lots']} lots * {lot_size} = {settings['quantity']}")
+    
+    return settings
 
 
 def nullify() -> None:
