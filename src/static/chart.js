@@ -42,8 +42,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		if (chartSettings.ma_2) maSeries.ma2 = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
 		if (chartSettings.ma_3) maSeries.ma3 = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
 
-		let allCandleData = [];
-		let displayCandleData = [];
+		let candleData = [];
 
 		function calculateMA(data, period) {
 			const result = [];
@@ -58,14 +57,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 
 		function updateMAs() {
-			if (maSeries.ma1 && displayCandleData.length >= chartSettings.ma_1) {
-				maSeries.ma1.setData(calculateMA(displayCandleData, chartSettings.ma_1));
+			if (maSeries.ma1 && candleData.length >= chartSettings.ma_1) {
+				maSeries.ma1.setData(calculateMA(candleData, chartSettings.ma_1));
 			}
-			if (maSeries.ma2 && displayCandleData.length >= chartSettings.ma_2) {
-				maSeries.ma2.setData(calculateMA(displayCandleData, chartSettings.ma_2));
+			if (maSeries.ma2 && candleData.length >= chartSettings.ma_2) {
+				maSeries.ma2.setData(calculateMA(candleData, chartSettings.ma_2));
 			}
-			if (maSeries.ma3 && displayCandleData.length >= chartSettings.ma_3) {
-				maSeries.ma3.setData(calculateMA(displayCandleData, chartSettings.ma_3));
+			if (maSeries.ma3 && candleData.length >= chartSettings.ma_3) {
+				maSeries.ma3.setData(calculateMA(candleData, chartSettings.ma_3));
 			}
 		}
 
@@ -76,10 +75,8 @@ window.addEventListener("DOMContentLoaded", () => {
 					if (!result.data || result.data.length === 0) {
 						throw new Error('No historical data');
 					}
-					allCandleData = result.data.reverse();
-					const keep = Math.min(chartSettings.candles, allCandleData.length);
-					displayCandleData = allCandleData.slice(-keep);
-					candleSeries.setData(displayCandleData);
+					candleData = result.data.reverse();
+					candleSeries.setData(candleData);
 					updateMAs();
 				})
 				.catch(e => {
@@ -92,18 +89,13 @@ window.addEventListener("DOMContentLoaded", () => {
 			const es = new EventSource(`/sse/candlesticks/${symbol}`);
 			es.addEventListener("live_update", (e) => {
 				const d = JSON.parse(e.data);
-				const lastTime = displayCandleData.length > 0 ? displayCandleData[displayCandleData.length - 1].time : 0;
+				const lastTime = candleData.length > 0 ? candleData[candleData.length - 1].time : 0;
 				if (d.time > lastTime) {
-					displayCandleData.push(d);
-					allCandleData.push(d);
-					if (displayCandleData.length > chartSettings.candles) {
-						displayCandleData = displayCandleData.slice(-chartSettings.candles);
-					}
-					candleSeries.setData(displayCandleData);
+					candleData.push(d);
+					candleSeries.setData(candleData);
 				} else if (d.time === lastTime) {
-					displayCandleData[displayCandleData.length - 1] = d;
-					allCandleData[allCandleData.length - 1] = d;
-					candleSeries.setData(displayCandleData);
+					candleData[candleData.length - 1] = d;
+					candleSeries.setData(candleData);
 				}
 				updateMAs();
 			});
