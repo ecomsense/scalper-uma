@@ -1,4 +1,9 @@
 window.addEventListener("DOMContentLoaded", () => {
+	if (typeof LightweightCharts === 'undefined') {
+		console.error('LightweightCharts library not loaded');
+		return;
+	}
+
 	const chartOptions = {
 		layout: {
 			background: { type: "solid", color: "#1a202c" },
@@ -39,11 +44,15 @@ window.addEventListener("DOMContentLoaded", () => {
 			return;
 		}
 
+		console.log(`Creating chart for ${containerId} with symbol ${symbol}`);
+
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
 		const candlestickSeries = chart.addCandlestickSeries(candlestickOptions);
 		const ma1Series = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
 		const ma2Series = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
 		const ma3Series = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
+
+		console.log('Chart series created:', { candlestickSeries, ma1Series, ma2Series, ma3Series });
 
 		chart.timeScale().applyOptions({
 			timeZone: "Asia/Kolkata",
@@ -54,19 +63,27 @@ window.addEventListener("DOMContentLoaded", () => {
 		function calculateMA(data, period) {
 			const maData = [];
 			for (let i = period - 1; i < data.length; i++) {
-				let sum = 0;
-				for (let j = 0; j < period; j++) {
-					sum += data[i - j].close;
+				if (data[i - j] && data[i - j].close !== undefined) {
+					let sum = 0;
+					for (let j = 0; j < period; j++) {
+						if (data[i - j] && data[i - j].close !== undefined) {
+							sum += data[i - j].close;
+						}
+					}
+					maData.push({
+						time: data[i].time,
+						value: sum / period,
+					});
 				}
-				maData.push({
-					time: data[i].time,
-					value: sum / period,
-				});
 			}
 			return maData;
 		}
 
 		function updateAllMA() {
+			if (!ma1Series || !ma2Series || !ma3Series) {
+				console.error('MA series not initialized');
+				return;
+			}
 			if (candleData.length >= 20) {
 				ma1Series.setData(calculateMA(candleData, 20));
 			}
@@ -75,11 +92,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			}
 			if (candleData.length >= 100) {
 				ma3Series.setData(calculateMA(candleData, 100));
-			}
-			if (candleData.length === 0) {
-				ma1Series.setData([]);
-				ma2Series.setData([]);
-				ma3Series.setData([]);
 			}
 		}
 
