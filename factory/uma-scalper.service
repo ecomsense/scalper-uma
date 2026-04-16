@@ -1,0 +1,16 @@
+[Unit]
+Description=UMA Scalper - Options Trading Bot
+After=network.target
+
+[Service]
+Type=simple
+User=uma
+Group=uma
+WorkingDirectory=/home/uma/no_env/uma_scalper
+Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
+ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

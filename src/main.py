@@ -6,16 +6,20 @@ from src.constants import (
     logging,
     O_FUTL,
     TRADE_JSON,
+    JWT_TOKEN,
+    HTPASSWD_FILE,
 )
 from functools import lru_cache
 import pandas as pd
-from fastapi import FastAPI, Body, Request
+from fastapi import FastAPI, Body, Request, HTTPException, Depends, Header
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
 import time
 import json
+import subprocess
+import os
 from src.tickrunner import TickRunner
 from src.wserver import Wserver
 
@@ -28,6 +32,12 @@ from contextlib import asynccontextmanager
 from pytz import timezone as tz
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Any, Optional
+
+
+def verify_api_key(x_api_key: str = Header(...)) -> str:
+    if x_api_key != JWT_TOKEN:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+    return x_api_key
 
 IST = tz("Asia/Kolkata")
 
@@ -159,7 +169,7 @@ async def serve_root():
 
 
 @app.get("/api/symbols")
-async def get_available_symbols(request: Request) -> JSONResponse:
+async def get_available_symbols(request: Request, _: str = Depends(verify_api_key)) -> JSONResponse:
     """
     Returns a list of available symbols.
     """
@@ -168,7 +178,7 @@ async def get_available_symbols(request: Request) -> JSONResponse:
 
 
 @app.post("/api/trade/buy")
-async def place_buy_order(payload: Dict[str, Any] = Body(...)) -> JSONResponse:
+async def place_buy_order(payload: Dict[str, Any] = Body(...), _: str = Depends(verify_api_key)) -> JSONResponse:
     nullify()
 
     symbol = payload.get("symbol", "DUMMY").upper()
@@ -219,7 +229,7 @@ async def place_buy_order(payload: Dict[str, Any] = Body(...)) -> JSONResponse:
 
 
 @app.get("/api/trade/sell")
-async def reset():
+async def reset(_: str = Depends(verify_api_key)):
     nullify()
     return JSONResponse(
         content={
@@ -231,7 +241,7 @@ async def reset():
 
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
-async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
+async def sse_candlestick_endpoint(symbol: str, request: Request, _: str = Depends(verify_api_key)) -> EventSourceResponse:
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
     last_sent_candle: Optional[Dict[str, Any]] = None
@@ -279,7 +289,7 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
 
 
 @app.get("/sse/orders")
-async def stream_all_orders(request: Request) -> EventSourceResponse:
+async def stream_all_orders(request: Request, _: str = Depends(verify_api_key)) -> EventSourceResponse:
     async def event_generator():
         while True:
             await asyncio.sleep(1.5)
@@ -297,3 +307,57 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                 }
 
     return EventSourceResponse(event_generator())
+
+
+@app.post("/api/admin/restart")
+async def restart_server(_: str = Depends(verify_api_key)) -> JSONResponse:
+    """
+    Restart the uvicorn server via systemd.
+    """
+    try:
+        subprocess.run(["sudo", "systemctl", "restart", "uma-scalper"], check=True)
+        return JSONResponse(content={"message": "Server restarting...", "status": "success"})
+    except subprocess.CalledProcessError as e:
+        return JSONResponse(content={"message": f"Failed to restart: {e}", "status": "error"}, status_code=500)
+
+
+@app.get("/api/admin/settings")
+async def get_settings_file(_: str = Depends(verify_api_key)) -> JSONResponse:
+    """
+    Get current settings.yml content.
+    """
+    try:
+        settings_path = Path(S_DATA) / "settings.yml"
+        with open(settings_path, "r") as f:
+            content = f.read()
+        return JSONResponse(content={"content": content, "status": "success"})
+    except Exception as e:
+        return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
+
+
+@app.post("/api/admin/settings")
+async def update_settings(settings_data: Dict[str, Any] = Body(...), _: str = Depends(verify_api_key)) -> JSONResponse:
+    """
+    Update settings.yml content.
+    """
+    try:
+        settings_path = Path(S_DATA) / "settings.yml"
+        content = settings_data.get("content", "")
+        with open(settings_path, "w") as f:
+            f.write(content)
+        return JSONResponse(content={"message": "Settings updated. Restart server to apply.", "status": "success"})
+    except Exception as e:
+        return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
+
+
+@app.get("/api/admin/status")
+async def get_status(_: str = Depends(verify_api_key)) -> JSONResponse:
+    """
+    Get server status and credentials info.
+    """
+    return JSONResponse(content={
+        "status": "running",
+        "htpasswd_file": HTPASSWD_FILE,
+        "jwt_token_file": "data/jwt_token.txt",
+        "message": "Use the credentials from console output to access this server"
+    })
