@@ -29,7 +29,7 @@ class Strategy:
         logging.info(
             f"premium {self.user_settings['premium']} to be check against quotes {quotes} for closeness "
         )
-        quotes = {self.tokens_for_all_trading_symbols[k]: v for k, v in quotes.items()}
+        quotes = {self.tokens_for_all_trading_symbols[k]: v for k, v in quotes.items() if k in self.tokens_for_all_trading_symbols}
         symbol_with_closest_premium = self.sym.find_closest_premium(
             quotes=quotes, premium=self.user_settings["premium"], contains=ce_or_pe
         )
