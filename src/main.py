@@ -460,13 +460,12 @@ async def get_chart_settings() -> JSONResponse:
     Get chart settings (MA periods, candles count) from settings.yml.
     """
     try:
-        base = O_SETG["trade"]["base"]
-        s = O_SETG[base]
+        c = O_SETG.get("candles", {})
         return JSONResponse(content={
-            "ma_1": s.get("ma_1"),
-            "ma_2": s.get("ma_2"),
-            "ma_3": s.get("ma_3"),
-            "candles": s.get("candles", 200),
+            "ma_1": c.get("ma_1"),
+            "ma_2": c.get("ma_2"),
+            "ma_3": c.get("ma_3"),
+            "history": c.get("history", 200),
         })
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
