@@ -22,11 +22,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	let chartSettings = { ma_1: null, ma_2: null, ma_3: null, history: 200 };
 
-	fetch("/api/chart/settings")
-		.then(r => r.json())
-		.then(s => { chartSettings = s; })
-		.catch(() => {});
-
 	function setupChart(containerId, symbol, buttonIds) {
 		const chartContainer = document.getElementById(containerId);
 		if (!chartContainer) {
@@ -141,7 +136,10 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 
-	fetch("/api/symbols")
+	fetch("/api/chart/settings")
+		.then(r => r.json())
+		.then(s => { chartSettings = s; })
+		.then(() => fetch("/api/symbols"))
 		.then(r => r.json())
 		.then(symbols => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
