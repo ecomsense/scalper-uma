@@ -198,7 +198,7 @@ async def serve_root():
 
 
 @app.get("/api/symbols")
-async def get_available_symbols(request: Request, _: str = Depends(verify_api_key)) -> JSONResponse:
+async def get_available_symbols(request: Request) -> JSONResponse:
     """
     Returns a list of available symbols.
     """
@@ -270,7 +270,7 @@ async def reset(_: str = Depends(verify_api_key)):
 
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
-async def sse_candlestick_endpoint(symbol: str, request: Request, _: str = Depends(verify_api_key)) -> EventSourceResponse:
+async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
     last_sent_candle: Optional[Dict[str, Any]] = None
@@ -318,7 +318,7 @@ async def sse_candlestick_endpoint(symbol: str, request: Request, _: str = Depen
 
 
 @app.get("/sse/orders")
-async def stream_all_orders(request: Request, _: str = Depends(verify_api_key)) -> EventSourceResponse:
+async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
         while True:
             await asyncio.sleep(1.5)
