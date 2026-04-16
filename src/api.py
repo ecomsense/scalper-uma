@@ -2,6 +2,7 @@ from __future__ import annotations
 from traceback import print_exc
 from importlib import import_module
 from typing import Dict, List, Optional, Any
+import time
 from src.constants import O_CNFG, logging
 from stock_brokers.flattrade.api_helper import post_order_hook
 
@@ -70,27 +71,13 @@ class Helper:
         cls, exchange: str, token: str, interval: int = 1
     ) -> List[Dict[str, Any]]:
         try:
-            resp = cls._api.historical(exchange, token, interval)
+            end_time = int(time.time())
+            start_time = end_time - (4 * 60 * 60)
+            resp = cls._api.historical(exchange, token, start_time, end_time, interval)
             return resp
         except Exception as e:
             logging.error(f"{e} in historical")
             return []
-        try:
-            resp = cls._api.scriptinfo(exchange, token)
-            if resp is not None:
-                lp = resp.get("lp") or resp.get("last") or resp.get("LTP")
-                if lp:
-                    return float(lp)
-                else:
-                    logging.warning(f"No ltp in response for {exchange}:{token}: {resp}")
-                    return 0.0
-            else:
-                raise ValueError("ltp is none")
-        except Exception as e:
-            message = f"{e} while ltp"
-            logging.error(message)
-            print_exc()
-            return 0.0
 
     @classmethod
     def modify_order(cls, kwargs: Dict[str, Any]) -> Optional[Any]:
