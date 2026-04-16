@@ -62,20 +62,6 @@
         margin-bottom: 5px;
       }
 
-      .header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 10px 20px;
-        background-color: #262626;
-        border-bottom: 1px solid #444;
-      }
-
-      .header-title {
-        font-size: 1.2em;
-        font-weight: bold;
-      }
-
       .footer {
         display: none;
       }
@@ -175,11 +161,6 @@
   </head>
   <body>
     <div class="container">
-      <div class="header">
-        <div class="header-title">UMA Scalper</div>
-        <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
-      </div>
-
       <div class="chart-grid">
         <div class="chart-container" id="ceChartContainer">
           <div class="chart-header">
@@ -204,6 +185,7 @@
             <div class="chart-title" id="chart-title-PE">Put Option</div>
             <div class="right-buttons">
               <button class="yellow-btn" id="mkt-btn-PE">MKT</button>
+              <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
             </div>
           </div>
           <div id="chart-PE"></div>
