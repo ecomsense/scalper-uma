@@ -235,11 +235,11 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
         candlesticks = []
         for _, row in df.iterrows():
             candlesticks.append({
-                "time": int(row["time"]) if "time" in row else int(row["ut"]),
-                "open": float(row["open"]),
-                "high": float(row["high"]),
-                "low": float(row["low"]),
-                "close": float(row["close"]),
+                "time": int(row["ssboe"]) if "ssboe" in row else int(row["ut"]),
+                "open": float(row["into"]) if "into" in row else float(row["open"]),
+                "high": float(row["inth"]) if "inth" in row else float(row["high"]),
+                "low": float(row["intl"]) if "intl" in row else float(row["low"]),
+                "close": float(row["intc"]) if "intc" in row else float(row["close"]),
             })
 
         return JSONResponse(content={"data": candlesticks})
@@ -317,9 +317,10 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
     last_sent_candle: Optional[Dict[str, Any]] = None
+    is_initial = True
 
     async def event_generator():
-        nonlocal last_sent_candle
+        nonlocal last_sent_candle, is_initial
         while True:
             await asyncio.sleep(0.5)
 
@@ -339,10 +340,18 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
                 current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
             )
 
-            if last_sent_candle is None or candle_time > last_sent_candle["time"]:
-                if last_sent_candle is not None:
-                    yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
-
+            if last_sent_candle is None:
+                last_sent_candle = {
+                    "open": price,
+                    "high": price,
+                    "low": price,
+                    "close": price,
+                    "volume": 0,
+                    "time": candle_time,
+                }
+                yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
+            elif candle_time > last_sent_candle["time"]:
+                yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
                 last_sent_candle = {
                     "open": price,
                     "high": price,
