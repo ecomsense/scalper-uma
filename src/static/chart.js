@@ -1,10 +1,5 @@
 window.addEventListener("DOMContentLoaded", () => {
-	let orderEventSource = null;
-	const orderSeriesMap = new Map();
-
 	const chartOptions = {
-		// width: 500,
-		// height: 300,
 		layout: {
 			background: { type: "solid", color: "#1a202c" },
 			textColor: "#d1d4dc",
@@ -31,7 +26,13 @@ window.addEventListener("DOMContentLoaded", () => {
 		wickDownColor: "#f44336",
 	};
 
-		function setupChart(containerId, symbol, buttonIds) {
+	const maColors = {
+		ma1: "#FFA500",
+		ma2: "#00FF00",
+		ma3: "#FF00FF",
+	};
+
+	function setupChart(containerId, symbol, buttonIds) {
 		const chartContainer = document.getElementById(containerId);
 		if (!chartContainer) {
 			console.error(`Chart container with ID '${containerId}' not found.`);
@@ -44,19 +45,28 @@ window.addEventListener("DOMContentLoaded", () => {
 			candlestickOptions,
 		);
 
-		const maSeries = chart.addSeries(LightweightCharts.LineSeries, {
-			color: "#FFA500",
+		const ma1Series = chart.addSeries(LightweightCharts.LineSeries, {
+			color: maColors.ma1,
 			lineWidth: 2,
 		});
 
-		// --- THIS IS THE FIX ---
+		const ma2Series = chart.addSeries(LightweightCharts.LineSeries, {
+			color: maColors.ma2,
+			lineWidth: 2,
+		});
+
+		const ma3Series = chart.addSeries(LightweightCharts.LineSeries, {
+			color: maColors.ma3,
+			lineWidth: 2,
+		});
+
 		chart.timeScale().applyOptions({
 			timeZone: "Asia/Kolkata",
 		});
 
 		let candleData = [];
 
-		function calculateMA(data, period = 9) {
+		function calculateMA(data, period) {
 			const maData = [];
 			for (let i = period - 1; i < data.length; i++) {
 				let sum = 0;
@@ -71,36 +81,59 @@ window.addEventListener("DOMContentLoaded", () => {
 			return maData;
 		}
 
-		function updateMA() {
-			if (candleData.length >= 9) {
-				const maData = calculateMA(candleData, 9);
-				maSeries.setData(maData);
+		function updateAllMA() {
+			if (candleData.length >= 20) {
+				ma1Series.setData(calculateMA(candleData, 20));
+			}
+			if (candleData.length >= 50) {
+				ma2Series.setData(calculateMA(candleData, 50));
+			}
+			if (candleData.length >= 100) {
+				ma3Series.setData(calculateMA(candleData, 100));
 			}
 		}
 
-		const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
+		function loadHistoricalData() {
+			return fetch(`/api/historical/${symbol}`)
+				.then((response) => response.json())
+				.then((result) => {
+					if (result.data && result.data.length > 0) {
+						candleData = result.data;
+						candlestickSeries.setData(candleData);
+						updateAllMA();
+						chart.timeScale().fitContent();
+					}
+				})
+				.catch((error) => {
+					console.error("Error loading historical data:", error);
+				});
+		}
 
-		candleEventSource.addEventListener("initial_data", (event) => {
-			const data = JSON.parse(event.data);
-			if (data.length > 0) {
-				candleData = data;
-				candlestickSeries.setData(data);
-				updateMA();
-				chart.timeScale().fitContent();
-			}
+		loadHistoricalData().then(() => {
+			const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
+
+			candleEventSource.addEventListener("initial_data", (event) => {
+				const data = JSON.parse(event.data);
+				if (data.length > 0 && candleData.length === 0) {
+					candleData = data;
+					candlestickSeries.setData(data);
+					updateAllMA();
+					chart.timeScale().fitContent();
+				}
+			});
+
+			candleEventSource.addEventListener("live_update", (event) => {
+				const data = JSON.parse(event.data);
+				candlestickSeries.update(data);
+				candleData.push(data);
+				updateAllMA();
+			});
+
+			candleEventSource.onerror = (error) => {
+				console.error(`Candlestick SSE error for ${symbol}:`, error);
+				candleEventSource.close();
+			};
 		});
-
-		candleEventSource.addEventListener("live_update", (event) => {
-			const data = JSON.parse(event.data);
-			candlestickSeries.update(data);
-			candleData.push(data);
-			updateMA();
-		});
-
-		candleEventSource.onerror = (error) => {
-			console.error(`Candlestick SSE error for ${symbol}:`, error);
-			candleEventSource.close();
-		};
 
 		const tradeLogic = async (endpoint, payload = null) => {
 			try {
@@ -122,6 +155,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.high).onclick = async () => {
 			const candles = candlestickSeries.data();
+			if (candles.length < 2) return;
 			const prevCandle = candles[candles.length - 2];
 			const payload = {
 				symbol: symbol,
@@ -136,6 +170,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.mktbuy).onclick = async () => {
 			const candles = candlestickSeries.data();
+			if (candles.length < 2) return;
 			const currCandle = candles[candles.length - 1];
 			const prevCandle = candles[candles.length - 2];
 			const payload = {
@@ -160,16 +195,6 @@ window.addEventListener("DOMContentLoaded", () => {
 				alert("Reset failed.");
 			}
 		};
-		/*
-        new ResizeObserver((entries) => {
-            if (entries.length === 0) return;
-            const rect = entries[0].contentRect;
-            chart.applyOptions({
-                width: rect.width,
-                height: rect.height,
-            });
-        }).observe(chartContainer);
-        */
 	}
 
 	async function initCharts() {

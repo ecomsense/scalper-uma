@@ -66,7 +66,15 @@ class Helper:
         return OPEN_ORDERS
 
     @classmethod
-    def ltp(cls, exchange: str, token: str) -> float:
+    def historical(
+        cls, exchange: str, token: str, interval: int = 1
+    ) -> List[Dict[str, Any]]:
+        try:
+            resp = cls._api.historical(exchange, token, interval)
+            return resp
+        except Exception as e:
+            logging.error(f"{e} in historical")
+            return []
         try:
             resp = cls._api.scriptinfo(exchange, token)
             if resp is not None:

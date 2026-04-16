@@ -16,3 +16,7 @@ NIFTY:
   depth: 5
   profit: 1
   premium: 100
+  ma_1: 20
+  ma_2: 50
+  ma_3: 100
+  candles: 200
