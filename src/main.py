@@ -207,6 +207,48 @@ async def get_available_symbols(request: Request) -> JSONResponse:
     return JSONResponse(content=symbols)
 
 
+@app.get("/api/historical/{symbol}")
+async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
+    """
+    Returns historical candlestick data for a symbol.
+    """
+    try:
+        tokens_nearest = request.app.state.tokens_nearest
+        ws_token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
+        if not ws_token:
+            return JSONResponse(content={"error": "Symbol not found"}, status_code=404)
+
+        parts = ws_token.split("|")
+        exchange, token = parts[0], parts[1]
+
+        settings = get_settings()
+        candles_count = settings.get("candles", 200)
+
+        historical_data = Helper.historical(exchange, token)
+
+        if not historical_data or len(historical_data) == 0:
+            return JSONResponse(content={"data": []})
+
+        df = pd.DataFrame(historical_data)
+        df = df.tail(candles_count)
+
+        candlesticks = []
+        for _, row in df.iterrows():
+            candlesticks.append({
+                "time": int(row["time"]) if "time" in row else int(row["ut"]),
+                "open": float(row["open"]),
+                "high": float(row["high"]),
+                "low": float(row["low"]),
+                "close": float(row["close"]),
+            })
+
+        return JSONResponse(content={"data": candlesticks})
+    except Exception as e:
+        logging.error(f"Error in historical: {e}")
+        print_exc()
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
 @app.post("/api/trade/buy")
 async def place_buy_order(payload: Dict[str, Any] = Body(...), _: str = Depends(verify_api_key)) -> JSONResponse:
     nullify()
