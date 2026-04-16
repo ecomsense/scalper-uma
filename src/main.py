@@ -399,9 +399,9 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        subprocess.run("/usr/bin/sudo /usr/bin/systemctl stop uma-scalper", shell=True, check=True)
-        time.sleep(3)
-        subprocess.run("/usr/bin/sudo /usr/bin/systemctl start uma-scalper", shell=True, check=True)
+        subprocess.run("nohup /usr/bin/sudo /usr/bin/systemctl stop uma-scalper > /dev/null 2>&1 &", shell=True)
+        time.sleep(2)
+        subprocess.run("nohup /usr/bin/sudo /usr/bin/systemctl start uma-scalper > /dev/null 2>&1 &", shell=True)
         return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
     except Exception as e:
         return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
