@@ -53,33 +53,44 @@ window.addEventListener("DOMContentLoaded", () => {
 			if (candleData.length >= 100) ma3Series.setData(calculateMA(candleData, 100));
 		}
 
+		let lastHistoricalTime = 0;
+
 		function loadHistorical() {
-			fetch(`/api/historical/${symbol}`)
+			return fetch(`/api/historical/${symbol}`)
 				.then(r => r.json())
 				.then(result => {
 					if (result.data && result.data.length > 0) {
 						candleData = result.data.reverse();
+						lastHistoricalTime = candleData[candleData.length - 1].time;
 						candleSeries.setData(candleData);
 						updateMAs();
 					}
+					return lastHistoricalTime;
 				})
-				.catch(e => console.error('Historical error:', e));
+				.catch(e => {
+					console.error('Historical error:', e);
+					return 0;
+				});
 		}
 
-		const es = new EventSource(`/sse/candlesticks/${symbol}`);
-		es.addEventListener("live_update", (e) => {
-			const d = JSON.parse(e.data);
-			const lastTime = candleData.length > 0 ? candleData[candleData.length - 1].time : 0;
-			if (d.time > lastTime) {
-				candleData.push(d);
-				candleSeries.setData(candleData);
-			} else if (d.time === lastTime) {
-				candleData[candleData.length - 1] = d;
-				candleSeries.setData(candleData);
-			}
-			updateMAs();
-		});
-		es.onerror = () => console.log('SSE error, reconnecting...');
+		function startLiveUpdates() {
+			const es = new EventSource(`/sse/candlesticks/${symbol}`);
+			es.addEventListener("live_update", (e) => {
+				const d = JSON.parse(e.data);
+				const lastTime = candleData.length > 0 ? candleData[candleData.length - 1].time : 0;
+				if (d.time > lastTime) {
+					candleData.push(d);
+					candleSeries.setData(candleData);
+				} else if (d.time === lastTime) {
+					candleData[candleData.length - 1] = d;
+					candleSeries.setData(candleData);
+				}
+				updateMAs();
+			});
+			es.onerror = () => console.log('SSE disconnected');
+		}
+
+		loadHistorical().then(() => startLiveUpdates());
 
 		loadHistorical();
 
