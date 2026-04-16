@@ -5,8 +5,6 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	const chartOptions = {
-		width: 800,
-		height: 400,
 		layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
 		grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
 		timeScale: { timeVisible: true, secondsVisible: false },
@@ -20,225 +18,110 @@ window.addEventListener("DOMContentLoaded", () => {
 		wickDownColor: "#f44336",
 	};
 
-	const maColors = {
-		ma1: "#FFA500",
-		ma2: "#00FF00",
-		ma3: "#FF00FF",
-	};
+	const maColors = { ma1: "#FFA500", ma2: "#00FF00", ma3: "#FF00FF" };
 
 	function setupChart(containerId, symbol, buttonIds) {
 		const chartContainer = document.getElementById(containerId);
 		if (!chartContainer) {
-			console.error(`Chart container with ID '${containerId}' not found.`);
+			console.error(`Chart container '${containerId}' not found`);
 			return;
 		}
 
-		console.log(`Creating chart for ${containerId} with symbol ${symbol}`);
-
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
-		const candlestickSeries = chart.addCandlestickSeries(candlestickOptions);
+		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		const ma1Series = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
 		const ma2Series = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
 		const ma3Series = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
 
-		console.log('Chart series created:', { candlestickSeries, ma1Series, ma2Series, ma3Series });
-
-		chart.timeScale().applyOptions({
-			timeZone: "Asia/Kolkata",
-		});
-
 		let candleData = [];
 
 		function calculateMA(data, period) {
-			const maData = [];
+			const result = [];
 			for (let i = period - 1; i < data.length; i++) {
-				if (data[i - j] && data[i - j].close !== undefined) {
-					let sum = 0;
-					for (let j = 0; j < period; j++) {
-						if (data[i - j] && data[i - j].close !== undefined) {
-							sum += data[i - j].close;
-						}
-					}
-					maData.push({
-						time: data[i].time,
-						value: sum / period,
-					});
+				let sum = 0;
+				for (let j = 0; j < period; j++) {
+					sum += data[i - j].close;
 				}
+				result.push({ time: data[i].time, value: sum / period });
 			}
-			return maData;
+			return result;
 		}
 
-		function updateAllMA() {
-			if (!ma1Series || !ma2Series || !ma3Series) {
-				console.error('MA series not initialized');
-				return;
-			}
-			if (candleData.length >= 20) {
-				ma1Series.setData(calculateMA(candleData, 20));
-			}
-			if (candleData.length >= 50) {
-				ma2Series.setData(calculateMA(candleData, 50));
-			}
-			if (candleData.length >= 100) {
-				ma3Series.setData(calculateMA(candleData, 100));
-			}
+		function updateMAs() {
+			if (candleData.length >= 20) ma1Series.setData(calculateMA(candleData, 20));
+			if (candleData.length >= 50) ma2Series.setData(calculateMA(candleData, 50));
+			if (candleData.length >= 100) ma3Series.setData(calculateMA(candleData, 100));
 		}
 
-		function loadHistoricalData() {
-			return fetch(`/api/historical/${symbol}`)
-				.then((response) => response.json())
-				.then((result) => {
-					console.log('Historical data received:', result);
+		function loadHistorical() {
+			fetch(`/api/historical/${symbol}`)
+				.then(r => r.json())
+				.then(result => {
 					if (result.data && result.data.length > 0) {
 						candleData = result.data;
-						console.log('Setting historical data, length:', candleData.length);
-						try {
-							candlestickSeries.setData(candleData);
-						} catch (e) {
-							console.error('Historical setData error:', e);
-						}
-						updateAllMA();
-						chart.timeScale().fitContent();
-						return true;
+						candleSeries.setData(candleData);
+						updateMAs();
 					}
-					return false;
 				})
-				.catch((error) => {
-					console.error("Error loading historical data:", error);
-					return false;
-				});
+				.catch(e => console.error('Historical error:', e));
 		}
 
-		function startLiveUpdates() {
-			const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
-			let lastTime = null;
-
-			candleEventSource.addEventListener("live_update", (event) => {
-				const data = JSON.parse(event.data);
-				
-				if (lastTime === null || data.time > lastTime) {
-					if (candleData.length > 0 && candleData[candleData.length - 1].time === lastTime) {
-						candleData[candleData.length - 1] = data;
-					} else {
-						candleData.push(data);
-					}
-					lastTime = data.time;
-					console.log('Setting data, candleData length:', candleData.length, 'sample:', candleData[0]);
-					try {
-						candlestickSeries.setData(candleData);
-					} catch (e) {
-						console.error('setData error:', e, 'data:', candleData);
-					}
-				}
-				updateAllMA();
-			});
-
-			candleEventSource.onerror = (error) => {
-				console.error(`SSE disconnected, reconnecting...`);
-				setTimeout(() => startLiveUpdates(), 3000);
-				candleEventSource.close();
-			};
-		}
-
-		loadHistoricalData().then((hasHistorical) => {
-			if (!hasHistorical) {
-				candleData = [];
+		const es = new EventSource(`/sse/candlesticks/${symbol}`);
+		es.addEventListener("live_update", (e) => {
+			const d = JSON.parse(e.data);
+			if (candleData.length === 0 || d.time > candleData[candleData.length - 1].time) {
+				candleData.push(d);
+			} else {
+				candleData[candleData.length - 1] = d;
 			}
-			startLiveUpdates();
+			candleSeries.setData(candleData);
+			updateMAs();
 		});
+		es.onerror = () => console.log('SSE error, reconnecting...');
 
-		const tradeLogic = async (endpoint, payload = null) => {
-			try {
-				const options = {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: payload ? JSON.stringify(payload) : null,
-				};
-				const response = await fetch(endpoint, options);
-				const result = await response.json();
-				if (result.status !== "success") {
-					alert(`Order failed for ${symbol}.`);
-				}
-			} catch (error) {
-				console.error(`Order failed for ${symbol}:`, error);
-				alert(`Order failed for ${symbol}.`);
-			}
-		};
+		loadHistorical();
 
-		document.getElementById(buttonIds.high).onclick = async () => {
-			const candles = candlestickSeries.data();
+		document.getElementById(buttonIds.high).onclick = () => {
+			const candles = candleSeries.data();
 			if (candles.length < 2) return;
-			const prevCandle = candles[candles.length - 2];
-			const payload = {
-				symbol: symbol,
-				price: prevCandle.high + 0.05,
-				trigger_price: prevCandle.high,
-				order_type: "SL",
-				exit_price: prevCandle.low,
-				cost_price: prevCandle.high + 0.05,
-			};
-			tradeLogic("/api/trade/buy", payload);
+			const prev = candles[candles.length - 2];
+			fetch("/api/trade/buy", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					symbol, price: prev.high + 0.05, trigger_price: prev.high,
+					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05
+				})
+			});
 		};
 
-		document.getElementById(buttonIds.mktbuy).onclick = async () => {
-			const candles = candlestickSeries.data();
+		document.getElementById(buttonIds.mktbuy).onclick = () => {
+			const candles = candleSeries.data();
 			if (candles.length < 2) return;
-			const currCandle = candles[candles.length - 1];
-			const prevCandle = candles[candles.length - 2];
-			const payload = {
-				symbol: symbol,
-				price: currCandle.close + 2,
-				order_type: "LIMIT",
-				exit_price: prevCandle.low,
-				cost_price: currCandle.close + 0.05,
-			};
-			tradeLogic("/api/trade/buy", payload);
+			const curr = candles[candles.length - 1];
+			const prev = candles[candles.length - 2];
+			fetch("/api/trade/buy", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					symbol, price: curr.close + 2, order_type: "LIMIT",
+					exit_price: prev.low, cost_price: curr.close + 0.05
+				})
+			});
 		};
 
-		document.getElementById(buttonIds.reset).onclick = async () => {
-			try {
-				const response = await fetch("/api/trade/sell", { method: "GET" });
-				const result = await response.json();
-				if (result.status !== "success") {
-					alert("Reset failed.");
-				}
-			} catch (error) {
-				console.error("Reset failed:", error);
-				alert("Reset failed.");
-			}
+		document.getElementById(buttonIds.reset).onclick = () => {
+			fetch("/api/trade/sell", { method: "GET" });
 		};
 	}
 
-	async function initCharts() {
-		try {
-			const response = await fetch("/api/symbols");
-			const symbols = await response.json();
-
-			if (!Array.isArray(symbols) || symbols.length < 2) {
-				console.error("Expected two symbols (CE and PE) from backend.");
-				return;
-			}
-
-			const ceSymbol = symbols[0];
-			const peSymbol = symbols[1];
-
-			document.getElementById("chart-title-CE").textContent = `${ceSymbol}`;
-			setupChart("chart-CE", ceSymbol, {
-				high: "buy-btn-CE",
-				mktbuy: "mkt-btn-CE",
-				reset: "sell-btn-CE",
-			});
-
-			document.getElementById("chart-title-PE").textContent = `${peSymbol}`;
-			setupChart("chart-PE", peSymbol, {
-				high: "buy-btn-PE",
-				mktbuy: "mkt-btn-PE",
-				reset: "sell-btn-PE",
-			});
-		} catch (error) {
-			console.error("Error initializing charts:", error);
-		}
-	}
-
-	initCharts();
+	fetch("/api/symbols")
+		.then(r => r.json())
+		.then(symbols => {
+			if (!Array.isArray(symbols) || symbols.length < 2) return;
+			document.getElementById("chart-title-CE").textContent = symbols[0];
+			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" });
+			document.getElementById("chart-title-PE").textContent = symbols[1];
+			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" });
+		});
 });
