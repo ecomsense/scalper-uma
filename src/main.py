@@ -235,8 +235,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
 
-        settings = get_settings()
-        candles_count = settings.get("candles", 200)
+        candles_count = O_SETG.get("candles", {}).get("history", 200)
 
         historical_data = Helper.historical(exchange, token)
 
