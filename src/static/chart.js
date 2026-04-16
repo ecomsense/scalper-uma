@@ -58,7 +58,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				.then(r => r.json())
 				.then(result => {
 					if (result.data && result.data.length > 0) {
-						candleData = result.data;
+						candleData = result.data.reverse();
 						candleSeries.setData(candleData);
 						updateMAs();
 					}
@@ -69,12 +69,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		const es = new EventSource(`/sse/candlesticks/${symbol}`);
 		es.addEventListener("live_update", (e) => {
 			const d = JSON.parse(e.data);
-			if (candleData.length === 0 || d.time > candleData[candleData.length - 1].time) {
+			const lastTime = candleData.length > 0 ? candleData[candleData.length - 1].time : 0;
+			if (d.time > lastTime) {
 				candleData.push(d);
-			} else {
+				candleSeries.setData(candleData);
+			} else if (d.time === lastTime) {
 				candleData[candleData.length - 1] = d;
+				candleSeries.setData(candleData);
 			}
-			candleSeries.setData(candleData);
 			updateMAs();
 		});
 		es.onerror = () => console.log('SSE error, reconnecting...');
