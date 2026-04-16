@@ -345,7 +345,7 @@ async def restart_server() -> JSONResponse:
     Restart the uvicorn server via systemd.
     """
     try:
-        subprocess.run(["sudo", "systemctl", "restart", "uma-scalper"], check=True)
+        subprocess.run("systemctl restart uma-scalper", shell=True, check=True)
         return JSONResponse(content={"message": "Server restarting...", "status": "success"})
     except subprocess.CalledProcessError as e:
         return JSONResponse(content={"message": f"Failed to restart: {e}", "status": "error"}, status_code=500)
@@ -357,7 +357,7 @@ async def stop_server() -> JSONResponse:
     Stop the uvicorn server via systemd.
     """
     try:
-        subprocess.run(["sudo", "systemctl", "stop", "uma-scalper"], check=True)
+        subprocess.run("systemctl stop uma-scalper", shell=True, check=True)
         return JSONResponse(content={"message": "Server stopped", "status": "success"})
     except subprocess.CalledProcessError as e:
         return JSONResponse(content={"message": f"Failed to stop: {e}", "status": "error"}, status_code=500)
@@ -369,7 +369,7 @@ async def start_server() -> JSONResponse:
     Start the uvicorn server via systemd.
     """
     try:
-        subprocess.run(["sudo", "systemctl", "start", "uma-scalper"], check=True)
+        subprocess.run("systemctl start uma-scalper", shell=True, check=True)
         return JSONResponse(content={"message": "Server started", "status": "success"})
     except subprocess.CalledProcessError as e:
         return JSONResponse(content={"message": f"Failed to start: {e}", "status": "error"}, status_code=500)
@@ -399,8 +399,8 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        subprocess.run(["sudo", "systemctl", "stop", "uma-scalper"], check=True)
-        subprocess.run(["sudo", "systemctl", "start", "uma-scalper"], check=True)
+        subprocess.run("systemctl stop uma-scalper", shell=True, check=True)
+        subprocess.run("systemctl start uma-scalper", shell=True, check=True)
         return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
     except Exception as e:
         return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
