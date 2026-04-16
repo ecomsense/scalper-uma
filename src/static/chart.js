@@ -99,9 +99,15 @@ window.addEventListener("DOMContentLoaded", () => {
 			return fetch(`/api/historical/${symbol}`)
 				.then((response) => response.json())
 				.then((result) => {
+					console.log('Historical data received:', result);
 					if (result.data && result.data.length > 0) {
 						candleData = result.data;
-						candlestickSeries.setData(candleData);
+						console.log('Setting historical data, length:', candleData.length);
+						try {
+							candlestickSeries.setData(candleData);
+						} catch (e) {
+							console.error('Historical setData error:', e);
+						}
 						updateAllMA();
 						chart.timeScale().fitContent();
 						return true;
@@ -128,7 +134,12 @@ window.addEventListener("DOMContentLoaded", () => {
 						candleData.push(data);
 					}
 					lastTime = data.time;
-					candlestickSeries.setData(candleData);
+					console.log('Setting data, candleData length:', candleData.length, 'sample:', candleData[0]);
+					try {
+						candlestickSeries.setData(candleData);
+					} catch (e) {
+						console.error('setData error:', e, 'data:', candleData);
+					}
 				}
 				updateAllMA();
 			});
