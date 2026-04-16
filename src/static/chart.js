@@ -102,7 +102,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				});
 		}
 
-		async function startLiveUpdates() {
+		function startLiveUpdates() {
 			const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
 			let lastTime = null;
 
@@ -122,7 +122,9 @@ window.addEventListener("DOMContentLoaded", () => {
 			});
 
 			candleEventSource.onerror = (error) => {
-				console.error(`Candlestick SSE error for ${symbol}:`, error);
+				console.error(`SSE disconnected, reconnecting...`);
+				setTimeout(() => startLiveUpdates(), 3000);
+				candleEventSource.close();
 			};
 		}
 
