@@ -11,14 +11,21 @@ from pprint import pprint
 from typing import Dict, Any, Optional
 from toolkit.logger import Logger
 from toolkit.fileutils import Fileutils
+import secrets
+import hashlib
+import base64
 
 O_FUTL: Fileutils = Fileutils()
 S_DATA: str = "./data/"
 
 S_LOG: str = S_DATA + "log.txt"
 TRADE_JSON: str = S_DATA + "trade.json"
+JWT_TOKEN_FILE: str = S_DATA + "jwt_token.txt"
+HTPASSWD_FILE: str = S_DATA + ".htpasswd"
 
 SERVER: str = "localhost:8000"
+HTPASSWD_USER: str = "trader"
+HTPASSWD_PASS: str = "trader123"
 
 
 def factory(file_in_data_dir: str) -> None:
@@ -35,6 +42,27 @@ for item in lst:
 
 if not O_FUTL.is_file_exists(TRADE_JSON):
     O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+
+
+def get_or_create_jwt_token() -> str:
+    if O_FUTL.is_file_exists(JWT_TOKEN_FILE):
+        with open(JWT_TOKEN_FILE, "r") as f:
+            return f.read().strip()
+    else:
+        token = secrets.token_urlsafe(32)
+        O_FUTL.write_file(JWT_TOKEN_FILE, token)
+        print(f"JWT token generated and saved to {JWT_TOKEN_FILE}")
+        return token
+
+
+def create_htpasswd() -> None:
+    if not O_FUTL.is_file_exists(HTPASSWD_FILE):
+        password_hash = hashlib.sha1(HTPASSWD_PASS.encode()).hexdigest()
+        htpasswd_line = f"{HTPASSWD_USER}:{{SHA}}{base64.b64encode(bytes.fromhex(password_hash)).decode()}"
+        O_FUTL.write_file(HTPASSWD_FILE, htpasswd_line)
+        print(f"htpasswd created at {HTPASSWD_FILE}")
+        print(f"  User: {HTPASSWD_USER}")
+        print(f"  Pass: {HTPASSWD_PASS}")
 
 
 def yml_to_obj(arg: Optional[str] = None) -> Dict[str, Any]:
@@ -82,6 +110,9 @@ pprint(O_CNFG)
 
 print("settings " + "\n" + "*****************")
 pprint(O_SETG)
+
+JWT_TOKEN: str = get_or_create_jwt_token()
+create_htpasswd()
 
 
 def set_logger() -> Logger:
