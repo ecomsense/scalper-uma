@@ -3,10 +3,11 @@ from __future__ import annotations
 from src.api import Helper
 from src.constants import (
     O_SETG,
+    O_CNFG,
     logging,
     O_FUTL,
     TRADE_JSON,
-    JWT_TOKEN,
+    S_DATA,
     HTPASSWD_FILE,
 )
 from functools import lru_cache
@@ -350,6 +351,30 @@ async def restart_server() -> JSONResponse:
         return JSONResponse(content={"message": f"Failed to restart: {e}", "status": "error"}, status_code=500)
 
 
+@app.post("/api/admin/stop")
+async def stop_server() -> JSONResponse:
+    """
+    Stop the uvicorn server via systemd.
+    """
+    try:
+        subprocess.run(["sudo", "systemctl", "stop", "uma-scalper"], check=True)
+        return JSONResponse(content={"message": "Server stopped", "status": "success"})
+    except subprocess.CalledProcessError as e:
+        return JSONResponse(content={"message": f"Failed to stop: {e}", "status": "error"}, status_code=500)
+
+
+@app.post("/api/admin/start")
+async def start_server() -> JSONResponse:
+    """
+    Start the uvicorn server via systemd.
+    """
+    try:
+        subprocess.run(["sudo", "systemctl", "start", "uma-scalper"], check=True)
+        return JSONResponse(content={"message": "Server started", "status": "success"})
+    except subprocess.CalledProcessError as e:
+        return JSONResponse(content={"message": f"Failed to start: {e}", "status": "error"}, status_code=500)
+
+
 @app.get("/api/admin/settings")
 async def get_settings_file() -> JSONResponse:
     """
@@ -382,9 +407,10 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
 @app.get("/api/admin/status")
 async def get_status() -> JSONResponse:
     """
-    Get server status and credentials info.
+    Get server status and API key.
     """
     return JSONResponse(content={
         "status": "running",
+        "api_key": O_CNFG.get("api_secret", ""),
         "message": "Server is running. Use admin endpoints to manage settings."
     })
