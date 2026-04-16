@@ -44,17 +44,48 @@ window.addEventListener("DOMContentLoaded", () => {
 			candlestickOptions,
 		);
 
+		const maSeries = chart.addSeries(LightweightCharts.LineSeries, {
+			color: "#FFA500",
+			lineWidth: 2,
+		});
+
 		// --- THIS IS THE FIX ---
 		chart.timeScale().applyOptions({
 			timeZone: "Asia/Kolkata",
 		});
+
+		let candleData = [];
+
+		function calculateMA(data, period = 9) {
+			const maData = [];
+			for (let i = period - 1; i < data.length; i++) {
+				let sum = 0;
+				for (let j = 0; j < period; j++) {
+					sum += data[i - j].close;
+				}
+				maData.push({
+					time: data[i].time,
+					value: sum / period,
+				});
+			}
+			return maData;
+		}
+
+		function updateMA() {
+			if (candleData.length >= 9) {
+				const maData = calculateMA(candleData, 9);
+				maSeries.setData(maData);
+			}
+		}
 
 		const candleEventSource = new EventSource(`/sse/candlesticks/${symbol}`);
 
 		candleEventSource.addEventListener("initial_data", (event) => {
 			const data = JSON.parse(event.data);
 			if (data.length > 0) {
+				candleData = data;
 				candlestickSeries.setData(data);
+				updateMA();
 				chart.timeScale().fitContent();
 			}
 		});
@@ -62,6 +93,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		candleEventSource.addEventListener("live_update", (event) => {
 			const data = JSON.parse(event.data);
 			candlestickSeries.update(data);
+			candleData.push(data);
+			updateMA();
 		});
 
 		candleEventSource.onerror = (error) => {
