@@ -392,14 +392,16 @@ async def get_settings_file() -> JSONResponse:
 @app.post("/api/admin/settings")
 async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
     """
-    Update settings.yml content.
+    Update settings.yml content and restart server.
     """
     try:
         settings_path = Path(S_DATA) / "settings.yml"
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        return JSONResponse(content={"message": "Settings updated. Restart server to apply.", "status": "success"})
+        subprocess.run(["sudo", "systemctl", "stop", "uma-scalper"], check=True)
+        subprocess.run(["sudo", "systemctl", "start", "uma-scalper"], check=True)
+        return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
     except Exception as e:
         return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
 
