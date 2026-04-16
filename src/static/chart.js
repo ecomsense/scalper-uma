@@ -31,7 +31,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		wickDownColor: "#f44336",
 	};
 
-	function setupChart(containerId, symbol, buttonIds) {
+		function setupChart(containerId, symbol, buttonIds) {
 		const chartContainer = document.getElementById(containerId);
 		if (!chartContainer) {
 			console.error(`Chart container with ID '${containerId}' not found.`);
@@ -85,68 +85,6 @@ window.addEventListener("DOMContentLoaded", () => {
 				console.error(`Order failed for ${symbol}:`, error);
 				alert(`Order failed for ${symbol}.`);
 			}
-		};
-
-		// Connect button listeners using their new unique IDs
-		document.getElementById(buttonIds.h2).onclick = async () => {
-			const candles = candlestickSeries.data();
-			const prevCandle = candles[candles.length - 2];
-			let payload;
-			if (prevCandle.close < prevCandle.open) {
-				payload = {
-					symbol: symbol,
-					price: prevCandle.open + 0.05,
-					trigger_price: prevCandle.open,
-					order_type: "SL",
-					exit_price: prevCandle.low,
-					cost_price: prevCandle.open + 0.05,
-					tag: "h2",
-				};
-			} else {
-				// bullish candle
-				payload = {
-					symbol: symbol,
-					price: prevCandle.close + 0.05,
-					trigger_price: prevCandle.close,
-					order_type: "SL",
-					exit_price: prevCandle.low,
-					cost_price: prevCandle.close + 0.05,
-					tag: "h2",
-				};
-			}
-			tradeLogic("/api/trade/buy", payload);
-		};
-
-		// Connect button listeners using their new unique IDs
-		document.getElementById(buttonIds.l2).onclick = async () => {
-			const candles = candlestickSeries.data();
-			const prevCandle = candles[candles.length - 2];
-			const high2low = prevCandle.high - prevCandle.low;
-
-			let payload;
-			if (prevCandle.close < prevCandle.open) {
-				payload = {
-					symbol: symbol,
-					price: prevCandle.close + 0.05,
-					trigger_price: prevCandle.close,
-					order_type: "SL",
-					exit_price: prevCandle.close - high2low,
-					cost_price: prevCandle.close + 0.05,
-					tag: "l2",
-				};
-			} else {
-				// bullish candle
-				payload = {
-					symbol: symbol,
-					price: prevCandle.open + 0.05,
-					trigger_price: prevCandle.open,
-					order_type: "SL",
-					exit_price: prevCandle.open - high2low,
-					cost_price: prevCandle.open + 0.05,
-					tag: "l2",
-				};
-			}
-			tradeLogic("/api/trade/buy", payload);
 		};
 
 		document.getElementById(buttonIds.high).onclick = async () => {
@@ -216,8 +154,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			document.getElementById("chart-title-CE").textContent = `${ceSymbol}`;
 			setupChart("chart-CE", ceSymbol, {
-				l2: "l2-btn-CE",
-				h2: "h2-btn-CE",
 				high: "buy-btn-CE",
 				mktbuy: "mkt-btn-CE",
 				reset: "sell-btn-CE",
@@ -225,8 +161,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			document.getElementById("chart-title-PE").textContent = `${peSymbol}`;
 			setupChart("chart-PE", peSymbol, {
-				l2: "l2-btn-PE",
-				h2: "h2-btn-PE",
 				high: "buy-btn-PE",
 				mktbuy: "mkt-btn-PE",
 				reset: "sell-btn-PE",
