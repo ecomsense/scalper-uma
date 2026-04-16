@@ -7,6 +7,8 @@ from src.wserver import Wserver
 
 class Strategy:
 
+    PREM_SEARCH_DEPTH = 50
+
     def __init__(self, user_settings: Dict[str, any], ltp_of_underlying: float) -> None:
         self.tokens_for_all_trading_symbols: Dict[str, str] = {}
         self.sym = Symbol(
@@ -17,7 +19,7 @@ class Strategy:
         )
         user_settings["atm"] = self.sym.get_atm(ltp_of_underlying)
         self.tokens_for_all_trading_symbols.update(
-            self.sym.get_tokens(user_settings["atm"])
+            self.sym.get_tokens(user_settings["atm"], depth=self.PREM_SEARCH_DEPTH)
         )
         self.user_settings = user_settings
 
