@@ -449,9 +449,9 @@ async def get_chart_settings() -> JSONResponse:
         base = O_SETG["trade"]["base"]
         s = O_SETG[base]
         return JSONResponse(content={
-            "ma_1": s.get("ma_1", 20),
-            "ma_2": s.get("ma_2", 50),
-            "ma_3": s.get("ma_3", 100),
+            "ma_1": s.get("ma_1"),
+            "ma_2": s.get("ma_2"),
+            "ma_3": s.get("ma_3"),
             "candles": s.get("candles", 200),
         })
     except Exception as e:
