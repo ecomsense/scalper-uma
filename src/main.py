@@ -112,27 +112,43 @@ async def lifespan(app: FastAPI):
         api = Helper.api()
         user_settings = get_settings()
 
-        # Subscribe to underlying index first via websocket to get LTP
+        # Get ATM from index LTP using websocket
         index_token = f"{user_settings['exchange']}|{user_settings['token']}"
-        ws_for_index = Wserver(api, [index_token])
+        ws = Wserver(api, [index_token])
 
-        # Wait for websocket to get LTP
-        while not ws_for_index.ltp:
+        # Wait for websocket to get LTP (max 30 seconds)
+        max_wait = 60
+        waited = 0
+        while not ws.ltp and waited < max_wait:
             await asyncio.sleep(0.5)
+            waited += 1
 
-        ltp_of_underlying = list(ws_for_index.ltp.values())[0]
+        if not ws.ltp:
+            logging.error("Failed to get LTP from websocket")
+            return
+
+        ltp_of_underlying = list(ws.ltp.values())[0]
         logging.info(f"Got LTP for {user_settings['base']}: {ltp_of_underlying}")
 
         # Now create strategy and subscribe to options
         sgy = Strategy(user_settings, ltp_of_underlying)
         tokens = list(sgy.tokens_for_all_trading_symbols.keys())
 
-        # Subscribe to both index and options
-        all_tokens = [index_token] + tokens
-        ws = Wserver(api, all_tokens)
+        if not tokens:
+            logging.warning("No tokens found for options")
+            return
 
-        while not ws.ltp or len(ws.ltp) < len(all_tokens):
+        # Subscribe to options on existing websocket
+        all_tokens = tokens + [index_token]
+        ws.subscribe(all_tokens)
+
+        # Wait for options LTP
+        waited = 0
+        while len(ws.ltp) < len(all_tokens) and waited < max_wait:
             await asyncio.sleep(0.5)
+            waited += 1
+
+        logging.info(f"Got quotes for {len(ws.ltp)} symbols")
 
         symbol_nearest_to_premium: List[str] = []
         for ce_or_pe in ["CE", "PE"]:
