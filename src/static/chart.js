@@ -31,16 +31,39 @@ window.addEventListener("DOMContentLoaded", () => {
 		wickDownColor: "#f44336",
 	};
 
-	const maColors = { ma1: "#FFA500", ma2: "#00FF00", ma3: "#FF00FF" };
+	const maColors = ["#FFA500", "#00FF00", "#FF00FF", "#00FFFF", "#FF00AA", "#FFFF00"];
 
-	function calculateMA(data, period) {
+	function calculateSMA(data, period, priceField) {
 		const result = [];
 		for (let i = period - 1; i < data.length; i++) {
 			let sum = 0;
 			for (let j = 0; j < period; j++) {
-				sum += data[i - j].close;
+				sum += data[i - j][priceField];
 			}
 			result.push({ time: data[i].time, value: sum / period });
+		}
+		return result;
+	}
+
+	function calculateEMA(data, period, priceField) {
+		const result = [];
+		const multiplier = 2 / (period + 1);
+		let ema = null;
+		
+		for (let i = 0; i < data.length; i++) {
+			const price = data[i][priceField];
+			if (i < period - 1) {
+				continue;
+			} else if (i === period - 1) {
+				let sum = 0;
+				for (let j = 0; j < period; j++) {
+					sum += data[j][priceField];
+				}
+				ema = sum / period;
+			} else {
+				ema = (price - ema) * multiplier + ema;
+			}
+			result.push({ time: data[i].time, value: ema });
 		}
 		return result;
 	}
@@ -52,30 +75,31 @@ window.addEventListener("DOMContentLoaded", () => {
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
-		let ma1Series = null, ma2Series = null, ma3Series = null;
+		const maConfigs = settings && settings.ma ? settings.ma : [];
+		const maSeries = [];
 		
-		if (settings && settings.ma_1) {
-			ma1Series = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
-		}
-		if (settings && settings.ma_2) {
-			ma2Series = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
-		}
-		if (settings && settings.ma_3) {
-			ma3Series = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
-		}
+		maConfigs.forEach((config, index) => {
+			const color = maColors[index % maColors.length];
+			const series = chart.addLineSeries({ color: color, lineWidth: 2 });
+			maSeries.push({ series, config });
+		});
 
 		let candleData = [];
 
 		function updateMAs() {
-			if (ma1Series && settings && candleData.length >= settings.ma_1) {
-				ma1Series.setData(calculateMA(candleData, settings.ma_1));
-			}
-			if (ma2Series && settings && candleData.length >= settings.ma_2) {
-				ma2Series.setData(calculateMA(candleData, settings.ma_2));
-			}
-			if (ma3Series && settings && candleData.length >= settings.ma_3) {
-				ma3Series.setData(calculateMA(candleData, settings.ma_3));
-			}
+			maSeries.forEach(({ series, config }) => {
+				const period = config.period;
+				const priceField = config.price || 'close';
+				const type = config.type || 'sma';
+				
+				if (candleData.length < period) return;
+				
+				const data = type === 'ema' 
+					? calculateEMA(candleData, period, priceField)
+					: calculateSMA(candleData, period, priceField);
+				
+				series.setData(data);
+			});
 		}
 
 		function loadHistorical() {
@@ -149,11 +173,9 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 
-	// Fetch settings first, then symbols, then setup charts
 	fetch("/api/chart/settings")
 		.then(r => r.json())
 		.then(settings => {
-			console.log('Chart settings loaded:', settings);
 			return fetch("/api/symbols").then(r => r.json()).then(symbols => ({ settings, symbols }));
 		})
 		.then(({ settings, symbols }) => {
