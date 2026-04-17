@@ -7,9 +7,19 @@ window.addEventListener("DOMContentLoaded", () => {
 	const chartOptions = {
 		layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
 		grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
+		localization: {
+			timeFormatter: (time) => {
+				const date = new Date(time * 1000);
+				return date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false });
+			},
+		},
 		timeScale: { 
 			timeVisible: true, 
 			secondsVisible: false,
+			tickMarkFormatter: (time) => {
+				const date = new Date(time * 1000);
+				return date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false });
+			},
 		},
 	};
 
@@ -40,7 +50,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		if (!chartContainer) return;
 
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
-		chart.timeScale().applyOptions({ timeZone: "Asia/Kolkata" });
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
 		let ma1Series = null, ma2Series = null, ma3Series = null;
