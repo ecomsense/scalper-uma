@@ -4,10 +4,7 @@ log:
 program:
   start: "9:15"
   stop: "15:15"
-trade:
-  start: "9:30"
-  stop: "15:00"
-  base: NIFTY
+base: NIFTY
 ma:
   - type: ema
     period: 3
@@ -16,13 +13,13 @@ ma:
     period: 9
     price: close
 NIFTY:
-  base: NIFTY
+  symbol: NIFTY
   option_exchange: NFO
   lots: 1
   profit: 1
   premium: 100
 BANKNIFTY:
-  base: BANKNIFTY
+  symbol: BANKNIFTY
   option_exchange: NFO
   lots: 1
   profit: 1
