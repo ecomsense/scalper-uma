@@ -10,7 +10,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		timeScale: { 
 			timeVisible: true, 
 			secondsVisible: false,
-			timeZone: "Asia/Kolkata",
 		},
 	};
 
@@ -41,6 +40,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		if (!chartContainer) return;
 
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
+		chart.timeScale().applyOptions({ timeZone: "Asia/Kolkata" });
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
 		let ma1Series = null, ma2Series = null, ma3Series = null;
