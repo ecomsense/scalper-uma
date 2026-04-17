@@ -334,17 +334,23 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
         
         print(f"[SSE] Subscribed to {symbol} -> {token_symbol}")
         
+        waited = 0
+        while token_symbol not in ws.ltp and waited < 60:
+            await asyncio.sleep(0.5)
+            waited += 1
+            print(f"[SSE] Waiting for price {token_symbol}, waited={waited}, ltp keys={list(ws.ltp.keys())[:5]}")
+        
+        if token_symbol not in ws.ltp:
+            print(f"[SSE] Timed out waiting for {token_symbol}")
+            return
+            
+        print(f"[SSE] Got initial price for {token_symbol}: {ws.ltp[token_symbol]}")
+        
         while True:
             await asyncio.sleep(0.5)
-            print(f"[SSE] Loop tick for {symbol}")
 
             try:
                 price = ws.ltp.get(token_symbol)
-                if price is None:
-                    logging.warning(f"[SSE] No price for {token_symbol}")
-                    continue
-                    
-                logging.info(f"[SSE] {symbol} price={price}, ltp={ws.ltp}")
                     
                 ist_now = datetime.now(IST)
                 current_timestamp_ist = int(ist_now.timestamp())
@@ -374,32 +380,6 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
             except Exception as e:
                 print(f"[SSE] Error: {e}")
                 continue
-
-            ist_now = datetime.now(IST)
-            current_timestamp_ist = int(ist_now.timestamp())
-
-            candle_time = current_timestamp_ist - (
-                current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
-            )
-
-            if last_sent_candle is None or candle_time > last_sent_candle["time"]:
-                if last_sent_candle is not None:
-                    yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
-
-                last_sent_candle = {
-                    "open": price,
-                    "high": price,
-                    "low": price,
-                    "close": price,
-                    "volume": 0,
-                    "time": candle_time,
-                }
-            else:
-                last_sent_candle["high"] = max(last_sent_candle["high"], price)
-                last_sent_candle["low"] = min(last_sent_candle["low"], price)
-                last_sent_candle["close"] = price
-
-            yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
     return EventSourceResponse(event_generator())
 
