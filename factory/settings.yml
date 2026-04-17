@@ -8,8 +8,6 @@ trade:
   start: "9:30"
   stop: "15:00"
   base: NIFTY
-candles:
-  history: 200
 ma:
   - type: ema
     period: 3

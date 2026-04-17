@@ -107,9 +107,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				.then(r => r.json())
 				.then(result => {
 					if (result.data && result.data.length > 0) {
-						const reversed = result.data.reverse();
-						const keepCount = (settings && settings.history) ? settings.history : 200;
-						candleData = reversed.slice(-keepCount);
+						candleData = result.data.reverse();
 						candleSeries.setData(candleData);
 						updateMAs();
 					}

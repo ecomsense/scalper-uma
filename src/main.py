@@ -226,19 +226,13 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
 
-        settings = get_settings()
-        candles_count = settings.get("candles", {}).get("history", 200)
-
         historical_data = Helper.historical(exchange, token)
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
 
-        df = pd.DataFrame(historical_data)
-        df = df.tail(candles_count)
-
         candlesticks = []
-        for _, row in df.iterrows():
+        for row in historical_data:
             candlesticks.append({
                 "time": int(row["ssboe"]) if "ssboe" in row else int(row["ut"]),
                 "open": float(row["into"]) if "into" in row else float(row["open"]),
@@ -472,13 +466,11 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
 @app.get("/api/chart/settings")
 async def get_chart_settings() -> JSONResponse:
     """
-    Get chart settings (candles history, MA configs) from settings.yml.
+    Get chart settings (MA configs) from settings.yml.
     """
     try:
-        c = O_SETG.get("candles", {})
         ma = O_SETG.get("ma", [])
         return JSONResponse(content={
-            "history": c.get("history", 200),
             "ma": ma,
         })
     except Exception as e:
