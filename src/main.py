@@ -341,8 +341,10 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
             try:
                 price = ws.ltp.get(token_symbol)
                 if price is None:
-                    print(f"[SSE] No price for {token_symbol}, ltp sample: {dict(list(ws.ltp.items())[:5])}")
+                    logging.warning(f"[SSE] No price for {token_symbol}")
                     continue
+                    
+                logging.info(f"[SSE] {symbol} price={price}, ltp={ws.ltp}")
                     
                 ist_now = datetime.now(IST)
                 current_timestamp_ist = int(ist_now.timestamp())
