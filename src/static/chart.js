@@ -97,21 +97,18 @@ window.addEventListener("DOMContentLoaded", () => {
 			const es = new EventSource(`/sse/candlesticks/${symbol}`);
 			es.addEventListener("live_update", (e) => {
 				const candle = JSON.parse(e.data);
-				console.log('[Chart] SSE received:', candle);
-				if (candleData.length === 0) {
-					console.log('[Chart] No candleData, ignoring');
-					return;
-				}
+				if (candleData.length === 0) return;
 				const lastCandle = candleData[candleData.length - 1];
-				console.log('[Chart] lastCandle:', lastCandle, 'time match:', candle.time === lastCandle.time);
+				
 				if (candle.time === lastCandle.time) {
 					lastCandle.high = candle.high;
 					lastCandle.low = candle.low;
 					lastCandle.close = candle.close;
-					console.log('[Chart] Updating candle to:', lastCandle);
 					candleSeries.update(lastCandle);
-				} else {
-					console.log('[Chart] Time mismatch - SSE time:', candle.time, 'chart time:', lastCandle.time);
+				} else if (candle.time > lastCandle.time) {
+					candleData.push(candle);
+					candleSeries.update(candle);
+					updateMAs();
 				}
 			});
 			es.onerror = () => console.log('SSE disconnected');
