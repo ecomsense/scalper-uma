@@ -2,9 +2,12 @@ from __future__ import annotations
 from traceback import print_exc
 from importlib import import_module
 from typing import Dict, List, Optional, Any
+from datetime import datetime, timedelta, timezone
 import time
 from src.constants import O_CNFG, logging
 from stock_brokers.flattrade.api_helper import post_order_hook
+
+IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def login() -> Any:
@@ -68,10 +71,14 @@ class Helper:
 
     @classmethod
     def historical(
-        cls, exchange: str, token: str, interval: int = 1
+        cls, exchange: str, token: str, interval: int = 1, days: int = 3
     ) -> List[Dict[str, Any]]:
         try:
-            resp = cls._api.broker.get_time_price_series(exchange=exchange, token=token)
+            to = int(datetime.now(IST).timestamp())
+            fm = int((datetime.now(IST) - timedelta(days=days)).timestamp())
+            resp = cls._api.broker.get_time_price_series(
+                exchange=exchange, token=token, starttime=fm, endtime=to, interval=interval
+            )
             return resp
         except Exception as e:
             logging.error(f"{e} in historical")

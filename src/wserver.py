@@ -30,11 +30,7 @@ class Wserver:
     def event_handler_quote_update(self, message: Dict[str, Any]) -> None:
         val = message.get("lp", False)
         if val:
-            key = message["e"] + "|" + message["tk"]
-            self.ltp[key] = float(val)
-            print(f"[WS] {key} = {val}")
-        else:
-            print(f"[WS] No lp in message: {message}")
+            self.ltp[message["e"] + "|" + message["tk"]] = float(val)
 
     def subscribe(self, tokens: List[str]) -> None:
         if self.socket_opened:
