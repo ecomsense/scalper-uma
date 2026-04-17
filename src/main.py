@@ -332,10 +332,11 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
             print(f"[SSE] Symbol {symbol} not found in tokens_nearest: {token_symbols}")
             return
         
-        print(f"[SSE] Subscribed to {symbol} -> {token_symbol}, ws.ltp keys: {list(ws.ltp.keys())}")
+        print(f"[SSE] Subscribed to {symbol} -> {token_symbol}")
         
         while True:
             await asyncio.sleep(0.5)
+            print(f"[SSE] Loop tick for {symbol}")
 
             try:
                 price = ws.ltp.get(token_symbol)
