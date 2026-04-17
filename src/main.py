@@ -86,19 +86,7 @@ def aggregate_ticks_to_candlesticks(
 def get_settings() -> Dict[str, Any]:
     base = O_SETG["trade"]["base"]
     settings = O_SETG[base] | dct_sym[base]
-    
-    if "lots" in settings and "quantity" not in settings:
-        from src.symbol import Symbol
-        sym = Symbol(
-            exchange=settings["option_exchange"],
-            base=base,
-            symbol=base,
-            expiry=settings.get("expiry"),
-        )
-        lot_size = sym.get_lot_size()
-        settings["quantity"] = settings["lots"] * lot_size
-        logging.info(f"Calculated quantity: {settings['lots']} lots * {lot_size} = {settings['quantity']}")
-    
+    settings["candles"] = O_SETG.get("candles", {})
     return settings
 
 
@@ -235,7 +223,8 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
 
-        candles_count = O_SETG.get("candles", {}).get("history", 200)
+        settings = get_settings()
+        candles_count = settings.get("candles", {}).get("history", 200)
 
         historical_data = Helper.historical(exchange, token)
 
@@ -453,23 +442,6 @@ async def get_settings_file() -> JSONResponse:
         return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
 
 
-@app.get("/api/chart/settings")
-async def get_chart_settings() -> JSONResponse:
-    """
-    Get chart settings (MA periods, candles count) from settings.yml.
-    """
-    try:
-        c = O_SETG.get("candles", {})
-        return JSONResponse(content={
-            "ma_1": c.get("ma_1"),
-            "ma_2": c.get("ma_2"),
-            "ma_3": c.get("ma_3"),
-            "history": c.get("history", 200),
-        })
-    except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-
 @app.post("/api/admin/settings")
 async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
     """
@@ -486,6 +458,25 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
     except Exception as e:
         return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
+
+
+@app.get("/api/chart/settings")
+async def get_chart_settings() -> JSONResponse:
+    """
+    Get chart settings (candles history, MA periods) from settings.yml.
+    """
+    try:
+        base = O_SETG["trade"]["base"]
+        s = O_SETG[base]
+        c = O_SETG.get("candles", {})
+        return JSONResponse(content={
+            "history": c.get("history", 200),
+            "ma_1": s.get("ma_1"),
+            "ma_2": s.get("ma_2"),
+            "ma_3": s.get("ma_3"),
+        })
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.get("/api/admin/status")

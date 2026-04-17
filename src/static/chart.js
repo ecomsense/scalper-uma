@@ -24,8 +24,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	const maColors = { ma1: "#FFA500", ma2: "#00FF00", ma3: "#FF00FF" };
 
-	let chartSettings = null;
-
 	function calculateMA(data, period) {
 		const result = [];
 		for (let i = period - 1; i < data.length; i++) {
@@ -40,37 +38,33 @@ window.addEventListener("DOMContentLoaded", () => {
 
 	function setupChart(containerId, symbol, buttonIds, settings) {
 		const chartContainer = document.getElementById(containerId);
-		if (!chartContainer) {
-			console.error(`Chart container '${containerId}' not found`);
-			return;
-		}
+		if (!chartContainer) return;
 
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
 		let ma1Series = null, ma2Series = null, ma3Series = null;
 		
-		if (settings.ma_1) {
+		if (settings && settings.ma_1) {
 			ma1Series = chart.addLineSeries({ color: maColors.ma1, lineWidth: 2 });
 		}
-		if (settings.ma_2) {
+		if (settings && settings.ma_2) {
 			ma2Series = chart.addLineSeries({ color: maColors.ma2, lineWidth: 2 });
 		}
-		if (settings.ma_3) {
+		if (settings && settings.ma_3) {
 			ma3Series = chart.addLineSeries({ color: maColors.ma3, lineWidth: 2 });
 		}
 
 		let candleData = [];
-		let lastCandleTime = 0;
 
 		function updateMAs() {
-			if (ma1Series && candleData.length >= settings.ma_1) {
+			if (ma1Series && settings && candleData.length >= settings.ma_1) {
 				ma1Series.setData(calculateMA(candleData, settings.ma_1));
 			}
-			if (ma2Series && candleData.length >= settings.ma_2) {
+			if (ma2Series && settings && candleData.length >= settings.ma_2) {
 				ma2Series.setData(calculateMA(candleData, settings.ma_2));
 			}
-			if (ma3Series && candleData.length >= settings.ma_3) {
+			if (ma3Series && settings && candleData.length >= settings.ma_3) {
 				ma3Series.setData(calculateMA(candleData, settings.ma_3));
 			}
 		}
@@ -81,26 +75,19 @@ window.addEventListener("DOMContentLoaded", () => {
 				.then(result => {
 					if (result.data && result.data.length > 0) {
 						const reversed = result.data.reverse();
-						const keepCount = settings.history || 200;
+						const keepCount = (settings && settings.history) ? settings.history : 200;
 						candleData = reversed.slice(-keepCount);
 						candleSeries.setData(candleData);
-						if (candleData.length > 0) {
-							lastCandleTime = candleData[candleData.length - 1].time;
-						}
 						updateMAs();
 					}
 				})
-				.catch(e => {
-					console.error('Historical error:', e);
-				});
+				.catch(e => console.error('Historical error:', e));
 		}
 
 		function startLiveUpdates() {
 			const es = new EventSource(`/sse/candlesticks/${symbol}`);
 			es.addEventListener("live_update", (e) => {
 				const d = JSON.parse(e.data);
-				
-				// Update last candle if same time, otherwise ignore
 				if (candleData.length > 0 && d.time === candleData[candleData.length - 1].time) {
 					candleData[candleData.length - 1] = d;
 					candleSeries.update(d);
@@ -150,15 +137,14 @@ window.addEventListener("DOMContentLoaded", () => {
 	fetch("/api/chart/settings")
 		.then(r => r.json())
 		.then(settings => {
-			chartSettings = settings;
-			return fetch("/api/symbols");
+			console.log('Chart settings loaded:', settings);
+			return fetch("/api/symbols").then(r => r.json()).then(symbols => ({ settings, symbols }));
 		})
-		.then(r => r.json())
-		.then(symbols => {
+		.then(({ settings, symbols }) => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 			document.getElementById("chart-title-CE").textContent = symbols[0];
-			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, chartSettings);
+			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
 			document.getElementById("chart-title-PE").textContent = symbols[1];
-			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, chartSettings);
+			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
 		});
 });
