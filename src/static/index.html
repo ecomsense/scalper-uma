@@ -241,10 +241,6 @@
           if (data.status === 'success') {
             document.getElementById('settingsMessage').innerHTML = 
               '<span style="color: green;">' + data.message + '</span>';
-            setTimeout(() => {
-              closeSettingsModal();
-              window.location.reload();
-            }, 2000);
           } else {
             document.getElementById('settingsMessage').innerHTML = 
               '<span style="color: red;">Error: ' + data.message + '</span>';
