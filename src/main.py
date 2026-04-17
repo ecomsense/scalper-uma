@@ -400,7 +400,7 @@ async def restart_server() -> JSONResponse:
     Restart the uvicorn server via systemd.
     """
     try:
-        subprocess.run("/usr/bin/systemctl restart uma-scalper.service", shell=True, check=True)
+        subprocess.run("sudo /usr/bin/systemctl restart uma-scalper.service", shell=True, check=True)
         return JSONResponse(content={"message": "Server restarting...", "status": "success"})
     except subprocess.CalledProcessError as e:
         return JSONResponse(content={"message": f"Failed to restart: {e}", "status": "error"}, status_code=500)
@@ -455,9 +455,9 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         with open(settings_path, "w") as f:
             f.write(content)
         logging.info("Settings saved, restarting service...")
-        subprocess.run("nohup /usr/bin/systemctl stop uma-scalper.service > /dev/null 2>&1 &", shell=True)
+        subprocess.run("nohup sudo /usr/bin/systemctl stop uma-scalper.service > /dev/null 2>&1 &", shell=True)
         time.sleep(2)
-        subprocess.run("nohup /usr/bin/systemctl start uma-scalper.service > /dev/null 2>&1 &", shell=True)
+        subprocess.run("nohup sudo /usr/bin/systemctl start uma-scalper.service > /dev/null 2>&1 &", shell=True)
         logging.info("Service restart triggered")
         return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
     except Exception as e:
