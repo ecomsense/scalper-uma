@@ -455,9 +455,9 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         with open(settings_path, "w") as f:
             f.write(content)
         logging.info("Settings saved, restarting service...")
-        subprocess.run(["sudo", "systemctl", "stop", "uma-scalper.service"])
+        subprocess.run(["/usr/bin/sudo", "systemctl", "stop", "uma-scalper.service"])
         time.sleep(2)
-        subprocess.run(["sudo", "systemctl", "start", "uma-scalper.service"])
+        subprocess.run(["/usr/bin/sudo", "systemctl", "start", "uma-scalper.service"])
         logging.info("Service restart triggered")
         return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
     except Exception as e:
