@@ -52,14 +52,21 @@ window.addEventListener("DOMContentLoaded", () => {
 		}
 
 		function updateMAs() {
+			console.log('updateMAs called, candleData length:', candleData.length);
 			if (maSeries.ma1 && candleData.length >= chartSettings.ma_1) {
-				maSeries.ma1.setData(calculateMA(candleData, chartSettings.ma_1));
+				const ma1Data = calculateMA(candleData, chartSettings.ma_1);
+				console.log('Setting MA1 with', ma1Data.length, 'points');
+				maSeries.ma1.setData(ma1Data);
 			}
 			if (maSeries.ma2 && candleData.length >= chartSettings.ma_2) {
-				maSeries.ma2.setData(calculateMA(candleData, chartSettings.ma_2));
+				const ma2Data = calculateMA(candleData, chartSettings.ma_2);
+				console.log('Setting MA2 with', ma2Data.length, 'points');
+				maSeries.ma2.setData(ma2Data);
 			}
 			if (maSeries.ma3 && candleData.length >= chartSettings.ma_3) {
-				maSeries.ma3.setData(calculateMA(candleData, chartSettings.ma_3));
+				const ma3Data = calculateMA(candleData, chartSettings.ma_3);
+				console.log('Setting MA3 with', ma3Data.length, 'points');
+				maSeries.ma3.setData(ma3Data);
 			}
 		}
 
@@ -67,9 +74,11 @@ window.addEventListener("DOMContentLoaded", () => {
 			return fetch(`/api/historical/${symbol}`)
 				.then(r => r.json())
 				.then(result => {
+					console.log('Historical loaded for', symbol, ':', result.data ? result.data.length : 0, 'candles');
 					if (result.data && result.data.length > 0) {
 						const allData = result.data.reverse();
 						candleData = allData.slice(-chartSettings.history);
+						console.log('Setting', candleData.length, 'candles, chartSettings:', chartSettings);
 						candleSeries.setData(candleData);
 						updateMAs();
 					}
