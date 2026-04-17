@@ -46,6 +46,7 @@ CANDLESTICK_TIMEFRAME_SECONDS: int = 60
 CANDLESTICK_TIMEFRAME_STR: str = "1min"
 
 IST_OFFSET: timedelta = timedelta(hours=5, minutes=30)
+IST = timezone(IST_OFFSET)
 
 
 # --- Helper Functions for Candlestick Aggregation ---
@@ -335,7 +336,7 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
             except (KeyError, IndexError):
                 continue
 
-            ist_now = datetime.now(timezone.utc) + IST_OFFSET
+            ist_now = datetime.now(IST)
             current_timestamp_ist = int(ist_now.timestamp())
 
             candle_time = current_timestamp_ist - (
