@@ -224,7 +224,10 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
 
-        historical_data = Helper.historical(exchange, token, days=3)
+        settings = get_settings()
+        candles_count = settings.get("candles", {}).get("history", 200)
+
+        historical_data = Helper.historical(exchange, token)
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
