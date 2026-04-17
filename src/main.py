@@ -42,8 +42,8 @@ def verify_api_key(x_api_key: str = Header(...)) -> str:
 
 IST = tz("Asia/Kolkata")
 
-CANDLESTICK_TIMEFRAME_SECONDS: int = 60
-CANDLESTICK_TIMEFRAME_STR: str = "1min"
+CANDLESTICK_TIMEFRAME_SECONDS: int = 1
+CANDLESTICK_TIMEFRAME_STR: str = "1s"
 
 IST_OFFSET: timedelta = timedelta(hours=5, minutes=30)
 IST = timezone(IST_OFFSET)
