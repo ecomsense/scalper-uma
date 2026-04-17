@@ -86,8 +86,7 @@ def aggregate_ticks_to_candlesticks(
 @lru_cache(maxsize=1)
 def get_settings() -> Dict[str, Any]:
     base = O_SETG["trade"]["base"]
-    settings = O_SETG[base] | dct_sym[base]
-    settings["candles"] = O_SETG.get("candles", {})
+    settings = O_SETG["base"][base] | dct_sym[base]
     return settings
 
 
