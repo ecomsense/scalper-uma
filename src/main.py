@@ -319,7 +319,10 @@ async def reset(_: str = Depends(verify_api_key)):
 async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
+    last_sent_candle: Optional[Dict[str, Any]] = None
+
     async def event_generator():
+        nonlocal last_sent_candle
         while True:
             await asyncio.sleep(0.5)
 
@@ -334,9 +337,29 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
 
             ist_now = datetime.now(IST)
             current_timestamp_ist = int(ist_now.timestamp())
-            candle_time = current_timestamp_ist - (current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS)
 
-            yield {"event": "tick", "data": json.dumps({"price": price, "time": candle_time})}
+            candle_time = current_timestamp_ist - (
+                current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
+            )
+
+            if last_sent_candle is None or candle_time > last_sent_candle["time"]:
+                if last_sent_candle is not None:
+                    yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
+
+                last_sent_candle = {
+                    "open": price,
+                    "high": price,
+                    "low": price,
+                    "close": price,
+                    "volume": 0,
+                    "time": candle_time,
+                }
+            else:
+                last_sent_candle["high"] = max(last_sent_candle["high"], price)
+                last_sent_candle["low"] = min(last_sent_candle["low"], price)
+                last_sent_candle["close"] = price
+
+            yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
     return EventSourceResponse(event_generator())
 
