@@ -167,6 +167,7 @@ async def lifespan(app: FastAPI):
         app.state.tokens_nearest = tokens_nearest
         app.state.ws = ws
         app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
+        logging.debug(f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}")
 
         runner = TickRunner(ws, tokens_nearest)
         task = asyncio.create_task(runner.run())
