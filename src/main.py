@@ -131,7 +131,7 @@ async def lifespan(app: FastAPI):
             return
 
         ltp_of_underlying = list(ws.ltp.values())[0]
-        logging.info(f"Got LTP for {user_settings['base']}: {ltp_of_underlying}")
+        logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
 
         # Now create strategy and subscribe to options
         sgy = Strategy(user_settings, ltp_of_underlying)

@@ -13,16 +13,16 @@ class Strategy:
         if not expiry:
             sym_tmp = Symbol(
                 exchange=user_settings["option_exchange"],
-                base=user_settings["base"],
-                symbol=user_settings["base"],
+                base=user_settings["symbol"],
+                symbol=user_settings["symbol"],
             )
             expiry = sym_tmp.get_next_expiry()
             user_settings["expiry"] = expiry
         
         self.sym = Symbol(
             exchange=user_settings["option_exchange"],
-            base=user_settings["base"],
-            symbol=user_settings["base"],
+            base=user_settings["symbol"],
+            symbol=user_settings["symbol"],
             expiry=expiry,
         )
         user_settings["atm"] = self.sym.get_atm(ltp_of_underlying)
