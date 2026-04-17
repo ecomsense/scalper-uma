@@ -255,7 +255,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
 
 @app.post("/api/trade/buy")
-async def place_buy_order(payload: Dict[str, Any] = Body(...), _: str = Depends(verify_api_key)) -> JSONResponse:
+async def place_buy_order(request: Request, payload: Dict[str, Any] = Body(...), _: str = Depends(verify_api_key)) -> JSONResponse:
     logging.debug(f"Order request received: {payload}")
     logging.debug(f"app.state.quantity: {request.app.state.quantity}")
     nullify()
