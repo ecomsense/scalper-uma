@@ -95,12 +95,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		function startLiveUpdates() {
 			const es = new EventSource(`/sse/candlesticks/${symbol}`);
-			es.addEventListener("live_update", (e) => {
-				const d = JSON.parse(e.data);
-				if (candleData.length > 0 && d.time === candleData[candleData.length - 1].time) {
-					candleData[candleData.length - 1] = d;
-					candleSeries.update(d);
-					updateMAs();
+			es.addEventListener("tick", (e) => {
+				const tick = JSON.parse(e.data);
+				const price = tick.price;
+				const tickTime = tick.time;
+				
+				if (candleData.length === 0) return;
+				
+				const lastCandle = candleData[candleData.length - 1];
+				if (tickTime === lastCandle.time) {
+					lastCandle.high = Math.max(lastCandle.high, price);
+					lastCandle.low = Math.min(lastCandle.low, price);
+					lastCandle.close = price;
+					candleSeries.update(lastCandle);
 				}
 			});
 			es.onerror = () => console.log('SSE disconnected');
