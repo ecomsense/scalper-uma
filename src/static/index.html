@@ -207,7 +207,6 @@
         <div style="margin-top: 10px; display: flex; gap: 10px;">
           <button class="green-btn" onclick="saveSettings()">Save</button>
           <button class="blue-btn" onclick="loadSettings()">Load Current</button>
-          <button class="red-btn" onclick="closeSettingsModal()">Cancel</button>
         </div>
         <div id="settingsMessage" style="margin-top: 10px;"></div>
       </div>
@@ -242,6 +241,10 @@
           if (data.status === 'success') {
             document.getElementById('settingsMessage').innerHTML = 
               '<span style="color: green;">' + data.message + '</span>';
+            setTimeout(() => {
+              closeSettingsModal();
+              window.location.reload();
+            }, 2000);
           } else {
             document.getElementById('settingsMessage').innerHTML = 
               '<span style="color: red;">Error: ' + data.message + '</span>';
