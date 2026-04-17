@@ -111,7 +111,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					updateMAs();
 				}
 			});
-			es.onerror = () => console.log('SSE disconnected');
 		}
 
 		loadHistorical().then(() => startLiveUpdates());

@@ -224,10 +224,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
 
-        settings = get_settings()
-        candles_count = settings.get("candles", {}).get("history", 200)
-
-        historical_data = Helper.historical(exchange, token)
+        historical_data = Helper.historical(exchange, token, days=3)
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
@@ -329,28 +326,23 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
         try:
             token_symbol = [k for k, v in token_symbols.items() if v == symbol][0]
         except (KeyError, IndexError):
-            print(f"[SSE] Symbol {symbol} not found in tokens_nearest: {token_symbols}")
             return
-        
-        print(f"[SSE] Subscribed to {symbol} -> {token_symbol}")
         
         waited = 0
         while token_symbol not in ws.ltp and waited < 60:
             await asyncio.sleep(0.5)
             waited += 1
-            print(f"[SSE] Waiting for price {token_symbol}, waited={waited}, ltp keys={list(ws.ltp.keys())[:5]}")
         
         if token_symbol not in ws.ltp:
-            print(f"[SSE] Timed out waiting for {token_symbol}")
             return
-            
-        print(f"[SSE] Got initial price for {token_symbol}: {ws.ltp[token_symbol]}")
         
         while True:
             await asyncio.sleep(0.5)
 
             try:
                 price = ws.ltp.get(token_symbol)
+                if price is None:
+                    continue
                     
                 ist_now = datetime.now(IST)
                 current_timestamp_ist = int(ist_now.timestamp())
@@ -358,7 +350,6 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
 
                 if last_sent_candle is None or candle_time > last_sent_candle["time"]:
                     if last_sent_candle is not None:
-                        print(f"[SSE] Sending completed candle: {last_sent_candle}")
                         yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
                     last_sent_candle = {
@@ -374,11 +365,9 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
                     last_sent_candle["low"] = min(last_sent_candle["low"], price)
                     last_sent_candle["close"] = price
 
-                print(f"[SSE] Sending live candle: O={last_sent_candle['open']} H={last_sent_candle['high']} L={last_sent_candle['low']} C={last_sent_candle['close']}")
                 yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
                 
             except Exception as e:
-                print(f"[SSE] Error: {e}")
                 continue
 
     return EventSourceResponse(event_generator())
