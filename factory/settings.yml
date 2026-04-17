@@ -10,21 +10,22 @@ trade:
   base: NIFTY
 candles:
   history: 200
+ma:
+  - type: ema
+    period: 3
+    price: low
+  - type: sma
+    period: 9
+    price: close
 NIFTY:
   base: NIFTY
   option_exchange: NFO
   lots: 1
   profit: 1
   premium: 100
-  ma_1: 20
-  ma_2: 50
-  ma_3: 100
 BANKNIFTY:
   base: BANKNIFTY
   option_exchange: NFO
   lots: 1
   profit: 1
   premium: 100
-  ma_1: 20
-  ma_2: 50
-  ma_3: 100

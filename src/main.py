@@ -472,17 +472,14 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
 @app.get("/api/chart/settings")
 async def get_chart_settings() -> JSONResponse:
     """
-    Get chart settings (candles history, MA periods) from settings.yml.
+    Get chart settings (candles history, MA configs) from settings.yml.
     """
     try:
-        base = O_SETG["trade"]["base"]
-        s = O_SETG[base]
         c = O_SETG.get("candles", {})
+        ma = O_SETG.get("ma", [])
         return JSONResponse(content={
             "history": c.get("history", 200),
-            "ma_1": s.get("ma_1"),
-            "ma_2": s.get("ma_2"),
-            "ma_3": s.get("ma_3"),
+            "ma": ma,
         })
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
