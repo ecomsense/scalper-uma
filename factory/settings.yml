@@ -15,16 +15,15 @@ ma:
   - type: sma
     period: 9
     price: close
-base:
-  NIFTY:
-    base: NIFTY
-    option_exchange: NFO
-    lots: 1
-    profit: 1
-    premium: 100
-  BANKNIFTY:
-    base: BANKNIFTY
-    option_exchange: NFO
-    lots: 1
-    profit: 1
-    premium: 100
+NIFTY:
+  base: NIFTY
+  option_exchange: NFO
+  lots: 1
+  profit: 1
+  premium: 100
+BANKNIFTY:
+  base: BANKNIFTY
+  option_exchange: NFO
+  lots: 1
+  profit: 1
+  premium: 100
