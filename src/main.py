@@ -166,6 +166,7 @@ async def lifespan(app: FastAPI):
 
         app.state.tokens_nearest = tokens_nearest
         app.state.ws = ws
+        app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
 
         runner = TickRunner(ws, tokens_nearest)
         task = asyncio.create_task(runner.run())
@@ -262,7 +263,7 @@ async def place_buy_order(payload: Dict[str, Any] = Body(...), _: str = Depends(
 
         order_details = {
             "symbol": symbol,
-            "quantity": settings["quantity"],
+            "quantity": request.app.state.quantity,
             "disclosed_quantity": 0,
             "exchange": settings["option_exchange"],
             "tag": payload.pop("tag", "no_tag"),
