@@ -363,7 +363,7 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
                     "volume": 0,
                     "time": candle_time,
                 }
-            else:
+            elif price != last_sent_candle["close"]:
                 last_sent_candle["high"] = max(last_sent_candle["high"], price)
                 last_sent_candle["low"] = min(last_sent_candle["low"], price)
                 last_sent_candle["close"] = price
