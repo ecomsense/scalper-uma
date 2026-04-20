@@ -210,7 +210,16 @@ window.addEventListener("DOMContentLoaded", () => {
 					const msg = JSON.parse(e.data);
 					const text = JSON.stringify(msg);
 					const isRejected = text.toLowerCase().includes("rejected");
-					showToast(text, isRejected);
+
+					let toastMsg = "Order Update";
+					if (msg.n) toastMsg = msg.n;
+					else if (msg.tsym) toastMsg = msg.tsym;
+					else if (msg.oid) toastMsg = "oid:" + msg.oid;
+					if (msg.status) toastMsg += " " + msg.status;
+					else if (msg.ost) toastMsg += " " + msg.ost;
+					if (msg.ror) toastMsg += " [" + msg.ror + "]";
+
+					showToast(toastMsg, isRejected);
 				} catch (err) { console.error("Order msg parse error:", err); }
 			});
 			orderSource.addEventListener("order_update", () => {
