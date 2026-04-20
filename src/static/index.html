@@ -66,6 +66,33 @@
         display: none;
       }
 
+      .bottom-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: #262626;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px 0;
+        border-top: 2px solid #444;
+        z-index: 100;
+      }
+      .panel-item {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+      .panel-item .label {
+        color: #888;
+        margin-right: 5px;
+      }
+      .panel-item span:last-child {
+        color: #4caf50;
+      }
+      .panel-item.negative span:last-child {
+        color: #f44336;
+      }
+
       .left-buttons,
       .right-buttons {
         display: flex;
@@ -219,6 +246,13 @@
       </div>
 
       <div class="footer"></div>
+    </div>
+
+    <div class="bottom-panel">
+      <div class="panel-item"><span class="label">Positions:</span> <span id="pos-count">0</span></div>
+      <div class="panel-item"><span class="label">Orders:</span> <span id="order-count">0</span></div>
+      <div class="panel-item"><span class="label">M2M:</span> <span id="m2m">0.00</span></div>
+      <div class="panel-item"><span class="label">Realized:</span> <span id="realized">0.00</span></div>
     </div>
 
     <!-- Settings Modal -->

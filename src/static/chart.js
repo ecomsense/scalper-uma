@@ -192,5 +192,46 @@ window.addEventListener("DOMContentLoaded", () => {
 					showToast(text, isRejected);
 				} catch (err) { console.error("Order msg parse error:", err); }
 			});
+			orderSource.addEventListener("order_update", () => {
+				updatePositionsSummary();
+			});
+
+			function updatePositionsSummary() {
+				fetch("/api/positions/summary")
+					.then(r => r.json())
+					.then(data => {
+						document.getElementById("pos-count").textContent = data.position_count || 0;
+						document.getElementById("order-count").textContent = data.order_count || 0;
+						const m2mEl = document.getElementById("m2m");
+						const realEl = document.getElementById("realized");
+						m2mEl.textContent = (data.m2m || 0).toFixed(2);
+						realEl.textContent = (data.realized_pnl || 0).toFixed(2);
+						m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
+						realEl.parentElement.classList.toggle("negative", data.realized_pnl < 0);
+					})
+					.catch(console.error);
+			}
+
+			document.getElementById("buy-btn-CE").onclick = function() {
+				updatePositionsSummary();
+			};
+			document.getElementById("mkt-btn-CE").onclick = function() {
+				updatePositionsSummary();
+			};
+			document.getElementById("sell-btn-CE").onclick = function() {
+				updatePositionsSummary();
+			};
+			document.getElementById("buy-btn-PE").onclick = function() {
+				updatePositionsSummary();
+			};
+			document.getElementById("mkt-btn-PE").onclick = function() {
+				updatePositionsSummary();
+			};
+			document.getElementById("sell-btn-PE").onclick = function() {
+				updatePositionsSummary();
+			};
+
+			updatePositionsSummary();
+			setInterval(updatePositionsSummary, 5000);
 		});
 });

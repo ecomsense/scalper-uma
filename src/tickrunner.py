@@ -94,13 +94,15 @@ class TickRunner:
                 logging.info(f"STOPPED: {self.exit_id}")
                 self.fn = "create"
             elif self._is_beyond_band():
+                ltp = self.ltps.get(self.symbol)
+                price = max(ltp - 2, 0.05)
                 kwargs = dict(
                     symbol=self.symbol,
                     order_id=self.exit_id,
                     quantity=self.quantity,
                     exchange=self.exchange,
                     order_type="LMT",
-                    price=0.05,
+                    price=price,
                     trigger_price=0,
                 )
                 Helper.modify_order(kwargs)

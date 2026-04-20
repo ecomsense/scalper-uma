@@ -26,6 +26,7 @@ class Wserver:
 
     def event_handler_order_update(self, message: Dict[str, Any]) -> None:
         self.order_update["message"] = message
+        logging.debug("message")
 
     def event_handler_quote_update(self, message: Dict[str, Any]) -> None:
         val = message.get("lp", False)
