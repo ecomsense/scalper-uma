@@ -4,6 +4,22 @@ window.addEventListener("DOMContentLoaded", () => {
 		return;
 	}
 
+	window.updatePositionsSummary = function() {
+		fetch("/api/positions/summary")
+			.then(r => r.json())
+			.then(data => {
+				document.getElementById("pos-count").textContent = data.position_count || 0;
+				document.getElementById("order-count").textContent = data.order_count || 0;
+				const m2mEl = document.getElementById("m2m");
+				const realEl = document.getElementById("realized");
+				m2mEl.textContent = (data.m2m || 0).toFixed(2);
+				realEl.textContent = (data.realized_pnl || 0).toFixed(2);
+				m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
+				realEl.parentElement.classList.toggle("negative", data.realized_pnl < 0);
+			})
+			.catch(console.error);
+	};
+
 	const chartOptions = {
 		layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
 		grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
@@ -188,27 +204,6 @@ window.addEventListener("DOMContentLoaded", () => {
 .then(({ settings, symbols }) => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 
-			document.getElementById("chart-title-CE").textContent = symbols[0];
-			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
-			document.getElementById("chart-title-PE").textContent = symbols[1];
-			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
-
-			function updatePositionsSummary() {
-				fetch("/api/positions/summary")
-					.then(r => r.json())
-					.then(data => {
-						document.getElementById("pos-count").textContent = data.position_count || 0;
-						document.getElementById("order-count").textContent = data.order_count || 0;
-						const m2mEl = document.getElementById("m2m");
-						const realEl = document.getElementById("realized");
-						m2mEl.textContent = (data.m2m || 0).toFixed(2);
-						realEl.textContent = (data.realized_pnl || 0).toFixed(2);
-						m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
-						realEl.parentElement.classList.toggle("negative", data.realized_pnl < 0);
-					})
-					.catch(console.error);
-			}
-
 			const orderSource = new EventSource("/sse/orders");
 			orderSource.addEventListener("order_msg", (e) => {
 				try {
@@ -221,6 +216,11 @@ window.addEventListener("DOMContentLoaded", () => {
 			orderSource.addEventListener("order_update", () => {
 				updatePositionsSummary();
 			});
+
+			document.getElementById("chart-title-CE").textContent = symbols[0];
+			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
+			document.getElementById("chart-title-PE").textContent = symbols[1];
+			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
 
 			updatePositionsSummary();
 			setInterval(updatePositionsSummary, 5000);
