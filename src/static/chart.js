@@ -138,6 +138,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		loadHistorical().then(() => startLiveUpdates());
 
 		document.getElementById(buttonIds.high).onclick = () => {
+			updatePositionsSummary();
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
 				showToast("Need at least 2 candles to place order", true);
@@ -155,6 +156,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		document.getElementById(buttonIds.mktbuy).onclick = () => {
+			updatePositionsSummary();
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
 				showToast("Need at least 2 candles to place order", true);
@@ -173,6 +175,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		document.getElementById(buttonIds.reset).onclick = () => {
+			updatePositionsSummary();
 			fetch("/api/trade/sell", { method: "GET" });
 		};
 	}
@@ -184,23 +187,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		})
 .then(({ settings, symbols }) => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
-			document.getElementById("chart-title-CE").textContent = symbols[0];
-			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
-			document.getElementById("chart-title-PE").textContent = symbols[1];
-			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
-
-			const orderSource = new EventSource("/sse/orders");
-			orderSource.addEventListener("order_msg", (e) => {
-				try {
-					const msg = JSON.parse(e.data);
-					const text = JSON.stringify(msg);
-					const isRejected = text.toLowerCase().includes("rejected");
-					showToast(text, isRejected);
-				} catch (err) { console.error("Order msg parse error:", err); }
-			});
-			orderSource.addEventListener("order_update", () => {
-				updatePositionsSummary();
-			});
 
 			function updatePositionsSummary() {
 				fetch("/api/positions/summary")
@@ -218,24 +204,23 @@ window.addEventListener("DOMContentLoaded", () => {
 					.catch(console.error);
 			}
 
-			document.getElementById("buy-btn-CE").onclick = function() {
+			document.getElementById("chart-title-CE").textContent = symbols[0];
+			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
+			document.getElementById("chart-title-PE").textContent = symbols[1];
+			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
+
+			const orderSource = new EventSource("/sse/orders");
+			orderSource.addEventListener("order_msg", (e) => {
+				try {
+					const msg = JSON.parse(e.data);
+					const text = JSON.stringify(msg);
+					const isRejected = text.toLowerCase().includes("rejected");
+					showToast(text, isRejected);
+				} catch (err) { console.error("Order msg parse error:", err); }
+			});
+			orderSource.addEventListener("order_update", () => {
 				updatePositionsSummary();
-			};
-			document.getElementById("mkt-btn-CE").onclick = function() {
-				updatePositionsSummary();
-			};
-			document.getElementById("sell-btn-CE").onclick = function() {
-				updatePositionsSummary();
-			};
-			document.getElementById("buy-btn-PE").onclick = function() {
-				updatePositionsSummary();
-			};
-			document.getElementById("mkt-btn-PE").onclick = function() {
-				updatePositionsSummary();
-			};
-			document.getElementById("sell-btn-PE").onclick = function() {
-				updatePositionsSummary();
-			};
+			});
 
 			updatePositionsSummary();
 			setInterval(updatePositionsSummary, 5000);
