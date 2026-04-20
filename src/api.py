@@ -40,12 +40,15 @@ class Helper:
 
     @classmethod
     def one_side(cls, bargs: Dict[str, Any]) -> Optional[str]:
+        logging.info(f"TRACE one_side: received bargs = {bargs}")
         try:
             resp = cls._api.order_place(**bargs)
+            logging.info(f"TRACE one_side: order_place returned = {resp}")
             return resp
         except Exception as e:
             message = f"helper error {e} while placing order {bargs}"
             logging.warning(message)
+            logging.exception("TRACE one_side: exception details:")
             print_exc()
             return None
 
