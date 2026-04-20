@@ -211,12 +211,9 @@ window.addEventListener("DOMContentLoaded", () => {
 					const text = JSON.stringify(msg);
 					const isRejected = text.toLowerCase().includes("rejected");
 
-					let toastMsg = "Order Update";
-					if (msg.n) toastMsg = msg.n;
-					else if (msg.tsym) toastMsg = msg.tsym;
-					else if (msg.oid) toastMsg = "oid:" + msg.oid;
-					if (msg.status) toastMsg += " " + msg.status;
-					else if (msg.ost) toastMsg += " " + msg.ost;
+					let toastMsg = (msg.bs === "B" ? "BUY" : msg.bs === "S" ? "SELL" : "Order");
+					if (msg.tsym) toastMsg = (msg.bs === "B" ? "BUY " : "SELL ") + msg.tsym.split(" ")[0].slice(-6);
+					if (msg.ost) toastMsg += " " + msg.ost;
 					if (msg.ror) toastMsg += " [" + msg.ror + "]";
 
 					showToast(toastMsg, isRejected);
