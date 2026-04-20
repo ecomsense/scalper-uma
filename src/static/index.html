@@ -148,6 +148,31 @@
         background-color: #ff9800;
       }
 
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 5px;
+        color: #fff;
+        font-weight: bold;
+        z-index: 2000;
+        animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 3s forwards;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        max-width: 350px;
+        word-wrap: break-word;
+      }
+      .toast.green { background-color: #4caf50; }
+      .toast.red { background-color: #f44336; }
+      @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes fadeOut {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+
       @media (max-width: 900px) {
         .chart-grid {
           flex-direction: column;
@@ -213,6 +238,29 @@
     </div>
 
     <script>
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      function playBeep(freq = 800, duration = 150) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration / 1000);
+      }
+
+      function showToast(message, isError = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + (isError ? 'red' : 'green');
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        playBeep(isError ? 600 : 900, isError ? 300 : 150);
+        setTimeout(() => toast.remove(), 3500);
+      }
+
       async function loadSettings() {
         try {
           const response = await fetch('/api/admin/settings');
