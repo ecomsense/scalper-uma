@@ -94,7 +94,7 @@ class TickRunner:
                 logging.info(f"STOPPED: {self.exit_id}")
                 self.fn = "create"
             elif self._is_beyond_band():
-kwargs = dict(
+                kwargs = dict(
                     symbol=self.symbol,
                     order_id=self.exit_id,
                     quantity=self.quantity,
