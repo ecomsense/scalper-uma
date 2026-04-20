@@ -96,10 +96,11 @@ class TickRunner:
             elif self._is_beyond_band():
                 kwargs = dict(
                     symbol=self.symbol,
-                    order_id=self.exit_id,
+                    order_id=self.exi
+d_id,
                     quantity=self.quantity,
                     exchange=self.exchange,
-                    order_type="MKT",
+                    order_type="LMT",
                     price=0,
                 )
                 Helper.modify_order(kwargs)
