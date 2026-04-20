@@ -251,7 +251,6 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 async def place_buy_order(request: Request, payload: Dict[str, Any] = Body(...)) -> JSONResponse:
     logging.debug(f"Order request received: {payload}")
     logging.debug(f"app.state.quantity: {request.app.state.quantity}")
-    nullify()
 
     symbol = payload.get("symbol", "DUMMY").upper()
     if symbol != "DUMMY":
@@ -376,11 +375,18 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
 @app.get("/sse/orders")
 async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
+        last_msg = ""
         while True:
             await asyncio.sleep(1.5)
             try:
                 ws = request.app.state.ws
-                print(ws.order_update, "/n", "ORDER UPDATE FROM WEBSOCKET")
+                order_msg = ws.order_update.get("message")
+                if order_msg:
+                    msg_str = json.dumps(order_msg)
+                    if msg_str != last_msg:
+                        last_msg = msg_str
+                        print(order_msg, "/n", "ORDER UPDATE FROM WEBSOCKET")
+                        yield {"event": "order_msg", "data": msg_str}
                 orders_cache = Helper.get_orders()
                 yield {"event": "order_update", "data": json.dumps(orders_cache)}
 
@@ -488,3 +494,6 @@ async def get_status() -> JSONResponse:
         "api_key": O_CNFG.get("api_secret", ""),
         "message": "Server is running. Use admin endpoints to manage settings."
     })
+
+
+

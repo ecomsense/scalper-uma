@@ -176,11 +176,21 @@ window.addEventListener("DOMContentLoaded", () => {
 		.then(settings => {
 			return fetch("/api/symbols").then(r => r.json()).then(symbols => ({ settings, symbols }));
 		})
-		.then(({ settings, symbols }) => {
+.then(({ settings, symbols }) => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 			document.getElementById("chart-title-CE").textContent = symbols[0];
 			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
 			document.getElementById("chart-title-PE").textContent = symbols[1];
 			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
+
+			const orderSource = new EventSource("/sse/orders");
+			orderSource.addEventListener("order_msg", (e) => {
+				try {
+					const msg = JSON.parse(e.data);
+					const text = JSON.stringify(msg);
+					const isRejected = text.toLowerCase().includes("rejected");
+					showToast(text, isRejected);
+				} catch (err) { console.error("Order msg parse error:", err); }
+			});
 		});
 });
