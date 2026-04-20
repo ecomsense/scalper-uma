@@ -4,10 +4,7 @@ import subprocess
 import sys
 
 action = sys.argv[1] if len(sys.argv) > 1 else "start"
-
-if action == "start":
-    subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "start", "uma-scalper.service"])
-elif action == "stop":
-    subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "stop", "uma-scalper.service"])
-elif action == "restart":
-    subprocess.run(["/usr/bin/sudo", "/usr/bin/systemctl", "restart", "uma-scalper.service"])
+CMD = ["/usr/bin/sudo", "/usr/bin/systemctl", action, "uma-scalper.service"]
+result = subprocess.run(CMD, capture_output=True, text=True)
+print(f"{CMD} stdout: {result.stdout}", file=sys.stderr)
+print(f"{CMD} stderr: {result.stderr}", file=sys.stderr)
