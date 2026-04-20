@@ -40,6 +40,7 @@ def verify_api_key(x_api_key: str = Header(...)) -> str:
         raise HTTPException(status_code=401, detail="Invalid API Key")
     return x_api_key
 
+
 IST = tz("Asia/Kolkata")
 
 CANDLESTICK_TIMEFRAME_SECONDS: int = 60
@@ -73,9 +74,7 @@ def aggregate_ticks_to_candlesticks(
             }
         )
         candlesticks = candlesticks.dropna()
-        candlesticks["time"] = (
-            candlesticks.index.astype("int64") // 10**9
-        )
+        candlesticks["time"] = candlesticks.index.astype("int64") // 10**9
 
         return candlesticks.reset_index(drop=True).to_dict(orient="records")
     except Exception as e:
@@ -166,7 +165,9 @@ async def lifespan(app: FastAPI):
         app.state.tokens_nearest = tokens_nearest
         app.state.ws = ws
         app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
-        logging.debug(f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}")
+        logging.debug(
+            f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}"
+        )
 
         runner = TickRunner(ws, tokens_nearest)
         task = asyncio.create_task(runner.run())
@@ -211,6 +212,39 @@ async def get_available_symbols(request: Request) -> JSONResponse:
     return JSONResponse(content=symbols)
 
 
+@app.get("/api/positions/summary")
+async def get_positions_summary() -> JSONResponse:
+    """
+    Returns positions summary: active positions, order count, m2m, realized pnl.
+    """
+    try:
+        positions = Helper.api().positions
+        orders = Helper.api().orders
+
+        active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
+        total_orders = len(orders) if orders else 0
+
+        m2m = 0.0
+        realized = 0.0
+        for pos in positions:
+            if pos:
+                m2m += pos.get("urmtom", 0)
+                realized += pos.get("rpnl", 0)
+
+        return JSONResponse(
+            content={
+                "positions": active_positions,
+                "position_count": len(active_positions),
+                "order_count": total_orders,
+                "m2m": round(m2m, 2),
+                "realized_pnl": round(realized, 2),
+            }
+        )
+    except Exception as e:
+        logging.error(f"Error getting positions summary: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+
 @app.get("/api/historical/{symbol}")
 async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
     """
@@ -232,13 +266,17 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
         candlesticks = []
         for row in historical_data:
-            candlesticks.append({
-                "time": int(row["ssboe"]) if "ssboe" in row else int(row["ut"]),
-                "open": float(row["into"]) if "into" in row else float(row["open"]),
-                "high": float(row["inth"]) if "inth" in row else float(row["high"]),
-                "low": float(row["intl"]) if "intl" in row else float(row["low"]),
-                "close": float(row["intc"]) if "intc" in row else float(row["close"]),
-            })
+            candlesticks.append(
+                {
+                    "time": int(row["ssboe"]) if "ssboe" in row else int(row["ut"]),
+                    "open": float(row["into"]) if "into" in row else float(row["open"]),
+                    "high": float(row["inth"]) if "inth" in row else float(row["high"]),
+                    "low": float(row["intl"]) if "intl" in row else float(row["low"]),
+                    "close": float(row["intc"])
+                    if "intc" in row
+                    else float(row["close"]),
+                }
+            )
 
         return JSONResponse(content={"data": candlesticks})
     except Exception as e:
@@ -248,7 +286,9 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
 
 @app.post("/api/trade/buy")
-async def place_buy_order(request: Request, payload: Dict[str, Any] = Body(...)) -> JSONResponse:
+async def place_buy_order(
+    request: Request, payload: Dict[str, Any] = Body(...)
+) -> JSONResponse:
     logging.debug(f"Order request received: {payload}")
     logging.debug(f"app.state.quantity: {request.app.state.quantity}")
 
@@ -300,7 +340,7 @@ async def place_buy_order(request: Request, payload: Dict[str, Any] = Body(...))
 
 
 @app.get("/api/trade/sell")
-async def reset():
+async def reset() -> JSONResponse:
     nullify()
     return JSONResponse(
         content={
@@ -312,7 +352,9 @@ async def reset():
 
 # --- SSE Endpoint for Streaming Candlesticks ---
 @app.get("/sse/candlesticks/{symbol}")
-async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
+async def sse_candlestick_endpoint(
+    symbol: str, request: Request
+) -> EventSourceResponse:
     print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
 
     last_sent_candle: Optional[Dict[str, Any]] = None
@@ -321,20 +363,20 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
         nonlocal last_sent_candle
         ws = request.app.state.ws
         token_symbols = request.app.state.tokens_nearest
-        
+
         try:
             token_symbol = [k for k, v in token_symbols.items() if v == symbol][0]
         except (KeyError, IndexError):
             return
-        
+
         waited = 0
         while token_symbol not in ws.ltp and waited < 60:
             await asyncio.sleep(0.5)
             waited += 1
-        
+
         if token_symbol not in ws.ltp:
             return
-        
+
         while True:
             await asyncio.sleep(0.5)
 
@@ -342,14 +384,19 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
                 price = ws.ltp.get(token_symbol)
                 if price is None:
                     continue
-                    
+
                 ist_now = datetime.now(IST)
                 current_timestamp_ist = int(ist_now.timestamp())
-                candle_time = current_timestamp_ist - (current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS)
+                candle_time = current_timestamp_ist - (
+                    current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
+                )
 
                 if last_sent_candle is None or candle_time > last_sent_candle["time"]:
                     if last_sent_candle is not None:
-                        yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
+                        yield {
+                            "event": "live_update",
+                            "data": json.dumps(last_sent_candle),
+                        }
 
                     last_sent_candle = {
                         "open": price,
@@ -365,7 +412,7 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
                     last_sent_candle["close"] = price
 
                 yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
-                
+
             except Exception as e:
                 continue
 
@@ -406,10 +453,19 @@ async def restart_server() -> JSONResponse:
     Restart the uvicorn server via systemd.
     """
     try:
-        subprocess.run("sudo /usr/bin/systemctl restart uma-scalper.service", shell=True, check=True)
-        return JSONResponse(content={"message": "Server restarting...", "status": "success"})
+        subprocess.run(
+            "sudo /usr/bin/systemctl restart uma-scalper.service",
+            shell=True,
+            check=True,
+        )
+        return JSONResponse(
+            content={"message": "Server restarting...", "status": "success"}
+        )
     except subprocess.CalledProcessError as e:
-        return JSONResponse(content={"message": f"Failed to restart: {e}", "status": "error"}, status_code=500)
+        return JSONResponse(
+            content={"message": f"Failed to restart: {e}", "status": "error"},
+            status_code=500,
+        )
 
 
 @app.post("/api/admin/stop")
@@ -418,10 +474,15 @@ async def stop_server() -> JSONResponse:
     Stop the uvicorn server via systemd.
     """
     try:
-        subprocess.run("/usr/bin/sudo /usr/bin/systemctl stop uma-scalper", shell=True, check=True)
+        subprocess.run(
+            "/usr/bin/sudo /usr/bin/systemctl stop uma-scalper", shell=True, check=True
+        )
         return JSONResponse(content={"message": "Server stopped", "status": "success"})
     except subprocess.CalledProcessError as e:
-        return JSONResponse(content={"message": f"Failed to stop: {e}", "status": "error"}, status_code=500)
+        return JSONResponse(
+            content={"message": f"Failed to stop: {e}", "status": "error"},
+            status_code=500,
+        )
 
 
 @app.post("/api/admin/start")
@@ -430,10 +491,15 @@ async def start_server() -> JSONResponse:
     Start the uvicorn server via systemd.
     """
     try:
-        subprocess.run("/usr/bin/sudo /usr/bin/systemctl start uma-scalper", shell=True, check=True)
+        subprocess.run(
+            "/usr/bin/sudo /usr/bin/systemctl start uma-scalper", shell=True, check=True
+        )
         return JSONResponse(content={"message": "Server started", "status": "success"})
     except subprocess.CalledProcessError as e:
-        return JSONResponse(content={"message": f"Failed to start: {e}", "status": "error"}, status_code=500)
+        return JSONResponse(
+            content={"message": f"Failed to start: {e}", "status": "error"},
+            status_code=500,
+        )
 
 
 @app.get("/api/admin/settings")
@@ -447,7 +513,9 @@ async def get_settings_file() -> JSONResponse:
             content = f.read()
         return JSONResponse(content={"content": content, "status": "success"})
     except Exception as e:
-        return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
+        return JSONResponse(
+            content={"message": str(e), "status": "error"}, status_code=500
+        )
 
 
 @app.post("/api/admin/settings")
@@ -465,9 +533,16 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         time.sleep(2)
         subprocess.run(["/usr/bin/sudo", "systemctl", "start", "uma-scalper.service"])
         logging.info("Service restart triggered")
-        return JSONResponse(content={"message": "Settings saved. Server restarting...", "status": "success"})
+        return JSONResponse(
+            content={
+                "message": "Settings saved. Server restarting...",
+                "status": "success",
+            }
+        )
     except Exception as e:
-        return JSONResponse(content={"message": str(e), "status": "error"}, status_code=500)
+        return JSONResponse(
+            content={"message": str(e), "status": "error"}, status_code=500
+        )
 
 
 @app.get("/api/chart/settings")
@@ -477,9 +552,11 @@ async def get_chart_settings() -> JSONResponse:
     """
     try:
         ma = O_SETG.get("ma", [])
-        return JSONResponse(content={
-            "ma": ma,
-        })
+        return JSONResponse(
+            content={
+                "ma": ma,
+            }
+        )
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
@@ -489,11 +566,10 @@ async def get_status() -> JSONResponse:
     """
     Get server status and API key.
     """
-    return JSONResponse(content={
-        "status": "running",
-        "api_key": O_CNFG.get("api_secret", ""),
-        "message": "Server is running. Use admin endpoints to manage settings."
-    })
-
-
-
+    return JSONResponse(
+        content={
+            "status": "running",
+            "api_key": O_CNFG.get("api_secret", ""),
+            "message": "Server is running. Use admin endpoints to manage settings.",
+        }
+    )

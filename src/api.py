@@ -2,7 +2,6 @@ from __future__ import annotations
 from traceback import print_exc
 from importlib import import_module
 from typing import Dict, List, Optional, Any
-import time
 from src.constants import O_CNFG, logging
 from stock_brokers.flattrade.api_helper import post_order_hook
 
@@ -98,6 +97,8 @@ class Helper:
                 elif pos:
                     quantity = abs(pos["quantity"])
                     if pos["quantity"] < 0:
+                        logging.debug(f"buy pos: {pos}")
+                        price = float(pos["lp"]) + 2
                         args = dict(
                             symbol=pos["symbol"],
                             quantity=quantity,
@@ -105,7 +106,7 @@ class Helper:
                             product=pos["prd"],
                             side="B",
                             order_type="LMT",
-                            price=1000,
+                            price=price,
                             trigger_price=0,
                             exchange="NFO",
                             tag="close",
