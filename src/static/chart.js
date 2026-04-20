@@ -188,6 +188,11 @@ window.addEventListener("DOMContentLoaded", () => {
 .then(({ settings, symbols }) => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 
+			document.getElementById("chart-title-CE").textContent = symbols[0];
+			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
+			document.getElementById("chart-title-PE").textContent = symbols[1];
+			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
+
 			function updatePositionsSummary() {
 				fetch("/api/positions/summary")
 					.then(r => r.json())
@@ -203,11 +208,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					})
 					.catch(console.error);
 			}
-
-			document.getElementById("chart-title-CE").textContent = symbols[0];
-			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
-			document.getElementById("chart-title-PE").textContent = symbols[1];
-			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
 
 			const orderSource = new EventSource("/sse/orders");
 			orderSource.addEventListener("order_msg", (e) => {
