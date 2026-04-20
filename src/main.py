@@ -289,15 +289,12 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 async def place_buy_order(
     request: Request, payload: Dict[str, Any] = Body(...)
 ) -> JSONResponse:
-    logging.info(f"TRACE: Order request received: {payload}")
-    logging.info(f"TRACE: app.state.quantity: {request.app.state.quantity}")
+    logging.debug(f"Order request received: {payload}")
+    logging.debug(f"app.state.quantity: {request.app.state.quantity}")
 
     symbol = payload.get("symbol", "DUMMY").upper()
-    logging.info(f"TRACE: symbol = {symbol}")
-
     if symbol != "DUMMY":
         settings = get_settings()
-        logging.info(f"TRACE: settings loaded: {settings.get('option_exchange')}")
 
         order_details = {
             "symbol": symbol,
@@ -307,18 +304,12 @@ async def place_buy_order(
             "tag": payload.pop("tag", "no_tag"),
             "side": "BUY",
         }
-        logging.info(f"TRACE: order_details before payload update: {order_details}")
 
         exit_price = payload.pop("exit_price")
         cost_price = payload.pop("cost_price")
-        logging.info(f"TRACE: exit_price={exit_price}, cost_price={cost_price}")
-
         order_details.update(payload)
-        logging.info(f"TRACE: order_details after payload update: {order_details}")
 
         order_id = Helper.one_side(order_details)
-        logging.info(f"TRACE: one_side returned: {order_id}")
-
         if order_id:
             order_details["entry_id"] = order_id
             order_details["exit_price"] = exit_price
@@ -330,7 +321,6 @@ async def place_buy_order(
             for key in blacklist:
                 order_details.pop(key, None)
             O_FUTL.write_file(filepath=TRADE_JSON, content=order_details)
-            logging.info(f"TRACE: Buy order SUCCESS: {order_details}")
             return JSONResponse(
                 content={
                     "message": f"Buy order initiated for {symbol}",
@@ -339,7 +329,6 @@ async def place_buy_order(
                 }
             )
 
-        logging.error(f"TRACE: Buy order FAILED - order_id was None")
         return JSONResponse(
             content={
                 "message": "error while buy order",
@@ -347,14 +336,6 @@ async def place_buy_order(
                 "order": order_details,
             }
         )
-
-    logging.error(f"TRACE: Buy order FAILED - symbol was DUMMY")
-    return JSONResponse(
-        content={
-            "message": "error: symbol is DUMMY",
-            "status": "failed",
-        }
-    )
 
 
 @app.get("/api/trade/sell")
