@@ -104,7 +104,9 @@ class Helper:
                             disclosed_quantity=quantity,
                             product=pos["prd"],
                             side="B",
-                            order_type="MKT",
+                            order_type="LMT",
+                            price=1000,
+                            trigger_price=0,
                             exchange="NFO",
                             tag="close",
                         )
@@ -117,7 +119,9 @@ class Helper:
                             disclosed_quantity=quantity,
                             product=pos["prd"],
                             side="S",
-                            order_type="MKT",
+                            order_type="LMT",
+                            price=0.5,
+                            trigger_price=0,
                             exchange=pos["exchange"],
                             tag="close",
                         )
