@@ -139,7 +139,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.high).onclick = () => {
 			const candles = candleSeries.data();
-			if (candles.length < 2) return;
+			if (candles.length < 2) {
+				showToast("Need at least 2 candles to place order", true);
+				return;
+			}
 			const prev = candles[candles.length - 2];
 			fetch("/api/trade/buy", {
 				method: "POST",
@@ -153,7 +156,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.mktbuy).onclick = () => {
 			const candles = candleSeries.data();
-			if (candles.length < 2) return;
+			if (candles.length < 2) {
+				showToast("Need at least 2 candles to place order", true);
+				return;
+			}
 			const curr = candles[candles.length - 1];
 			const prev = candles[candles.length - 2];
 			fetch("/api/trade/buy", {
