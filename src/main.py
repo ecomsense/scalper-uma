@@ -301,7 +301,7 @@ async def place_buy_order(request: Request, payload: Dict[str, Any] = Body(...))
 
 
 @app.get("/api/trade/sell")
-async def reset(_: str = Depends(verify_api_key)):
+async def reset():
     nullify()
     return JSONResponse(
         content={
