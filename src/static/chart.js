@@ -9,7 +9,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			.then(r => r.json())
 			.then(data => {
 				document.getElementById("pos-count").textContent = data.position_count || 0;
-				document.getElementById("order-count").textContent = data.order_count || 0;
+				document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + (data.order_count || 0);
 				const m2mEl = document.getElementById("m2m");
 				const realEl = document.getElementById("realized");
 				m2mEl.textContent = (data.m2m || 0).toFixed(2);
@@ -208,15 +208,13 @@ window.addEventListener("DOMContentLoaded", () => {
 			orderSource.addEventListener("order_msg", (e) => {
 				try {
 					const msg = JSON.parse(e.data);
-					const text = JSON.stringify(msg);
-					const isRejected = text.toLowerCase().includes("rejected");
+					const status = msg.status || msg.ost || "";
+					const validStatuses = ["trigger_pending", "COMPLETE", "OPEN", "PENDING"];
+					if (!validStatuses.includes(status)) return;
 
-					let toastMsg = (msg.bs === "B" ? "BUY" : msg.bs === "S" ? "SELL" : "Order");
-					if (msg.tsym) toastMsg = (msg.bs === "B" ? "BUY " : "SELL ") + msg.tsym.split(" ")[0].slice(-6);
-					if (msg.ost) toastMsg += " " + msg.ost;
-					if (msg.ror) toastMsg += " [" + msg.ror + "]";
-
-					showToast(toastMsg, isRejected);
+					const isBuy = msg.bs === "B";
+					let toastMsg = (isBuy ? "Buy " : "Sell ") + (msg.tsym || "Order");
+					showToast(toastMsg, !isBuy);
 				} catch (err) { console.error("Order msg parse error:", err); }
 			});
 			orderSource.addEventListener("order_update", () => {
