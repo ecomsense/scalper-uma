@@ -101,19 +101,19 @@ window.addEventListener("DOMContentLoaded", () => {
 			maSeries.push({ series, config });
 		});
 
-		// Price lines for buy/stop/target
+		// Price lines for buy/stop/target - each chart has its own
 		let buyLine = null;
 		let stopLine = null;
 		let targetLine = null;
 		
-		// Store prices for breach detection
-		let buyPrice = 0;
-		let stopPrice = 0;
-		let targetPrice = 0;
+		function clearAllLines() {
+			if (buyLine) { buyLine.destroy(); buyLine = null; }
+			if (stopLine) { stopLine.destroy(); stopLine = null; }
+			if (targetLine) { targetLine.destroy(); targetLine = null; }
+		}
 
-		window.drawBuyLine = function(price) {
-			buyPrice = price;
-			if (buyLine) buyLine.destroy();
+		function drawBuyLine(price) {
+			clearAllLines();
 			buyLine = candleSeries.createPriceLine({
 				price: price,
 				color: '#4CAF50',
@@ -122,11 +122,9 @@ window.addEventListener("DOMContentLoaded", () => {
 				axisLabelVisible: true,
 				title: 'Buy',
 			});
-		};
+		}
 
-		window.drawStopLine = function(price) {
-			stopPrice = price;
-			if (stopLine) stopLine.destroy();
+		function drawStopLine(price) {
 			stopLine = candleSeries.createPriceLine({
 				price: price,
 				color: '#f44336',
@@ -135,11 +133,9 @@ window.addEventListener("DOMContentLoaded", () => {
 				axisLabelVisible: true,
 				title: 'STP',
 			});
-		};
+		}
 
-		window.drawTargetLine = function(price) {
-			targetPrice = price;
-			if (targetLine) targetLine.destroy();
+		function drawTargetLine(price) {
 			targetLine = candleSeries.createPriceLine({
 				price: price,
 				color: '#2196F3',
@@ -148,20 +144,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				axisLabelVisible: true,
 				title: 'TGT',
 			});
-		};
-
-		window.clearAllLines = function() {
-			if (buyLine) { buyLine.destroy(); buyLine = null; }
-			if (stopLine) { stopLine.destroy(); stopLine = null; }
-			if (targetLine) { targetLine.destroy(); targetLine = null; }
-			buyPrice = 0;
-			stopPrice = 0;
-			targetPrice = 0;
-		};
-
-		window.getTradePrices = function() {
-			return { buyPrice, stopPrice, targetPrice };
-		};
+		}
 
 		// Remove test lines - will draw when trade placed
 		// window.drawBuyLine(50);
@@ -223,7 +206,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.high).onclick = () => {
 			updatePositionsSummary();
-			console.log("High clicked for symbol:", symbol);
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
 				showToast("Need at least 2 candles to place order", true);
