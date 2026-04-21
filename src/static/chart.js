@@ -97,7 +97,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		
 		maConfigs.forEach((config, index) => {
 			const color = maColors[index % maColors.length];
-			const series = chart.addLineSeries({ color: color, lineWidth: 2 });
+			const series = chart.addLineSeries({ 
+				color: color, 
+				lineWidth: 2,
+				lastValueVisible: false,
+				crosshairMarkerVisible: false,
+			});
 			maSeries.push({ series, config });
 		});
 
@@ -107,9 +112,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		let targetLine = null;
 		
 		function clearAllLines() {
-			console.log("clearAllLines, buyLine:", !!buyLine);
 			if (buyLine) { 
-				try { candleSeries.removePriceLine(buyLine); } catch(e) { console.log("err", e); } 
+				try { candleSeries.removePriceLine(buyLine); } catch(e) {} 
 				buyLine = null; 
 			}
 			if (stopLine) { 
@@ -120,7 +124,6 @@ window.addEventListener("DOMContentLoaded", () => {
 				try { candleSeries.removePriceLine(targetLine); } catch(e) {} 
 				targetLine = null; 
 			}
-			console.log("Lines cleared");
 		}
 
 		function drawBuyLine(price) {
