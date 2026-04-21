@@ -296,10 +296,10 @@ window.addEventListener("DOMContentLoaded", () => {
 				updatePositionsSummary();
 			});
 
-			document.getElementById("chart-title-CE").textContent = symbols[0];
-			setupChart("chart-CE", symbols[0], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
-			document.getElementById("chart-title-PE").textContent = symbols[1];
-			setupChart("chart-PE", symbols[1], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
+			document.getElementById("chart-title-CE").textContent = symbols[1];
+			setupChart("chart-CE", symbols[1], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
+			document.getElementById("chart-title-PE").textContent = symbols[0];
+			setupChart("chart-PE", symbols[0], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
 
 			updatePositionsSummary();
 			setInterval(updatePositionsSummary, 5000);
