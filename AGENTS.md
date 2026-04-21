@@ -70,3 +70,25 @@ with open("data/cron.txt", "a") as f:
 
 - Start: 9:14 AM weekdays
 - Stop: 3:31 PM weekdays
+
+## Bug Fixes & Discoveries
+
+### TickRunner Not Detecting Entry Order Completion (2026-04-21)
+
+**Symptom**: Stop loss (exit) order was never placed after entry order completed.
+
+**Root Cause**: TickRunner stored `entry_id` only in its instance variable (`self.entry_id`), but when an order was placed via the API endpoint (`/api/trade`), the order ID was saved to `trade.json`. TickRunner never read from `trade.json`, so it never detected when entry orders completed and never placed the exit order.
+
+**Flow**:
+1. User clicks BUY → API calls `Helper.one_side(order_details)` → returns order_id
+2. API saves to `trade.json`: `{"entry_id": "26042100278879", "symbol": "...", ...}`
+3. TickRunner's `self.entry_id` was always "" (empty string)
+4. `is_trade()` checks `self.entry_id` which was always empty → never triggered
+
+**Fix** (`src/tickrunner.py`):
+- Added `_load_trade_from_file()` method to read from trade.json on init
+- Modified `create()` to check for existing trade before clearing
+- Save exit_id to trade.json when exit order is placed
+- Now TickRunner properly loads pending trades on startup
+
+**Key Insight**: Always sync state between API and background workers via persistent storage (trade.json), not just instance variables.
