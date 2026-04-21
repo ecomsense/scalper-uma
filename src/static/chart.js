@@ -163,10 +163,10 @@ window.addEventListener("DOMContentLoaded", () => {
 			return { buyPrice, stopPrice, targetPrice };
 		};
 
-		// TEST: Draw all 3 lines
-		window.drawBuyLine(50);
-		window.drawStopLine(48);
-		window.drawTargetLine(55);
+		// Remove test lines - will draw when trade placed
+		// window.drawBuyLine(50);
+		// window.drawStopLine(48);
+		// window.drawTargetLine(55);
 
 		let candleData = [];
 
@@ -229,6 +229,9 @@ window.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 			const prev = candles[candles.length - 2];
+			clearAllLines();
+			drawBuyLine(prev.high + 0.05);
+			drawStopLine(prev.low);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -248,6 +251,9 @@ window.addEventListener("DOMContentLoaded", () => {
 			}
 			const curr = candles[candles.length - 1];
 			const prev = candles[candles.length - 2];
+			clearAllLines();
+			drawBuyLine(curr.close + 2);
+			drawStopLine(prev.low);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -260,6 +266,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.reset).onclick = () => {
 			updatePositionsSummary();
+			clearAllLines();
 			fetch("/api/trade/sell", { method: "GET" });
 		};
 	}
