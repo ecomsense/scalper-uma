@@ -107,15 +107,18 @@ window.addEventListener("DOMContentLoaded", () => {
 		let targetLine = null;
 		
 		function clearAllLines() {
-			if (buyLine && typeof buyLine.destroy === 'function') { try { buyLine.destroy(); } catch(e) {} }
+			console.log("clearAllLines called, buyLine:", !!buyLine, typeof buyLine?.destroy);
+			if (buyLine && typeof buyLine.destroy === 'function') { try { buyLine.destroy(); } catch(e) { console.log("err", e); } }
 			buyLine = null;
 			if (stopLine && typeof stopLine.destroy === 'function') { try { stopLine.destroy(); } catch(e) {} }
 			stopLine = null;
 			if (targetLine && typeof targetLine.destroy === 'function') { try { targetLine.destroy(); } catch(e) {} }
 			targetLine = null;
+			console.log("Lines cleared");
 		}
 
 		function drawBuyLine(price) {
+			console.log("drawBuyLine:", price, "candleSeries:", !!candleSeries);
 			clearAllLines();
 			buyLine = candleSeries.createPriceLine({
 				price: price,
@@ -125,6 +128,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				axisLabelVisible: true,
 				title: 'Buy',
 			});
+			console.log("buyLine created:", !!buyLine);
 		}
 
 		function drawStopLine(price) {
