@@ -23,6 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	const chartOptions = {
 		layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
 		grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
+		crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
 		localization: {
 			timeFormatter: (time) => {
 				const date = new Date(time * 1000);
@@ -100,15 +101,52 @@ window.addEventListener("DOMContentLoaded", () => {
 			maSeries.push({ series, config });
 		});
 
-		// TEST: Draw a horizontal line at fixed price (50) - for testing only
-		const testLine = candleSeries.createPriceLine({
-			price: 50,
-			color: '#FFA500',
-			lineWidth: 2,
-			lineStyle: 2, // Dashed
-			axisLabelVisible: true,
-			title: 'TEST'
-		});
+		// Price lines for buy/stop/target
+		let buyLine = null;
+		let stopLine = null;
+		let targetLine = null;
+
+		window.drawBuyLine = function(price) {
+			if (buyLine) buyLine.destroy();
+			buyLine = candleSeries.createPriceLine({
+				price: price,
+				color: '#4CAF50',
+				lineWidth: 1,
+				lineStyle: 2,
+				axisLabelVisible: false,
+			});
+		};
+
+		window.drawStopLine = function(price) {
+			if (stopLine) stopLine.destroy();
+			stopLine = candleSeries.createPriceLine({
+				price: price,
+				color: '#f44336',
+				lineWidth: 1,
+				lineStyle: 2,
+				axisLabelVisible: false,
+			});
+		};
+
+		window.drawTargetLine = function(price) {
+			if (targetLine) targetLine.destroy();
+			targetLine = candleSeries.createPriceLine({
+				price: price,
+				color: '#2196F3',
+				lineWidth: 1,
+				lineStyle: 2,
+				axisLabelVisible: false,
+			});
+		};
+
+		window.clearAllLines = function() {
+			if (buyLine) { buyLine.destroy(); buyLine = null; }
+			if (stopLine) { stopLine.destroy(); stopLine = null; }
+			if (targetLine) { targetLine.destroy(); targetLine = null; }
+		};
+
+		// TEST: Draw buy line at 50
+		window.drawBuyLine(50);
 
 		let candleData = [];
 
