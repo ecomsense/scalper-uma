@@ -263,8 +263,8 @@ window.addEventListener("DOMContentLoaded", () => {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, price: buyPrice, order_type: "LIMIT",
-					exit_price: stopPrice, cost_price: buyPrice
+					symbol, price: curr.close + 2, order_type: "LIMIT",
+					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
 			});
 		};
