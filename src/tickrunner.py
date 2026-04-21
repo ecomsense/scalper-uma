@@ -150,9 +150,11 @@ class TickRunner:
 
     def run_state_machine(self) -> None:
         try:
-            ltps = self.ws.ltp
-            ltps = {k: v for k, v in ltps.items() if k in self.tokens_nearest.keys()}
-            self.ltps = {self.tokens_nearest[k]: v for k, v in ltps.items()}
+            self.ltps = {}
+            ws_ltp = self.ws.ltp
+            for ws_token, trading_symbol in self.tokens_nearest.items():
+                if ws_token in ws_ltp:
+                    self.ltps[trading_symbol] = ws_ltp[ws_token]
             if self.entry_id and self.fn != "create":
                 logging.info(f"TickRunner: {self.fn} entry={self.entry_id}")
             getattr(self, self.fn)()
