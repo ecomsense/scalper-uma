@@ -100,6 +100,16 @@ window.addEventListener("DOMContentLoaded", () => {
 			maSeries.push({ series, config });
 		});
 
+		// TEST: Draw a horizontal line at fixed price (50) - for testing only
+		const testLine = candleSeries.createPriceLine({
+			price: 50,
+			color: '#FFA500',
+			lineWidth: 2,
+			lineStyle: 2, // Dashed
+			axisLabelVisible: true,
+			title: 'TEST'
+		});
+
 		let candleData = [];
 
 		function updateMAs() {
