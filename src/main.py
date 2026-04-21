@@ -224,6 +224,13 @@ async def get_positions_summary() -> JSONResponse:
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
         total_orders = len(orders) if orders else 0
 
+        active_orders = 0
+        if orders:
+            for o in orders:
+                status = o.get("status", "")
+                if status in ["OPEN", "PENDING", "TRIGGER_PENDING"]:
+                    active_orders += 1
+
         m2m = 0.0
         realized = 0.0
         for pos in positions:
@@ -235,8 +242,9 @@ async def get_positions_summary() -> JSONResponse:
             content={
                 "positions": active_positions,
                 "position_count": len(active_positions),
+                "active_orders": active_orders,
                 "order_count": total_orders,
-                "m2m": round(m2m, 2),
+                "m2m": round(m2m - realized, 2),
                 "realized_pnl": round(realized, 2),
             }
         )
@@ -272,9 +280,9 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
                     "open": float(row["into"]) if "into" in row else float(row["open"]),
                     "high": float(row["inth"]) if "inth" in row else float(row["high"]),
                     "low": float(row["intl"]) if "intl" in row else float(row["low"]),
-                    "close": float(row["intc"])
-                    if "intc" in row
-                    else float(row["close"]),
+                    "close": (
+                        float(row["intc"]) if "intc" in row else float(row["close"])
+                    ),
                 }
             )
 
@@ -292,6 +300,7 @@ async def place_buy_order(
     logging.debug(f"Order request received: {payload}")
     logging.debug(f"app.state.quantity: {request.app.state.quantity}")
 
+    nullify()
     symbol = payload.get("symbol", "DUMMY").upper()
     if symbol != "DUMMY":
         settings = get_settings()
