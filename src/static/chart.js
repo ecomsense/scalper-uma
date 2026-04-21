@@ -107,9 +107,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		let targetLine = null;
 		
 		function clearAllLines() {
-			if (buyLine) { try { buyLine.destroy(); } catch(e) {} buyLine = null; }
-			if (stopLine) { try { stopLine.destroy(); } catch(e) {} stopLine = null; }
-			if (targetLine) { try { targetLine.destroy(); } catch(e) {} targetLine = null; }
+			if (buyLine && typeof buyLine.destroy === 'function') { try { buyLine.destroy(); } catch(e) {} }
+			buyLine = null;
+			if (stopLine && typeof stopLine.destroy === 'function') { try { stopLine.destroy(); } catch(e) {} }
+			stopLine = null;
+			if (targetLine && typeof targetLine.destroy === 'function') { try { targetLine.destroy(); } catch(e) {} }
+			targetLine = null;
 		}
 
 		function drawBuyLine(price) {
