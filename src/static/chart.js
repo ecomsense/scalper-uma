@@ -89,6 +89,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		const chartContainer = document.getElementById(containerId);
 		if (!chartContainer) return;
 
+		const profit = settings?.profit || 5;
+
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
@@ -228,7 +230,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const prev = candles[candles.length - 2];
 			const buyPrice = prev.high + 0.05;
 			const stopPrice = prev.low;
-			const targetPrice = buyPrice + 5; // default profit, updated from settings
+			const targetPrice = buyPrice + profit;
 			clearAllLines();
 			drawBuyLine(buyPrice);
 			drawStopLine(stopPrice);
@@ -254,7 +256,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const prev = candles[candles.length - 2];
 			const buyPrice = curr.close + 2;
 			const stopPrice = prev.low;
-			const targetPrice = buyPrice + 5;
+			const targetPrice = buyPrice + profit;
 			clearAllLines();
 			drawBuyLine(buyPrice);
 			drawStopLine(stopPrice);
