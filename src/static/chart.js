@@ -99,7 +99,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const color = maColors[index % maColors.length];
 			const series = chart.addLineSeries({ 
 				color: color, 
-				lineWidth: 2,
+				lineWidth: 1,
 				lastValueVisible: false,
 				crosshairMarkerVisible: false,
 			});
@@ -226,9 +226,13 @@ window.addEventListener("DOMContentLoaded", () => {
 				return;
 			}
 			const prev = candles[candles.length - 2];
+			const buyPrice = prev.high + 0.05;
+			const stopPrice = prev.low;
+			const targetPrice = buyPrice + 5; // default profit, updated from settings
 			clearAllLines();
-			drawBuyLine(prev.high + 0.05);
-			drawStopLine(prev.low);
+			drawBuyLine(buyPrice);
+			drawStopLine(stopPrice);
+			drawTargetLine(targetPrice);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -248,15 +252,19 @@ window.addEventListener("DOMContentLoaded", () => {
 			}
 			const curr = candles[candles.length - 1];
 			const prev = candles[candles.length - 2];
+			const buyPrice = curr.close + 2;
+			const stopPrice = prev.low;
+			const targetPrice = buyPrice + 5;
 			clearAllLines();
-			drawBuyLine(curr.close + 2);
-			drawStopLine(prev.low);
+			drawBuyLine(buyPrice);
+			drawStopLine(stopPrice);
+			drawTargetLine(targetPrice);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, price: curr.close + 2, order_type: "LIMIT",
-					exit_price: prev.low, cost_price: curr.close + 0.05
+					symbol, price: buyPrice, order_type: "LIMIT",
+					exit_price: stopPrice, cost_price: buyPrice
 				})
 			});
 		};
