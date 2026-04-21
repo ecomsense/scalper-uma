@@ -96,7 +96,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		
 		// OHLC display
 		const ohlcDiv = document.createElement('div');
-		ohlcDiv.style.cssText = 'position:absolute;top:50px;left:10px;background:#1a202c;color:#d1d4dc;padding:4px 8px;font-size:12px;pointer-events:none;z-index:10;';
+		ohlcDiv.style.cssText = 'position:absolute;top:30px;left:10px;background:#1a202c;color:#d1d4dc;padding:4px 8px;font-size:12px;pointer-events:none;z-index:10;';
 		chartContainer.style.position = 'relative';
 		chartContainer.appendChild(ohlcDiv);
 		
