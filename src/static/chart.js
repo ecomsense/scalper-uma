@@ -223,6 +223,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		document.getElementById(buttonIds.high).onclick = () => {
 			updatePositionsSummary();
+			console.log("High clicked for symbol:", symbol);
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
 				showToast("Need at least 2 candles to place order", true);
