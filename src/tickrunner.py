@@ -51,7 +51,7 @@ class TickRunner:
         try:
             item = get_dict_from_list(self.entry_id)
             if item and item.get("status", None) == "COMPLETE":
-                logging.info(f"attempting to exit trade {self.entry_id}")
+                logging.info(f"Entry COMPLETE: {self.entry_id}, placing exit at {self.exit_price}")
                 args = dict(
                     symbol=self.symbol,
                     exchange=self.exchange,
@@ -68,12 +68,13 @@ class TickRunner:
                     self.exit_id = exit_id
                     self.fn = "exit_trade"
             elif item and item.get("status", None) in ["REJECTED", "CANCELED"]:
+                logging.info(f"Entry {item.get('status')}: {self.entry_id}, clearing")
                 self.entry_id = ""
                 self.fn = "create"
             elif item:
-                logging.info(f"trade status is {item['status']}")
+                logging.info(f"Entry status: {item.get('status')} for {self.entry_id}")
             else:
-                logging.warning(f"trade status unknown {self.entry_id}")
+                logging.warning(f"Trade status unknown: {self.entry_id}")
         except Exception as e:
             logging.error(f"{e} while is_trade")
 
@@ -87,24 +88,31 @@ class TickRunner:
 
     def exit_trade(self) -> None:
         try:
-            if self._is_stopped():
-                logging.info(f"STOPPED: {self.exit_id}")
+            item = get_dict_from_list(self.exit_id)
+            if item and item.get("status", None) in ["COMPLETE", "REJECTED", "CANCELED"]:
+                logging.info(f"Exit {item.get('status')}: {self.exit_id}, clearing")
                 self.fn = "create"
-            elif self._is_beyond_band():
+                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+                self.entry_id = ""
+                self.exit_id = ""
+            elif item and item.get("status", None) == "OPEN":
                 ltp = self.ltps.get(self.symbol)
-                price = max(ltp - 2, 0.05)
-                kwargs = dict(
-                    symbol=self.symbol,
-                    order_id=self.exit_id,
-                    quantity=self.quantity,
-                    exchange=self.exchange,
-                    order_type="LMT",
-                    price=price,
-                    trigger_price=0,
-                )
-                Helper.modify_order(kwargs)
-                logging.info(f"EXITED BEYOND BAND: {self.exit_id}")
-                self.fn = "create"
+                if ltp and (ltp > self.target_price or ltp < self.exit_price):
+                    logging.info(f"Target reached for {self.exit_id}, modifying to market")
+                    kwargs = dict(
+                        symbol=self.symbol,
+                        order_id=self.exit_id,
+                        quantity=self.quantity,
+                        exchange=self.exchange,
+                        order_type="LMT",
+                        price=0.05,
+                        trigger_price=0,
+                    )
+                    Helper.modify_order(kwargs)
+                    self.fn = "create"
+                    O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+                else:
+                    logging.info(f"Exit OPEN at target:{self.target_price} stop:{self.exit_price}, ltp:{ltp}")
         except Exception as e:
             logging.error(f"{e} exit_trade")
 
@@ -113,6 +121,8 @@ class TickRunner:
             ltps = self.ws.ltp
             ltps = {k: v for k, v in ltps.items() if k in self.tokens_nearest.keys()}
             self.ltps = {self.tokens_nearest[k]: v for k, v in ltps.items()}
+            if self.entry_id and self.fn != "create":
+                logging.info(f"TickRunner: {self.fn} entry={self.entry_id}")
             getattr(self, self.fn)()
         except Exception as e:
             logging.error(f"{e} run_state_machine")
