@@ -37,13 +37,32 @@ class TickRunner:
         self.exit_id: str = ""
         self.exit_price: Optional[float] = None
         self.target_price: Optional[float] = None
-        O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+        self._load_trade_from_file()
+
+    def _load_trade_from_file(self) -> None:
+        try:
+            if path.exists(TRADE_JSON):
+                data = O_FUTL.read_file(TRADE_JSON)
+                if data and data.get("entry_id"):
+                    self.entry_id = data.get("entry_id", "")
+                    self.symbol = data.get("symbol", "")
+                    self.quantity = data.get("quantity", 0)
+                    self.exchange = data.get("exchange", "")
+                    self.tag = data.get("tag", "")
+                    self.exit_price = data.get("exit_price")
+                    self.target_price = data.get("target_price")
+                    if self.entry_id:
+                        self.fn = "is_trade"
+                        logging.info(f"Loaded trade: entry_id={self.entry_id}, symbol={self.symbol}")
+        except Exception as e:
+            logging.error(f"{e} _load_trade_from_file")
 
     def create(self) -> None:
         try:
-            O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
-            self.entry_id = ""
-            self.fn = "create"
+            self._load_trade_from_file()
+            if not self.entry_id:
+                O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+                self.fn = "create"
         except Exception as e:
             logging.error(f"{e} while create")
 
@@ -66,6 +85,17 @@ class TickRunner:
                 exit_id = Helper.one_side(args)
                 if exit_id:
                     self.exit_id = exit_id
+                    logging.info(f"Exit order placed: {exit_id} for {self.symbol}")
+                    O_FUTL.write_file(TRADE_JSON, {
+                        "entry_id": self.entry_id,
+                        "exit_id": self.exit_id,
+                        "symbol": self.symbol,
+                        "quantity": self.quantity,
+                        "exchange": self.exchange,
+                        "tag": self.tag,
+                        "exit_price": self.exit_price,
+                        "target_price": self.target_price,
+                    })
                     self.fn = "exit_trade"
             elif item and item.get("status", None) in ["REJECTED", "CANCELED"]:
                 logging.info(f"Entry {item.get('status')}: {self.entry_id}, clearing")
