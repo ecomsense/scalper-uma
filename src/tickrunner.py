@@ -37,41 +37,13 @@ class TickRunner:
         self.exit_id: str = ""
         self.exit_price: Optional[float] = None
         self.target_price: Optional[float] = None
-
-    def clear_trade(self) -> None:
         O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
-        self.entry_id = ""
-        self.exit_id = ""
-
-    def load_trade_from_file(self) -> bool:
-        try:
-            if path.exists(TRADE_JSON):
-                dict_fm_file = O_FUTL.read_file(TRADE_JSON)
-                old_entry_id = dict_fm_file.get("entry_id", "")
-                if old_entry_id:
-                    order = get_dict_from_list(old_entry_id)
-                    if order and order.get("status") == "COMPLETE":
-                        self.clear_trade()
-                        return False
-                    elif order and order.get("status") in ["REJECTED", "CANCELED"]:
-                        self.clear_trade()
-                        return False
-                    elif order:
-                        for key, value in dict_fm_file.items():
-                            setattr(self, key, value)
-                        return True
-            return False
-        except Exception as e:
-            logging.error(f"{e} in load_trade")
-            return False
 
     def create(self) -> None:
         try:
-            if self.load_trade_from_file():
-                self.fn = "is_trade"
-            else:
-                self.entry_id = ""
-                self.fn = "create"
+            O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+            self.entry_id = ""
+            self.fn = "create"
         except Exception as e:
             logging.error(f"{e} while create")
 
