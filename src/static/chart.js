@@ -94,6 +94,20 @@ window.addEventListener("DOMContentLoaded", () => {
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
+		// OHLC display
+		const ohlcDiv = document.createElement('div');
+		ohlcDiv.style.cssText = 'position:absolute;top:40px;left:10px;background:#1a202c;color:#d1d4dc;padding:4px 8px;font-size:12px;pointer-events:none;z-index:10;';
+		chartContainer.appendChild(ohlcDiv);
+		
+		chart.subscribeCrosshairMove((param) => {
+			if (param.time && param.seriesData.get(candleSeries)) {
+				const data = param.seriesData.get(candleSeries);
+				ohlcDiv.textContent = `O:${data.open} H:${data.high} L:${data.low} C:${data.close}`;
+			} else {
+				ohlcDiv.textContent = '';
+			}
+		});
+		
 		const maConfigs = settings && settings.ma ? settings.ma : [];
 		const maSeries = [];
 		
