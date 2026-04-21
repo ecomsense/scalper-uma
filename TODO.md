@@ -1,5 +1,13 @@
 # TODO - Scalper-UMA
 
+## 🚨 MAJOR MILESTONE: Frontend-Based Trading
+
+**This is a major architectural change. May need to revert.**
+
+See "Frontend-Based Trading (New Architecture)" section below.
+
+---
+
 ## Testing Required
 
 - [ ] Test modify-to-market when target reached after server restart (fix deployed at 14:34)
