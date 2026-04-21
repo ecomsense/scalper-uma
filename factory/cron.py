@@ -7,9 +7,9 @@ import os
 os.chdir("/home/uma/no_env/uma_scalper")
 action = sys.argv[1] if len(sys.argv) > 1 else "start"
 
-# Direct systemctl - works from user cron without sudo
+# Direct systemctl - works from user level
 CMD = ["/usr/bin/systemctl", action, "uma-scalper.service"]
-result = subprocess.run(CMD, capture_output=True, text=True)
+result = subprocess.run(CMD, capture_output=True, text=True, env={**os.environ, "XDG_RUNTIME_DIR": "/run/user/1001"})
 
 # Write output to cron.txt
 with open("data/cron.txt", "a") as f:
