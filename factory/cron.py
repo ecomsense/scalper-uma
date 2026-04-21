@@ -11,7 +11,7 @@ VENV_PY = "/home/uma/no_env/uma_scalper/.venv/bin/python"
 LOG = "/home/uma/no_env/uma_scalper/data/log.txt"
 
 def start():
-    subprocess.Popen([VENV_PY, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
+    subprocess.Popen([VENV_PY, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"],
                    stdout=open(LOG, "a"), stderr=subprocess.STDOUT)
 
 def stop():
