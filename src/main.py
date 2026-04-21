@@ -235,7 +235,9 @@ async def get_positions_summary() -> JSONResponse:
         realized = 0.0
         for pos in positions:
             if pos:
-                m2m += pos.get("urmtom", 0)
+                qty = pos.get("quantity", 0)
+                if qty != 0:
+                    m2m += pos.get("urmtom", 0)
                 realized += pos.get("rpnl", 0)
 
         return JSONResponse(
@@ -244,7 +246,7 @@ async def get_positions_summary() -> JSONResponse:
                 "position_count": len(active_positions),
                 "active_orders": active_orders,
                 "order_count": total_orders,
-                "m2m": round(m2m - realized, 2),
+                "m2m": round(m2m, 2),
                 "realized_pnl": round(realized, 2),
             }
         )
