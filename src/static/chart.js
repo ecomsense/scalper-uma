@@ -120,7 +120,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				lineWidth: 2,
 				lineStyle: 2,
 				axisLabelVisible: true,
-				title: 'Buy: ' + price.toFixed(2),
+				title: 'Buy',
 			});
 		};
 
@@ -133,7 +133,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				lineWidth: 2,
 				lineStyle: 2,
 				axisLabelVisible: true,
-				title: 'SL: ' + price.toFixed(2),
+				title: 'STP',
 			});
 		};
 
@@ -146,7 +146,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				lineWidth: 2,
 				lineStyle: 2,
 				axisLabelVisible: true,
-				title: 'Tgt: ' + price.toFixed(2),
+				title: 'TGT',
 			});
 		};
 
@@ -163,8 +163,10 @@ window.addEventListener("DOMContentLoaded", () => {
 			return { buyPrice, stopPrice, targetPrice };
 		};
 
-		// TEST: Draw buy line at 50
+		// TEST: Draw all 3 lines
 		window.drawBuyLine(50);
+		window.drawStopLine(48);
+		window.drawTargetLine(55);
 
 		let candleData = [];
 
