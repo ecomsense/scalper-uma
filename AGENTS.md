@@ -44,28 +44,30 @@
 - User-level cron is used (not root)
 - Cron script: `factory/cron.py`
 
-### Running systemctl from Python
+### Running uvicorn directly
 
-The key insight: running `/usr/bin/systemctl` directly (without sudo) works from user cron because systemd socket is accessible. Use full path:
+No systemctl needed - just run uvicorn directly. Simpler since server restarts daily and market closes at 15:30.
 
 ```python
 import subprocess
 import os
-os.chdir("/path/to/your/project")
-action = "start"  # or "stop"
-service = "your-service-name"
-CMD = ["/usr/bin/systemctl", action, f"{service}.service"]
-result = subprocess.run(CMD, capture_output=True, text=True)
-# Log output to file for debugging
-with open("data/cron.txt", "a") as f:
-    f.write(f"[{action}] {result.returncode} stdout:{result.stdout} stderr:{result.stderr}\n")
+os.chdir("/home/uma/no_env/uma_scalper")
+VENV_PY = "/home/uma/no_env/uma_scalper/.venv/bin/python"
+LOG = "/home/uma/no_env/uma_scalper/data/log.txt"
+
+def start():
+    subprocess.Popen([VENV_PY, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
+                   stdout=open(LOG, "a"), stderr=subprocess.STDOUT)
+
+def stop():
+    subprocess.run(["pkill", "-f", "uvicorn.*8000"])
 ```
 
-### Cron entries (example for your service)
+### Cron entries
 
 ```
-14 9 * * 1-5 /usr/bin/python3 /path/to/your/project/factory/cron.py start >> /path/to/your/project/data/cron.txt 2>&1
-31 15 * * 1-5 /usr/bin/python3 /path/to/your/project/factory/cron.py stop >> /path/to/your/project/data/cron.txt 2>&1
+14 9 * * 1-5 /usr/bin/python3 /home/uma/no_env/uma_scalper/factory/cron.py start >> /home/uma/no_env/uma_scalper/data/cron.txt 2>&1
+31 15 * * 1-5 /usr/bin/python3 /home/uma/no_env/uma_scalper/factory/cron.py stop >> /home/uma/no_env/uma_scalper/data/cron.txt 2>&1
 ```
 
 - Start: 9:14 AM weekdays
