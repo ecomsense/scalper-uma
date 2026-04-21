@@ -127,6 +127,7 @@ class TickRunner:
                 self.exit_id = ""
             elif item and item.get("status", None) == "OPEN":
                 ltp = self.ltps.get(self.symbol)
+                logging.info(f"exit_trade: symbol={self.symbol}, ltp_keys={list(self.ltps.keys())}, ltp={ltp}")
                 if ltp and (ltp > self.target_price or ltp < self.exit_price):
                     logging.info(f"Target reached for {self.exit_id}, modifying to market")
                     kwargs = dict(
