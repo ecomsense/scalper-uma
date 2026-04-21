@@ -92,3 +92,30 @@ with open("data/cron.txt", "a") as f:
 - Now TickRunner properly loads pending trades on startup
 
 **Key Insight**: Always sync state between API and background workers via persistent storage (trade.json), not just instance variables.
+
+### TickRunner LTP Lookup Failing for Non-ATM Symbols (2026-04-21)
+
+**Symptom**: Exit order placed successfully, but modify to market when target reached never triggered. LTP was always None.
+
+**Root Cause**: `tokens_nearest` was only containing 1 symbol (ATM closest to premium). When user traded a different symbol (e.g., P24000 when ATM was P23850), the LTP lookup failed because that symbol wasn't in the subscribed tokens list.
+
+**Flow**:
+1. Strategy picks ATM symbol closest to premium (e.g., P23850)
+2. `tokens_nearest` = {"NFO|72458": "NIFTY28APR26P23850"} (1 token)
+3. User trades P24000 (different strike)
+4. trade.json saves symbol="NIFTY28APR26P24000"
+5. TickRunner's `self.ltps` only has P23850's LTP
+6. `self.ltps.get("P24000")` returns None → modify never triggers
+
+**Fix** (`src/main.py`):
+- Pass all 198 subscribed tokens to TickRunner, not just the ATM
+- Changed: `runner = TickRunner(ws, tokens_nearest)`
+- To: `runner = TickRunner(ws, all_tokens_map)` where all_tokens_map contains all option tokens
+
+**Key Insight**: WebSocket subscribes to many symbols, but we only stored one in tokens_nearest. Need to store ALL subscribed tokens for LTP lookup.
+
+### Cron Start Not Logging (2026-04-21)
+
+**Issue**: Morning cron at 9:14 AM did not write to cron.txt. Service was running (manually started), so cron may have failed silently.
+
+**Current Status**: Investigating why morning cron output is missing from cron.txt.
