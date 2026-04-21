@@ -105,37 +105,48 @@ window.addEventListener("DOMContentLoaded", () => {
 		let buyLine = null;
 		let stopLine = null;
 		let targetLine = null;
+		
+		// Store prices for breach detection
+		let buyPrice = 0;
+		let stopPrice = 0;
+		let targetPrice = 0;
 
 		window.drawBuyLine = function(price) {
+			buyPrice = price;
 			if (buyLine) buyLine.destroy();
 			buyLine = candleSeries.createPriceLine({
 				price: price,
 				color: '#4CAF50',
-				lineWidth: 1,
+				lineWidth: 2,
 				lineStyle: 2,
-				axisLabelVisible: false,
+				axisLabelVisible: true,
+				title: 'Buy: ' + price.toFixed(2),
 			});
 		};
 
 		window.drawStopLine = function(price) {
+			stopPrice = price;
 			if (stopLine) stopLine.destroy();
 			stopLine = candleSeries.createPriceLine({
 				price: price,
 				color: '#f44336',
-				lineWidth: 1,
+				lineWidth: 2,
 				lineStyle: 2,
-				axisLabelVisible: false,
+				axisLabelVisible: true,
+				title: 'SL: ' + price.toFixed(2),
 			});
 		};
 
 		window.drawTargetLine = function(price) {
+			targetPrice = price;
 			if (targetLine) targetLine.destroy();
 			targetLine = candleSeries.createPriceLine({
 				price: price,
 				color: '#2196F3',
-				lineWidth: 1,
+				lineWidth: 2,
 				lineStyle: 2,
-				axisLabelVisible: false,
+				axisLabelVisible: true,
+				title: 'Tgt: ' + price.toFixed(2),
 			});
 		};
 
@@ -143,6 +154,13 @@ window.addEventListener("DOMContentLoaded", () => {
 			if (buyLine) { buyLine.destroy(); buyLine = null; }
 			if (stopLine) { stopLine.destroy(); stopLine = null; }
 			if (targetLine) { targetLine.destroy(); targetLine = null; }
+			buyPrice = 0;
+			stopPrice = 0;
+			targetPrice = 0;
+		};
+
+		window.getTradePrices = function() {
+			return { buyPrice, stopPrice, targetPrice };
 		};
 
 		// TEST: Draw buy line at 50
