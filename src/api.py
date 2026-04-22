@@ -72,6 +72,10 @@ class Helper:
         try:
             logging.info(f"historical: calling broker.get_time_price_series({exchange}, {token})")
             resp = cls._api.broker.get_time_price_series(exchange=exchange, token=token)
+            logging.info(f"historical: broker raw resp type: {type(resp)}, is None: {resp is None}")
+            if resp is None:
+                logging.error(f"historical: broker returned None for {exchange}|{token}")
+                return []
             logging.info(f"historical: broker returned {len(resp)} rows")
             return resp
         except Exception as e:
