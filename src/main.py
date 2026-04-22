@@ -472,18 +472,21 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
 @app.post("/api/admin/restart")
 async def restart_server() -> JSONResponse:
     """
-    Restart the uvicorn server via systemd.
+    Restart the uvicorn server (using pkill/uvicorn like cron.py).
     """
     try:
-        subprocess.run(
-            "sudo /usr/bin/systemctl restart uma-scalper.service",
-            shell=True,
-            check=True,
+        logging.info("Restarting server...")
+        subprocess.run(["pkill", "-f", "uvicorn.*8000"])
+        time.sleep(2)
+        venv_python = str(Path(__file__).parent / ".venv/bin/python")
+        subprocess.Popen(
+            [venv_python, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
+            cwd=str(Path(__file__).parent),
         )
         return JSONResponse(
             content={"message": "Server restarting...", "status": "success"}
         )
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to restart: {e}", "status": "error"},
             status_code=500,
@@ -493,14 +496,12 @@ async def restart_server() -> JSONResponse:
 @app.post("/api/admin/stop")
 async def stop_server() -> JSONResponse:
     """
-    Stop the uvicorn server via systemd.
+    Stop the uvicorn server (using pkill like cron.py).
     """
     try:
-        subprocess.run(
-            "/usr/bin/sudo /usr/bin/systemctl stop uma-scalper", shell=True, check=True
-        )
+        subprocess.run(["pkill", "-f", "uvicorn.*8000"])
         return JSONResponse(content={"message": "Server stopped", "status": "success"})
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to stop: {e}", "status": "error"},
             status_code=500,
@@ -543,18 +544,22 @@ async def get_settings_file() -> JSONResponse:
 @app.post("/api/admin/settings")
 async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
     """
-    Update settings.yml content and restart server.
+    Update settings.yml content and restart server (using pkill/uvicorn like cron.py).
     """
     try:
         settings_path = Path(S_DATA) / "settings.yml"
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        logging.info("Settings saved, restarting service...")
-        subprocess.run(["/usr/bin/sudo", "systemctl", "stop", "uma-scalper.service"])
+        logging.info("Settings saved, restarting...")
+        subprocess.run(["pkill", "-f", "uvicorn.*8000"])
         time.sleep(2)
-        subprocess.run(["/usr/bin/sudo", "systemctl", "start", "uma-scalper.service"])
-        logging.info("Service restart triggered")
+        venv_python = str(Path(__file__).parent / ".venv/bin/python")
+        subprocess.Popen(
+            [venv_python, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
+            cwd=str(Path(__file__).parent),
+        )
+        logging.info("Server restarted")
         return JSONResponse(
             content={
                 "message": "Settings saved. Server restarting...",
