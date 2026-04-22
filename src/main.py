@@ -176,9 +176,12 @@ async def trading_session_stop(app: FastAPI):
 
 def schedule_trading_session(app: FastAPI):
     """Schedule trading session start/stop based on market hours."""
-    # Clear existing jobs
-    SCHEDULER.remove_job("start_session", job_id="start_session")
-    SCHEDULER.remove_job("stop_session", job_id="stop_session")
+    # Clear existing jobs if any
+    for job_id in ["start_session", "stop_session"]:
+        try:
+            SCHEDULER.remove_job(job_id)
+        except Exception:
+            pass
     
     SCHEDULER.add_job(
         trading_session_start,
