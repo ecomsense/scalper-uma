@@ -19,15 +19,19 @@ from pathlib import Path
 import asyncio
 import time
 import json
-import subprocess
 import os
 from src.tickrunner import TickRunner
 from src.wserver import Wserver
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 from sse_starlette.sse import EventSourceResponse
 from src.strategy import Strategy
 from src.constants import dct_sym
 from traceback import print_exc
+
+MARKER_FILE = Path(S_DATA) / "settings.marker"
+SCHEDULER = AsyncIOScheduler()
 from contextlib import asynccontextmanager
 
 from pytz import timezone as tz
@@ -42,6 +46,155 @@ def verify_api_key(x_api_key: str = Header(...)) -> str:
 
 
 IST = tz("Asia/Kolkata")
+
+def touch_marker():
+    """Touch the marker file to signal settings changed."""
+    MARKER_FILE.touch()
+
+def get_marker_mtime() -> float:
+    """Get marker file modification time."""
+    if MARKER_FILE.exists():
+        return MARKER_FILE.stat().st_mtime
+    return 0
+
+def get_settings_timestamp() -> float:
+    """Get settings file modification time."""
+    settings_path = Path(S_DATA) / "settings.yml"
+    if settings_path.exists():
+        return settings_path.stat().st_mtime
+    return 0
+
+def reload_settings():
+    """Reload settings from file (re-read environment variables)."""
+    from src.constants import load_env_settings
+    load_env_settings()
+
+async def trading_session_start(app: FastAPI):
+    """Start the trading session (called by scheduler or on settings change)."""
+    logging.info("Starting trading session...")
+    
+    # Cancel existing runner if any
+    if hasattr(app.state, "runner_task"):
+        app.state.runner_task.cancel()
+        try:
+            await app.state.runner_task
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            pass
+    
+    # Reload settings fresh
+    reload_settings()
+    user_settings = get_settings()
+    
+    try:
+        api = Helper.api()
+        
+        # Get ATM from index LTP using websocket
+        index_token = f"{user_settings['exchange']}|{user_settings['token']}"
+        ws = Wserver(api, [index_token])
+        
+        # Wait for websocket to get LTP (max 30 seconds)
+        max_wait = 60
+        waited = 0
+        while not ws.ltp and waited < max_wait:
+            await asyncio.sleep(0.5)
+            waited += 1
+        
+        if not ws.ltp:
+            logging.error("Failed to get LTP from websocket")
+            return
+        
+        ltp_of_underlying = list(ws.ltp.values())[0]
+        logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
+        
+        # Now create strategy and subscribe to options
+        sgy = Strategy(user_settings, ltp_of_underlying)
+        tokens = list(sgy.tokens_for_all_trading_symbols.keys())
+        
+        if not tokens:
+            logging.warning("No tokens found for options")
+            return
+        
+        # Subscribe to options on existing websocket
+        all_tokens = tokens + [index_token]
+        ws.subscribe(all_tokens)
+        
+        # Wait for options LTP
+        waited = 0
+        while len(ws.ltp) < len(all_tokens) and waited < max_wait:
+            await asyncio.sleep(0.5)
+            waited += 1
+        
+        logging.info(f"Got quotes for {len(ws.ltp)} symbols")
+        
+        symbol_nearest_to_premium: List[str] = []
+        for ce_or_pe in ["CE", "PE"]:
+            res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
+            if res:
+                symbol_nearest_to_premium.append(res)
+        
+        tokens_nearest: Dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
+            symbol_nearest_to_premium
+        )
+        
+        app.state.tokens_nearest = tokens_nearest
+        app.state.ws = ws
+        app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
+        logging.debug(
+            f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}"
+        )
+        
+        all_tokens_map = sgy.tokens_for_all_trading_symbols
+        logging.info(f"Passing {len(all_tokens_map)} tokens to TickRunner")
+        runner = TickRunner(ws, all_tokens_map)
+        task = asyncio.create_task(runner.run())
+        app.state.runner_task = task
+        
+        logging.info(f"Nearest symbols: {tokens_nearest}")
+        logging.info("✅ Trading session started.")
+        
+    except Exception as e:
+        logging.error(f"Failed to start trading session: {e}")
+        print_exc()
+
+async def trading_session_stop(app: FastAPI):
+    """Stop the trading session (called by scheduler or on settings change)."""
+    logging.info("Stopping trading session...")
+    
+    if hasattr(app.state, "runner_task"):
+        app.state.runner_task.cancel()
+        try:
+            await app.state.runner_task
+        except asyncio.CancelledError:
+            logging.info("TickRunner task cancelled.")
+        except Exception:
+            pass
+    
+    Helper.close_positions()
+    logging.info("✅ Trading session stopped.")
+
+def schedule_trading_session(app: FastAPI):
+    """Schedule trading session start/stop based on market hours."""
+    # Clear existing jobs
+    SCHEDULER.remove_job("start_session", job_id="start_session")
+    SCHEDULER.remove_job("stop_session", job_id="stop_session")
+    
+    SCHEDULER.add_job(
+        trading_session_start,
+        trigger=CronTrigger(day_of_week="mon-fri", hour=9, minute=14, tz=IST),
+        id="start_session",
+        args=[app],
+    )
+    
+    SCHEDULER.add_job(
+        trading_session_stop,
+        trigger=CronTrigger(day_of_week="mon-fri", hour=15, minute=15, tz=IST),
+        id="stop_session",
+        args=[app],
+    )
+    
+    logging.info("Trading session scheduled: 09:14-15:15 Mon-Fri")
 
 CANDLESTICK_TIMEFRAME_SECONDS: int = 60
 CANDLESTICK_TIMEFRAME_STR: str = "1min"
@@ -107,89 +260,25 @@ def nullify() -> None:
 
 
 # --- Application Lifespan Event ---
-# We use asynccontextmanager to define the startup and shutdown logic.
+# Server runs 24/7, scheduler handles trading session
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    try:
-        api = Helper.api()
-        user_settings = get_settings()
-
-        # Get ATM from index LTP using websocket
-        index_token = f"{user_settings['exchange']}|{user_settings['token']}"
-        ws = Wserver(api, [index_token])
-
-        # Wait for websocket to get LTP (max 30 seconds)
-        max_wait = 60
-        waited = 0
-        while not ws.ltp and waited < max_wait:
-            await asyncio.sleep(0.5)
-            waited += 1
-
-        if not ws.ltp:
-            logging.error("Failed to get LTP from websocket")
-            return
-
-        ltp_of_underlying = list(ws.ltp.values())[0]
-        logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
-
-        # Now create strategy and subscribe to options
-        sgy = Strategy(user_settings, ltp_of_underlying)
-        tokens = list(sgy.tokens_for_all_trading_symbols.keys())
-
-        if not tokens:
-            logging.warning("No tokens found for options")
-            return
-
-        # Subscribe to options on existing websocket
-        all_tokens = tokens + [index_token]
-        ws.subscribe(all_tokens)
-
-        # Wait for options LTP
-        waited = 0
-        while len(ws.ltp) < len(all_tokens) and waited < max_wait:
-            await asyncio.sleep(0.5)
-            waited += 1
-
-        logging.info(f"Got quotes for {len(ws.ltp)} symbols")
-
-        symbol_nearest_to_premium: List[str] = []
-        for ce_or_pe in ["CE", "PE"]:
-            res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
-            if res:
-                symbol_nearest_to_premium.append(res)
-
-        tokens_nearest: Dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
-            symbol_nearest_to_premium
-        )
-
-        app.state.tokens_nearest = tokens_nearest
-        app.state.ws = ws
-        app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
-        logging.debug(
-            f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}"
-        )
-
-        all_tokens_map = sgy.tokens_for_all_trading_symbols
-        logging.info(f"Passing {len(all_tokens_map)} tokens to TickRunner")
-        runner = TickRunner(ws, all_tokens_map)
-        task = asyncio.create_task(runner.run())
-        app.state.runner_task = task
-
-        print(tokens_nearest, "nearest")
-        print("✅ TickRunner started.")
-
-        yield
-
-    finally:
-        print("Shutting down...")
-        if hasattr(app.state, "runner_task"):
-            app.state.runner_task.cancel()
-            try:
-                await app.state.runner_task
-            except asyncio.CancelledError:
-                print("✅ TickRunner task cancelled.")
-        Helper.close_positions()
-        print("✅ Shutdown complete.")
+    # Schedule trading start/stop (hardcoded: 9:14-15:15 Mon-Fri)
+    schedule_trading_session(app)
+    SCHEDULER.start()
+    logging.info("✅ Scheduler started.")
+    
+    # Start trading session immediately if within market hours
+    now = datetime.now(IST)
+    if now.weekday() < 5 and (9*60+14) <= now.hour*60+now.minute <= (15*60+15):
+        await trading_session_start(app)
+    
+    yield
+    
+    # Shutdown: stop scheduler and trading session
+    await trading_session_stop(app)
+    SCHEDULER.shutdown()
+    logging.info("✅ Scheduler shutdown.")
 
 
 # --- FastAPI App Initialization ---
@@ -470,21 +559,14 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
 
 
 @app.post("/api/admin/restart")
-async def restart_server() -> JSONResponse:
+async def restart_trading_session(request: Request) -> JSONResponse:
     """
-    Restart the uvicorn server (using pkill/uvicorn like cron.py).
+    Restart the trading session (soft restart).
     """
     try:
-        logging.info("Restarting server...")
-        subprocess.run(["pkill", "-9", "-f", "uvicorn.*8000"])
-        time.sleep(2)
-        subprocess.Popen(
-            ["/home/uma/no_env/uma_scalper/.venv/bin/python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
-            cwd="/home/uma/no_env/uma_scalper",
-        )
-        return JSONResponse(
-            content={"message": "Server restarting...", "status": "success"}
-        )
+        await trading_session_stop(request.app)
+        await trading_session_start(request.app)
+        return JSONResponse(content={"message": "Trading session restarted", "status": "success"})
     except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to restart: {e}", "status": "error"},
@@ -493,13 +575,13 @@ async def restart_server() -> JSONResponse:
 
 
 @app.post("/api/admin/stop")
-async def stop_server() -> JSONResponse:
+async def stop_trading_session(request: Request) -> JSONResponse:
     """
-    Stop the uvicorn server (using pkill like cron.py).
+    Stop the trading session.
     """
     try:
-        subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
-        return JSONResponse(content={"message": "Server stopped", "status": "success"})
+        await trading_session_stop(request.app)
+        return JSONResponse(content={"message": "Trading session stopped", "status": "success"})
     except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to stop: {e}", "status": "error"},
@@ -508,16 +590,18 @@ async def stop_server() -> JSONResponse:
 
 
 @app.post("/api/admin/start")
-async def start_server() -> JSONResponse:
+async def start_trading_session(request: Request) -> JSONResponse:
     """
-    Start the uvicorn server via systemd.
+    Start the trading session.
     """
     try:
-        subprocess.run(
-            "/usr/bin/sudo /usr/bin/systemctl start uma-scalper", shell=True, check=True
+        await trading_session_start(request.app)
+        return JSONResponse(content={"message": "Trading session started", "status": "success"})
+    except Exception as e:
+        return JSONResponse(
+            content={"message": f"Failed to start: {e}", "status": "error"},
+            status_code=500,
         )
-        return JSONResponse(content={"message": "Server started", "status": "success"})
-    except subprocess.CalledProcessError as e:
         return JSONResponse(
             content={"message": f"Failed to start: {e}", "status": "error"},
             status_code=500,
@@ -541,26 +625,22 @@ async def get_settings_file() -> JSONResponse:
 
 
 @app.post("/api/admin/settings")
-async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
+async def update_settings(request: Request, settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
     """
-    Update settings.yml content and restart server (using pkill/uvicorn like cron.py).
+    Update settings.yml content and restart trading session.
     """
     try:
         settings_path = Path(S_DATA) / "settings.yml"
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        logging.info("Settings saved, restarting...")
-        subprocess.run(["pkill", "-9", "-f", "uvicorn.*8000"])
-        time.sleep(2)
-        subprocess.Popen(
-            ["/home/uma/no_env/uma_scalper/.venv/bin/python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
-            cwd="/home/uma/no_env/uma_scalper",
-        )
-        logging.info("Server restarted")
+        touch_marker()
+        logging.info("Settings saved, restarting trading session...")
+        await trading_session_stop(request.app)
+        await trading_session_start(request.app)
         return JSONResponse(
             content={
-                "message": "Settings saved. Server restarting...",
+                "message": "Settings saved. Trading session restarted.",
                 "status": "success",
             }
         )
