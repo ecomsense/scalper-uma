@@ -144,6 +144,7 @@ async def trading_session_start(app: FastAPI):
         runner = TickRunner(ws, all_tokens_map)
         task = asyncio.create_task(runner.run())
         app.state.runner_task = task
+        app.state.is_trading = True
         
         logging.info(f"Nearest symbols: {tokens_nearest}")
         logging.info("✅ Trading session started.")
@@ -164,6 +165,7 @@ async def trading_session_stop(app: FastAPI):
             logging.info("TickRunner task cancelled.")
         except Exception:
             pass
+        app.state.runner_task = None
     
     Helper.close_positions()
     logging.info("✅ Trading session stopped.")
@@ -286,8 +288,8 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static"
 
 @app.get("/", include_in_schema=False)
 async def serve_root(request: Request):
-    trading_active = getattr(request.app.state, "runner_task", None) is not None
-    if not trading_active:
+    is_trading = getattr(request.app.state, "is_trading", False)
+    if not is_trading:
         return HTMLResponse("""
         <!DOCTYPE html>
         <html>
