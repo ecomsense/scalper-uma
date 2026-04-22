@@ -157,7 +157,7 @@ async def trading_session_stop(app: FastAPI):
     """Stop the trading session (called by scheduler or on settings change)."""
     logging.info("Stopping trading session...")
     
-    if hasattr(app.state, "runner_task"):
+    if hasattr(app.state, "runner_task") and app.state.runner_task:
         app.state.runner_task.cancel()
         try:
             await app.state.runner_task
@@ -651,9 +651,22 @@ async def update_settings(request: Request, settings_data: Dict[str, Any] = Body
         with open(settings_path, "w") as f:
             f.write(content)
         touch_marker()
-        logging.info("Settings saved, restarting trading session...")
-        await trading_session_stop(request.app)
-        await trading_session_start(request.app)
+        logging.info("Settings saved, stopping trading session...")
+        try:
+            await trading_session_stop(request.app)
+            logging.info("Trading session stopped successfully.")
+        except Exception as e:
+            logging.error(f"Error in trading_session_stop: {e}")
+            import traceback
+            logging.error(traceback.format_exc())
+        logging.info("Starting trading session...")
+        try:
+            await trading_session_start(request.app)
+            logging.info("Trading session started successfully.")
+        except Exception as e:
+            logging.error(f"Error in trading_session_start: {e}")
+            import traceback
+            logging.error(traceback.format_exc())
         return JSONResponse(
             content={
                 "message": "Settings saved. Trading session restarted.",
@@ -661,6 +674,9 @@ async def update_settings(request: Request, settings_data: Dict[str, Any] = Body
             }
         )
     except Exception as e:
+        logging.error(f"Error in update_settings: {e}")
+        import traceback
+        logging.error(traceback.format_exc())
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
         )
@@ -673,9 +689,13 @@ async def get_chart_settings() -> JSONResponse:
     """
     try:
         ma = O_SETG.get("ma", [])
+        base = O_SETG.get("base", "NIFTY")
+        base_settings = O_SETG.get(base, {})
+        profit = base_settings.get("profit", 5) if isinstance(base_settings, dict) else 5
         return JSONResponse(
             content={
                 "ma": ma,
+                "profit": profit,
             }
         )
     except Exception as e:

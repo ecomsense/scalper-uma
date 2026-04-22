@@ -101,7 +101,10 @@ class Helper:
     @classmethod
     def close_positions(cls) -> None:
         try:
-            for pos in cls.api().positions:
+            api = cls.api()
+            if api is None:
+                return
+            for pos in api.positions:
                 if pos and pos["quantity"] == 0:
                     continue
                 elif pos:
