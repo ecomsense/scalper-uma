@@ -241,7 +241,9 @@ window.addEventListener("DOMContentLoaded", () => {
 				showToast("Need at least 2 candles to place order", true);
 				return;
 			}
+			const curr = candles[candles.length - 1];
 			const prev = candles[candles.length - 2];
+			const ltp = curr.close;
 			const buyPrice = prev.high + 0.05;
 			const stopPrice = prev.low;
 			const targetPrice = buyPrice + profit;
@@ -253,7 +255,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, price: prev.high + 0.05, trigger_price: prev.high,
+					symbol, ltp, price: prev.high + 0.05, trigger_price: prev.high,
 					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05, tag: symbol
 				})
 			});
@@ -279,7 +281,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, price: curr.close + 2, order_type: "LIMIT",
+					symbol, ltp: curr.close, price: curr.close + 2, order_type: "LIMIT",
 					exit_price: prev.low, cost_price: curr.close + 0.05, tag: symbol
 				})
 			});
