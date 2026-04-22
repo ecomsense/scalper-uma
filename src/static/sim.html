@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulation - Draggable Stop Line</title>
+    <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.development.js"></script>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: #1a1a1a;
+        color: #d1d4dc;
+        overflow: hidden;
+      }
+      .container {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .chart-container {
+        flex: 1;
+        margin: 10px;
+        background-color: #262626;
+        border-radius: 8px;
+        position: relative;
+      }
+      .chart-info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #1a202c;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 10;
+        pointer-events: none;
+      }
+      .stop-info {
+        position: absolute;
+        top: 50px;
+        left: 10px;
+        background: #1a202c;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 12px;
+        z-index: 10;
+        color: #f44336;
+      }
+      .controls {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: #fff;
+      }
+      .green-btn { background-color: #4caf50; }
+      .red-btn { background-color: #f44336; }
+      .blue-btn { background-color: #2196f3; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="chart-container" id="chart"></div>
+    </div>
+
+    <div class="stop-info" id="stopInfo">
+      STOP: <span id="stopPrice">Drag the red line</span>
+    </div>
+    <div class="chart-info" id="ohlcInfo">
+      O: - H: - L: - C: -
+    </div>
+
+    <div class="controls">
+      <button class="blue-btn" onclick="startSim()">Start Sim</button>
+      <button class="red-btn" onclick="resetSim()">Reset</button>
+    </div>
+
+    <script>
+      const chartOptions = {
+        layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
+        grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
+        crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+        timeScale: { timeVisible: true, secondsVisible: false },
+      };
+
+      const candlestickOptions = {
+        upColor: "#4CAF50",
+        downColor: "#f44336",
+        borderVisible: false,
+        wickUpColor: "#4CAF50",
+        wickDownColor: "#f44336",
+      };
+
+      const chart = LightweightCharts.createChart(document.getElementById("chart"), chartOptions);
+      const candleSeries = chart.addCandlestickSeries(candlestickOptions);
+
+      let candleData = [];
+      let stopLine = null;
+      let dragging = null;
+      let simRunning = false;
+      let simTime = 0;
+
+      function generateDummyData(count = 200) {
+        const data = [];
+        let price = 22000;
+        const now = Math.floor(Date.now() / 1000);
+        const startTime = now - count * 60;
+
+        for (let i = 0; i < count; i++) {
+          const change = (Math.random() - 0.5) * 30;
+          const open = price;
+          const close = price + change;
+          const high = Math.max(open, close) + Math.random() * 10;
+          const low = Math.min(open, close) - Math.random() * 10;
+          data.push({
+            time: startTime + i * 60,
+            open: Math.round(open * 100) / 100,
+            high: Math.round(high * 100) / 100,
+            low: Math.round(low * 100) / 100,
+            close: Math.round(close * 100) / 100,
+          });
+          price = close;
+        }
+        return data;
+      }
+
+      function drawStopLine(price) {
+        if (stopLine) {
+          try { candleSeries.removePriceLine(stopLine); } catch(e) {}
+        }
+        stopLine = candleSeries.createPriceLine({
+          price: price,
+          color: '#f44336',
+          lineWidth: 2,
+          lineStyle: LightweightCharts.LineStyle.Dashed,
+          axisLabelVisible: true,
+          title: 'STOP',
+        });
+        document.getElementById("stopPrice").textContent = price.toFixed(2);
+      }
+
+      function handleDragging(container) {
+        container.addEventListener('mousedown', (e) => {
+          if (!stopLine) return;
+          const rect = container.getBoundingClientRect();
+          const y = e.clientY - rect.top;
+          const lineY = candleSeries.priceToCoordinate(stopLine.options.price);
+          if (Math.abs(y - lineY) < 15) {
+            dragging = { line: stopLine, startY: y };
+            container.style.cursor = 'ns-resize';
+          }
+        });
+
+        container.addEventListener('mousemove', (e) => {
+          if (!dragging) return;
+          const rect = container.getBoundingClientRect();
+          const y = e.clientY - rect.top;
+          const visibleRange = candleSeries.visibleRange();
+          const height = chart.height();
+
+          if (visibleRange) {
+            const range = visibleRange.to - visibleRange.from;
+            const newPrice = visibleRange.to - (y / height) * range;
+            const rounded = Math.round(newPrice * 100) / 100;
+            dragging.line.applyOptions({ price: rounded });
+            document.getElementById("stopPrice").textContent = rounded.toFixed(2);
+          }
+        });
+
+        container.addEventListener('mouseup', () => {
+          if (dragging) {
+            dragging = null;
+            container.style.cursor = '';
+          }
+        });
+
+        container.addEventListener('mouseleave', () => {
+          if (dragging) {
+            dragging = null;
+            container.style.cursor = '';
+          }
+        });
+      }
+
+      chart.subscribeCrosshairMove((param) => {
+        const data = param.seriesData.get(candleSeries);
+        const el = document.getElementById("ohlcInfo");
+        if (data) {
+          el.textContent = `O:${data.open} H:${data.high} L:${data.low} C:${data.close}`;
+        } else {
+          el.textContent = 'O: - H: - L: - C: -';
+        }
+      });
+
+      handleDragging(document.getElementById("chart"));
+
+      function startSim() {
+        if (simRunning) return;
+        candleData = generateDummyData(200);
+        candleSeries.setData(candleData);
+        
+        const last = candleData[candleData.length - 1];
+        drawStopLine(last.close - 50);
+        
+        simRunning = true;
+        simTime = setInterval(() => {
+          if (candleData.length === 0) return;
+          
+          const now = Math.floor(Date.now() / 1000);
+          const lastCandle = candleData[candleData.length - 1];
+          
+          if (now - lastCandle.time >= 60) {
+            const change = (Math.random() - 0.5) * 20;
+            const newCandle = {
+              time: now,
+              open: lastCandle.close,
+              high: lastCandle.close + change + 5,
+              low: lastCandle.close + change - 5,
+              close: lastCandle.close + change,
+            };
+            candleData.push(newCandle);
+            candleSeries.update(newCandle);
+          } else {
+            const update = {
+              time: lastCandle.time,
+              open: lastCandle.open,
+              high: lastCandle.high + Math.random() * 2,
+              low: lastCandle.low - Math.random() * 2,
+              close: lastCandle.close + (Math.random() - 0.5) * 5,
+            };
+            candleSeries.update(update);
+          }
+        }, 1000);
+      }
+
+      function resetSim() {
+        simRunning = false;
+        clearInterval(simTime);
+        candleData = [];
+        if (stopLine) {
+          try { candleSeries.removePriceLine(stopLine); } catch(e) {}
+          stopLine = null;
+        }
+        document.getElementById("stopPrice").textContent = "Drag the red line";
+      }
+    </script>
+  </body>
+</html>
