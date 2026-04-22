@@ -17,7 +17,7 @@
 ## Trading Flow
 
 1. App starts → `Helper.api()` creates broker session
-2. WebSocket connects via `Wserver` 
+2. WebSocket connects via `Wserver`
 3. `TickRunner` monitors prices and executes trades
 4. SSE endpoints stream candlesticks and order updates
 
@@ -26,6 +26,38 @@
 - **Credentials**: `{project-name}_.yml` (e.g., `scalper-uma.yml`)
 - **Settings**: `data/settings.yml`
 - **Trade state**: `data/trade.json`
+
+## Server Management
+
+### Server Details
+- **IP**: 65.20.83.178
+- **User**: uma
+- **Service**: fastapi_app.service
+
+### Starting/Stopping Server
+```bash
+ssh uma@65.20.83.178 "systemctl --user stop fastapi_app.service && sleep 2 && systemctl --user start fastapi_app.service"
+```
+
+### Restarting After Code Changes
+```bash
+# Local: commit and push
+cd /home/pannet1/py/fastapi/scalper-uma && git add -A && git commit -m "message" && git push
+
+# Server: pull and restart
+ssh uma@65.20.83.178 "cd /home/uma/no_env/uma_scalper && git pull && systemctl --user stop fastapi_app.service && sleep 2 && systemctl --user start fastapi_app.service"
+```
+
+### Testing Endpoints
+```bash
+ssh uma@65.20.83.178 "curl -s http://127.0.0.1:8000/api/chart/settings"
+```
+
+### Killing Ghost Processes
+If multiple uvicorn processes are running:
+```bash
+ssh uma@65.20.83.178 "pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service"
+```
 
 ## Common Tasks
 
@@ -38,86 +70,33 @@
 - The "session" in this codebase refers to the broker API connection (Finvasia)
 - No database - uses JSON files for persistence
 - Trades NIFTY/BANKNIFTY options based on premium proximity
-
-## Cron Setup
-
-- User-level cron is used (not root)
-- Cron script: `factory/cron.py`
-
-### Running uvicorn directly
-
-No systemctl needed - just run uvicorn directly. Simpler since server restarts daily and market closes at 15:30.
-
-```python
-import subprocess
-import os
-os.chdir("/home/uma/no_env/uma_scalper")
-VENV_PY = "/home/uma/no_env/uma_scalper/.venv/bin/python"
-LOG = "/home/uma/no_env/uma_scalper/data/log.txt"
-
-def start():
-    subprocess.Popen([VENV_PY, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
-                   stdout=open(LOG, "a"), stderr=subprocess.STDOUT)
-
-def stop():
-    subprocess.run(["pkill", "-f", "uvicorn.*8000"])
-```
-
-### Cron entries
-
-```
-14 9 * * 1-5 /usr/bin/python3 /home/uma/no_env/uma_scalper/factory/cron.py start >> /home/uma/no_env/uma_scalper/data/cron.txt 2>&1
-31 15 * * 1-5 /usr/bin/python3 /home/uma/no_env/uma_scalper/factory/cron.py stop >> /home/uma/no_env/uma_scalper/data/cron.txt 2>&1
-```
-
-- Start: 9:14 AM weekdays
-- Stop: 3:31 PM weekdays
+- Always use `systemctl --user` for server management
+- Delete cached bytecode: `rm -rf src/__pycache__`
+- Use `default.target` for user services (not `multi-user.target`)
 
 ## Bug Fixes & Discoveries
 
-### TickRunner Not Detecting Entry Order Completion (2026-04-21)
+### Chart Settings Profit (2026-04-22)
 
-**Symptom**: Stop loss (exit) order was never placed after entry order completed.
+**Symptom**: Frontend always showed TGT as buy + 5, ignoring settings.yml profit value.
 
-**Root Cause**: TickRunner stored `entry_id` only in its instance variable (`self.entry_id`), but when an order was placed via the API endpoint (`/api/trade`), the order ID was saved to `trade.json`. TickRunner never read from `trade.json`, so it never detected when entry orders completed and never placed the exit order.
-
-**Flow**:
-1. User clicks BUY → API calls `Helper.one_side(order_details)` → returns order_id
-2. API saves to `trade.json`: `{"entry_id": "26042100278879", "symbol": "...", ...}`
-3. TickRunner's `self.entry_id` was always "" (empty string)
-4. `is_trade()` checks `self.entry_id` which was always empty → never triggered
-
-**Fix** (`src/tickrunner.py`):
-- Added `_load_trade_from_file()` method to read from trade.json on init
-- Modified `create()` to check for existing trade before clearing
-- Save exit_id to trade.json when exit order is placed
-- Now TickRunner properly loads pending trades on startup
-
-**Key Insight**: Always sync state between API and background workers via persistent storage (trade.json), not just instance variables.
-
-### TickRunner LTP Lookup Failing for Non-ATM Symbols (2026-04-21)
-
-**Symptom**: Exit order placed successfully, but modify to market when target reached never triggered. LTP was always None.
-
-**Root Cause**: `tokens_nearest` was only containing 1 symbol (ATM closest to premium). When user traded a different symbol (e.g., P24000 when ATM was P23850), the LTP lookup failed because that symbol wasn't in the subscribed tokens list.
-
-**Flow**:
-1. Strategy picks ATM symbol closest to premium (e.g., P23850)
-2. `tokens_nearest` = {"NFO|72458": "NIFTY28APR26P23850"} (1 token)
-3. User trades P24000 (different strike)
-4. trade.json saves symbol="NIFTY28APR26P24000"
-5. TickRunner's `self.ltps` only has P23850's LTP
-6. `self.ltps.get("P24000")` returns None → modify never triggers
+**Root Cause**: `/api/chart/settings` endpoint only returned `ma` config, not `profit`.
 
 **Fix** (`src/main.py`):
-- Pass all 198 subscribed tokens to TickRunner, not just the ATM
-- Changed: `runner = TickRunner(ws, tokens_nearest)`
-- To: `runner = TickRunner(ws, all_tokens_map)` where all_tokens_map contains all option tokens
+```python
+base = O_SETG.get("base", "NIFTY")
+base_settings = O_SETG.get(base, {})
+profit = base_settings.get("profit", 5)
+return JSONResponse(content={"ma": ma, "profit": profit})
+```
 
-**Key Insight**: WebSocket subscribes to many symbols, but we only stored one in tokens_nearest. Need to store ALL subscribed tokens for LTP lookup.
+### Multiple Uvicorn Processes
 
-### Cron Start Not Logging (2026-04-21)
+**Symptom**: Code changes not taking effect despite restart.
 
-**Issue**: Morning cron at 9:14 AM did not write to cron.txt. Service was running (manually started), so cron may have failed silently.
+**Root Cause**: Multiple uvicorn processes running (old from --reload or direct start).
 
-**Current Status**: Investigating why morning cron output is missing from cron.txt.
+**Fix**: Always kill all processes before restart:
+```bash
+pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service
+```
