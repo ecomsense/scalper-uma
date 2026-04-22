@@ -266,10 +266,10 @@ def nullify() -> None:
 # Server runs 24/7, scheduler handles trading session
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Schedule trading start/stop (hardcoded: 9:14-15:15 Mon-Fri)
+    # Schedule trading start/stop (hardcoded: 9:14-23:59 Mon-Fri)
     schedule_trading_session(app)
     SCHEDULER.start()
-logging.info("✅ Scheduler started.")
+    logging.info("✅ Scheduler started.")
     
     # Start trading session immediately (always, for testing)
     await trading_session_start(app)
