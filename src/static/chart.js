@@ -254,7 +254,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					symbol, price: prev.high + 0.05, trigger_price: prev.high,
-					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05
+					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05, tag: symbol
 				})
 			});
 		};
@@ -280,7 +280,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					symbol, price: curr.close + 2, order_type: "LIMIT",
-					exit_price: prev.low, cost_price: curr.close + 0.05
+					exit_price: prev.low, cost_price: curr.close + 0.05, tag: symbol
 				})
 			});
 		};
@@ -288,7 +288,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		document.getElementById(buttonIds.reset).onclick = () => {
 			updatePositionsSummary();
 			clearAllLines();
-			fetch("/api/trade/sell", { method: "GET" });
+			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" });
 		};
 	}
 

@@ -352,14 +352,24 @@ async def place_buy_order(
 
 
 @app.get("/api/trade/sell")
-async def reset() -> JSONResponse:
-    nullify()
-    return JSONResponse(
-        content={
-            "message": "reset completed",
-            "status": "success",
-        }
-    )
+async def reset(symbol: str = "") -> JSONResponse:
+    if symbol:
+        logging.info(f"Sell request for symbol: {symbol}")
+        nullify()
+        return JSONResponse(
+            content={
+                "message": f"reset completed for {symbol}",
+                "status": "success",
+            }
+        )
+    else:
+        nullify()
+        return JSONResponse(
+            content={
+                "message": "reset completed",
+                "status": "success",
+            }
+        )
 
 
 # --- SSE Endpoint for Streaming Candlesticks ---
