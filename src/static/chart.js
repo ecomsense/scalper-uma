@@ -325,6 +325,5 @@ window.addEventListener("DOMContentLoaded", () => {
 			setupChart("chart-PE", symbols[0], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
 
 			updatePositionsSummary();
-			setInterval(updatePositionsSummary, 5000);
 		});
 });
