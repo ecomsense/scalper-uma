@@ -70,9 +70,12 @@ class Helper:
         cls, exchange: str, token: str, interval: int = 1
     ) -> List[Dict[str, Any]]:
         try:
+            # Force re-create broker to get fresh session
+            logging.info(f"historical: refreshing API session")
+            cls._api = None
+            api = cls.api()
             logging.info(f"historical: calling broker.get_time_price_series({exchange}, {token})")
-            resp = cls._api.broker.get_time_price_series(exchange=exchange, token=token)
-            logging.info(f"historical: broker raw resp type: {type(resp)}, is None: {resp is None}")
+            resp = api.broker.get_time_price_series(exchange=exchange, token=token)
             if resp is None:
                 logging.error(f"historical: broker returned None for {exchange}|{token}")
                 return []
