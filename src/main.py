@@ -273,7 +273,7 @@ async def lifespan(app: FastAPI):
     
     # Start trading session immediately if within market hours
     now = datetime.now(IST)
-    if now.weekday() < 5 and (9*60+14) <= now.hour*60+now.minute <= (15*60+15):
+    if now.weekday() < 5 and (9*60+14) <= now.hour*60+now.minute <= (23*60+59):
         await trading_session_start(app)
     
     yield
