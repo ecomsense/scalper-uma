@@ -478,11 +478,10 @@ async def restart_server() -> JSONResponse:
         logging.info("Restarting server...")
         subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
         time.sleep(2)
-        venv_python = str(Path(__file__).parent / ".venv/bin/python")
         subprocess.Popen(
-            f"{venv_python} -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+            "/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
             shell=True,
-            cwd=str(Path(__file__).parent),
+            cwd="/home/uma/no_env/uma_scalper",
         )
         return JSONResponse(
             content={"message": "Server restarting...", "status": "success"}
