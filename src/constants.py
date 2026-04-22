@@ -105,6 +105,14 @@ def read_yml() -> tuple[Dict[str, Any], Dict[str, Any]]:
 O_CNFG: Dict[str, Any]
 O_SETG: Dict[str, Any]
 O_CNFG, O_SETG = read_yml()
+
+def load_env_settings():
+    """Reload settings from settings.yml (clears cache)."""
+    global O_CNFG, O_SETG
+    get_settings.cache_clear()
+    O_CNFG, O_SETG = read_yml()
+    print("Settings reloaded from file.")
+
 print("broker credentials" + "\n" + "*****************")
 pprint(O_CNFG)
 
