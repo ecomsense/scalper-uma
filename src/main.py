@@ -476,11 +476,10 @@ async def restart_server() -> JSONResponse:
     """
     try:
         logging.info("Restarting server...")
-        subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
+        subprocess.run(["pkill", "-9", "-f", "uvicorn.*8000"])
         time.sleep(2)
         subprocess.Popen(
-            "/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
-            shell=True,
+            ["/home/uma/no_env/uma_scalper/.venv/bin/python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
             cwd="/home/uma/no_env/uma_scalper",
         )
         return JSONResponse(
@@ -552,11 +551,10 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         with open(settings_path, "w") as f:
             f.write(content)
         logging.info("Settings saved, restarting...")
-        subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
+        subprocess.run(["pkill", "-9", "-f", "uvicorn.*8000"])
         time.sleep(2)
         subprocess.Popen(
-            "/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
-            shell=True,
+            ["/home/uma/no_env/uma_scalper/.venv/bin/python", "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
             cwd="/home/uma/no_env/uma_scalper",
         )
         logging.info("Server restarted")
