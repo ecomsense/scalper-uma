@@ -70,10 +70,13 @@ class Helper:
         cls, exchange: str, token: str, interval: int = 1
     ) -> List[Dict[str, Any]]:
         try:
+            logging.info(f"historical: calling broker.get_time_price_series({exchange}, {token})")
             resp = cls._api.broker.get_time_price_series(exchange=exchange, token=token)
+            logging.info(f"historical: broker returned {len(resp)} rows")
             return resp
         except Exception as e:
             logging.error(f"{e} in historical")
+            print_exc()
             return []
 
     @classmethod
