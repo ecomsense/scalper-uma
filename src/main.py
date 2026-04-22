@@ -554,10 +554,10 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         logging.info("Settings saved, restarting...")
         subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
         time.sleep(2)
-        venv_python = str(Path(__file__).parent / ".venv/bin/python")
         subprocess.Popen(
-            [venv_python, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
-            cwd=str(Path(__file__).parent),
+            "/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+            shell=True,
+            cwd="/home/uma/no_env/uma_scalper",
         )
         logging.info("Server restarted")
         return JSONResponse(
