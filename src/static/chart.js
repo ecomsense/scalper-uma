@@ -256,7 +256,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					symbol, ltp, price: prev.high + 0.05, trigger_price: prev.high,
-					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05, tag: symbol
+					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05
 				})
 			});
 		};
@@ -282,7 +282,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					symbol, ltp: curr.close, price: curr.close + 2, order_type: "LIMIT",
-					exit_price: prev.low, cost_price: curr.close + 0.05, tag: symbol
+					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
 			});
 		};
