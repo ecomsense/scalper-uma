@@ -64,11 +64,6 @@ def get_settings_timestamp() -> float:
         return settings_path.stat().st_mtime
     return 0
 
-def reload_settings():
-    """Reload settings from file (re-read environment variables)."""
-    from src.constants import load_env_settings
-    load_env_settings()
-
 async def trading_session_start(app: FastAPI):
     """Start the trading session (called by scheduler or on settings change)."""
     logging.info("Starting trading session...")
@@ -83,8 +78,7 @@ async def trading_session_start(app: FastAPI):
         except Exception:
             pass
     
-    # Reload settings fresh
-    reload_settings()
+    # Get fresh settings
     user_settings = get_settings()
     
     try:
