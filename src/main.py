@@ -269,12 +269,10 @@ async def lifespan(app: FastAPI):
     # Schedule trading start/stop (hardcoded: 9:14-15:15 Mon-Fri)
     schedule_trading_session(app)
     SCHEDULER.start()
-    logging.info("✅ Scheduler started.")
+logging.info("✅ Scheduler started.")
     
-    # Start trading session immediately if within market hours
-    now = datetime.now(IST)
-    if now.weekday() < 5 and (9*60+14) <= now.hour*60+now.minute <= (23*60+59):
-        await trading_session_start(app)
+    # Start trading session immediately (always, for testing)
+    await trading_session_start(app)
     
     yield
     
