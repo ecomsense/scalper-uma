@@ -13,7 +13,7 @@ from src.constants import (
 from functools import lru_cache
 import pandas as pd
 from fastapi import FastAPI, Body, Request, HTTPException, Depends, Header
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
@@ -285,7 +285,20 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static"
 
 
 @app.get("/", include_in_schema=False)
-async def serve_root():
+async def serve_root(request: Request):
+    trading_active = getattr(request.app.state, "runner_task", None) is not None
+    if not trading_active:
+        return HTMLResponse("""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Scalper-UMA</title></head>
+        <body style="font-family:Arial;text-align:center;padding-top:100px;background:#1a1a2e;color:#fff;">
+            <h1>Application is on scheduled sleep</h1>
+            <p>Trading hours: 09:14 - 23:59 IST</p>
+            <p>Will resume automatically when market opens.</p>
+        </body>
+        </html>
+        """)
     return FileResponse(STATIC_DIR / "index.html")
 
 
