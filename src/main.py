@@ -476,11 +476,12 @@ async def restart_server() -> JSONResponse:
     """
     try:
         logging.info("Restarting server...")
-        subprocess.run(["pkill", "-f", "uvicorn.*8000"])
+        subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
         time.sleep(2)
         venv_python = str(Path(__file__).parent / ".venv/bin/python")
         subprocess.Popen(
-            [venv_python, "-m", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"],
+            f"{venv_python} -m uvicorn src.main:app --host 0.0.0.0 --port 8000",
+            shell=True,
             cwd=str(Path(__file__).parent),
         )
         return JSONResponse(
@@ -499,7 +500,7 @@ async def stop_server() -> JSONResponse:
     Stop the uvicorn server (using pkill like cron.py).
     """
     try:
-        subprocess.run(["pkill", "-f", "uvicorn.*8000"])
+        subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
         return JSONResponse(content={"message": "Server stopped", "status": "success"})
     except Exception as e:
         return JSONResponse(
@@ -552,7 +553,7 @@ async def update_settings(settings_data: Dict[str, Any] = Body(...)) -> JSONResp
         with open(settings_path, "w") as f:
             f.write(content)
         logging.info("Settings saved, restarting...")
-        subprocess.run(["pkill", "-f", "uvicorn.*8000"])
+        subprocess.run("pkill -f 'uvicorn.*8000'", shell=True)
         time.sleep(2)
         venv_python = str(Path(__file__).parent / ".venv/bin/python")
         subprocess.Popen(
