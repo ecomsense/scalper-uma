@@ -357,6 +357,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
+        logging.info(f"historical: before Helper.historical: Helper._api={Helper._api}, Helper._api.broker={Helper._api.broker}")
         logging.info(f"historical: calling broker: exchange={exchange}, token={token}")
 
         historical_data = Helper.historical(exchange, token)
