@@ -189,12 +189,12 @@ def schedule_trading_session(app: FastAPI):
     
     SCHEDULER.add_job(
         trading_session_stop,
-        trigger=CronTrigger(day_of_week="mon-fri", hour=15, minute=15, tz=IST),
+        trigger=CronTrigger(day_of_week="mon-fri", hour=23, minute=59, tz=IST),
         id="stop_session",
         args=[app],
     )
     
-    logging.info("Trading session scheduled: 09:14-15:15 Mon-Fri")
+    logging.info("Trading session scheduled: 09:14-23:59 Mon-Fri (TESTING)")
 
 CANDLESTICK_TIMEFRAME_SECONDS: int = 60
 CANDLESTICK_TIMEFRAME_STR: str = "1min"
