@@ -64,6 +64,22 @@ class Helper:
             logging.error(f"Error cancelling other orders: {e}")
 
     @classmethod
+    def cancel_all_orders(cls, symbol: str, keep_order_id: str = None) -> None:
+        try:
+            orders = cls.orders()
+            if not orders:
+                return
+            for o in orders:
+                if o.get("symbol") == symbol and o.get("status") in ["OPEN", "trigger_pending", "PENDING"]:
+                    if keep_order_id and o.get("order_id") == keep_order_id:
+                        continue
+                    cancel_args = {"order_id": o.get("order_id"), "quantity": o.get("quantity")}
+                    cls._api.order_cancel(**cancel_args)
+                    logging.info(f"Cancelled order {o.get('order_id')} for {symbol}")
+        except Exception as e:
+            logging.error(f"Error cancelling all orders: {e}")
+
+    @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
         order_book = cls.api().orders
         cls._orders = post_order_hook(*order_book)
