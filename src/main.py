@@ -364,6 +364,16 @@ async def get_positions_summary() -> JSONResponse:
         )
     except Exception as e:
         logging.error(f"Error getting positions summary: {e}")
+        return JSONResponse(
+            content={
+                "positions": [],
+                "position_count": 0,
+                "active_orders": 0,
+                "order_count": 0,
+                "m2m": 0.0,
+                "realized_pnl": 0.0,
+            }
+        )
 
 
 @app.get("/api/historical/{symbol}")
