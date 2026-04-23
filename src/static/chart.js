@@ -307,6 +307,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 
 			const orderSource = new EventSource("/sse/orders");
+			setInterval(updatePositionsSummary, 5000);
 			orderSource.addEventListener("order_msg", (e) => {
 				try {
 					const msg = JSON.parse(e.data);
