@@ -175,7 +175,6 @@ async def trading_session_stop(app: FastAPI):
             pass
         app.state.runner_task = None
 
-    Helper.close_positions()
     logging.info("✅ Trading session stopped.")
 
 
@@ -277,8 +276,6 @@ def nullify(symbol: str = "") -> None:
 
         if ltp and symbol:
             Helper.close_all_for_symbol(symbol, ltp)
-        else:
-            Helper.close_positions()
     except Exception as e:
         logging.error(f"Error in null ify: {e}")
         print_exc()
