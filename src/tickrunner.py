@@ -127,7 +127,7 @@ class TickRunner:
                 O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
                 self.entry_id = ""
                 self.exit_id = ""
-            elif item and item.get("status", None) == "OPEN":
+            elif item and item.get("status", None) in ["OPEN", "TRIGGER_PENDING"]:
                 ltp = self.ltps.get(self.symbol)
                 ws_ltp_keys = list(self.ws.ltp.keys())
                 logging.info(f"exit_trade: symbol={self.symbol} in tokens_nearest={self.symbol in self.tokens_nearest} in ltps={self.symbol in self.ltps}, ws_ltp_keys={ws_ltp_keys[:3]}..., ltp={ltp}")
