@@ -18,14 +18,13 @@ def login() -> Any:
     logging.info(f"BrokerClass: {broker_module}")
     BrokerClass = getattr(broker_module, broker_name.capitalize())
 
-    print(O_CNFG)
+    logging.debug(f"Broker credentials: {O_CNFG}")
     broker_object = BrokerClass(**O_CNFG)
     if broker_object.authenticate():
         logging.info("api connected")
-        print("connected")
         return broker_object
     else:
-        print("failed to connect, exiting")
+        logging.critical("failed to connect, exiting")
         __import__("sys").exit(1)
 
 
@@ -58,21 +57,7 @@ class Helper:
             return None
 
     @classmethod
-    def cancel_other_orders(cls, symbol: str, keep_order_id: str, side: str) -> None:
-        try:
-            orders = cls.orders()
-            if not orders:
-                return
-            for o in orders:
-                if o.get("symbol") == symbol and o.get("side") == side and o.get("status") in ["OPEN", "trigger_pending", "PENDING"] and o.get("order_id") != keep_order_id:
-                    cancel_args = {"order_id": o.get("order_id"), "quantity": o.get("quantity")}
-                    cls._api.order_cancel(**cancel_args)
-                    logging.info(f"Cancelled order {o.get('order_id')} for {symbol}")
-        except Exception as e:
-            logging.error(f"Error cancelling other orders: {e}")
-
-    @classmethod
-    def cancel_all_orders(cls, symbol: str, keep_order_id: str = None) -> None:
+    def cancel_orders(cls, symbol: str, keep_order_id: str = None, side: str = None) -> None:
         try:
             orders = cls.orders()
             if not orders:
@@ -81,11 +66,13 @@ class Helper:
                 if o.get("symbol") == symbol and o.get("status") in ["OPEN", "trigger_pending", "PENDING"]:
                     if keep_order_id and o.get("order_id") == keep_order_id:
                         continue
+                    if side and o.get("side") != side:
+                        continue
                     cancel_args = {"order_id": o.get("order_id"), "quantity": o.get("quantity")}
                     cls._api.order_cancel(**cancel_args)
                     logging.info(f"Cancelled order {o.get('order_id')} for {symbol}")
         except Exception as e:
-            logging.error(f"Error cancelling all orders: {e}")
+            logging.error(f"Error cancelling orders: {e}")
 
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
@@ -95,16 +82,6 @@ class Helper:
             order_book = [{}]
         cls._orders = post_order_hook(*order_book)
         return cls._orders
-
-    @classmethod
-    def get_orders(cls) -> List[Dict[str, Any]]:
-        OPEN_ORDERS: List[Dict[str, Any]] = []
-        if cls._orders is not None:
-            for item in cls._orders:
-                if item["status"] == "COMPLETE":
-                    OPEN_ORDERS.append(item)
-                    return OPEN_ORDERS
-        return OPEN_ORDERS
 
     @classmethod
     def historical(
@@ -140,60 +117,12 @@ class Helper:
         return None
 
     @classmethod
-    def close_positions(cls) -> None:
-        try:
-            api = cls.api()
-            if api is None:
-                return
-            for pos in api.positions:
-                if pos and pos["quantity"] == 0:
-                    continue
-                elif pos:
-                    quantity = abs(pos["quantity"])
-                    if pos["quantity"] < 0:
-                        logging.debug(f"buy pos: {pos}")
-                        price = float(pos["lp"]) + 2
-                        args = dict(
-                            symbol=pos["symbol"],
-                            quantity=quantity,
-                            disclosed_quantity=quantity,
-                            product=pos["prd"],
-                            side="B",
-                            order_type="LMT",
-                            price=price,
-                            trigger_price=0,
-                            exchange="NFO",
-                            tag="close",
-                        )
-                        resp = cls._api.order_place(**args)
-                        logging.debug(f"api responded with {resp}")
-                    elif quantity > 0:
-                        price = float(pos["lp"]) + 2
-                        args = dict(
-                            symbol=pos["symbol"],
-                            quantity=quantity,
-                            disclosed_quantity=quantity,
-                            product=pos["prd"],
-                            side="S",
-                            order_type="LMT",
-                            price=price,
-                            trigger_price=0,
-                            exchange=pos["exchange"],
-                            tag="close",
-                        )
-                        resp = cls._api.order_place(**args)
-                        logging.debug(f"api responded with {resp}")
-        except Exception as e:
-            logging.error(f"while closing positions")
-            print_exc()
-
-    @classmethod
     def close_all_for_symbol(cls, symbol: str, ltp: float, max_retries: int = 5) -> None:
         slippage = 0.50
         for loop in range(max_retries):
             try:
                 current_slippage = slippage * (loop + 1)
-                cls.cancel_all_orders(symbol)
+                cls.cancel_orders(symbol)
                 time.sleep(1)
                 positions = cls.api().positions
                 open_positions = [p for p in positions if p and p.get("symbol") == symbol and p.get("quantity", 0) != 0]
@@ -246,7 +175,7 @@ class Helper:
             positions = cls.api().positions
             if any(positions):
                 for pos in positions:
-                    print(pos["urmtom"], pos["rpnl"])
+                    logging.debug(f"M2M: urmtom={pos['urmtom']}, rpnl={pos['rpnl']}")
                     pnl += pos["urmtom"] + pos["rpnl"]
         except Exception as e:
             message = f"while calculating {e}"
@@ -256,27 +185,22 @@ class Helper:
 
 
 if __name__ == "__main__":
-    from pprint import pprint
+    import json
     import pandas as pd
     from src.constants import S_DATA
 
     Helper.api()
-    # resp = Helper._api.broker.get_order_book()
     resp = Helper.orders()
-    """
-    pprint(resp)
     if resp and any(resp):
+        logging.info(f"Orders count: {len(resp)}")
         pd.DataFrame(resp).to_csv(S_DATA + "orders.csv", index=False)
-        print(pd.DataFrame(resp))
     else:
-        print("no response from orders")
+        logging.info("no response from orders")
     resp = Helper.api().positions
-    pprint(resp)
     if resp and any(resp):
+        logging.info(f"Positions count: {len(resp)}")
         pd.DataFrame(resp).to_csv(S_DATA + "positions.csv", index=False)
-        print(pd.DataFrame(resp))
     else:
-        print("no response from positions")
+        logging.info("no response from positions")
 
-    """
-    print("m2m", Helper.mtm())
+    logging.info(f"m2m: {Helper.mtm()}")

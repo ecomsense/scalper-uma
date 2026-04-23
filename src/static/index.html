@@ -3,228 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Live Scalping Charts</title>
+    <title>UMA Scalper</title>
     <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.development.js"></script>
-    <style>
-      html,
-      body {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
-        background-color: #1a1a1a;
-        color: #d1d4dc;
-        overflow: hidden;
-      }
-
-      .container {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-
-      .chart-grid {
-        display: flex;
-        flex-grow: 1;
-        flex-wrap: wrap;
-        justify-content: space-around;
-        align-items: center;
-        gap: 10px;
-        padding: 10px;
-        box-sizing: border-box;
-      }
-
-      .chart-container {
-        height: 100%;
-        flex: 1 1 45vw;
-        background-color: #262626;
-        border-radius: 8px;
-        padding: 10px;
-        padding-bottom: 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        box-sizing: border-box;
-        max-width: 49vw;
-        /* Key change: Use flex-grow to fill vertical space */
-        display: flex;
-        flex-direction: column;
-        flex-grow: 1;
-      }
-
-      /* The key fix: make the chart div itself flexible */
-      .chart-container > div[id^="chart-"] {
-        flex-grow: 1;
-      }
-
-      .chart-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 5px;
-      }
-
-      .footer {
-        display: none;
-      }
-
-      .bottom-panel {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background-color: #262626;
-        display: flex;
-        justify-content: space-around;
-        padding: 10px 0;
-        border-top: 2px solid #444;
-        z-index: 100;
-      }
-      .panel-item {
-        font-size: 1.1em;
-        font-weight: bold;
-      }
-      .panel-item .label {
-        color: #888;
-        margin-right: 5px;
-      }
-      .panel-item span:last-child {
-        color: #4caf50;
-      }
-      .panel-item.negative span:last-child {
-        color: #f44336;
-      }
-
-      .left-buttons,
-      .right-buttons {
-        display: flex;
-        gap: 5px;
-      }
-
-      .chart-title {
-        font-size: 1em;
-        text-align: center;
-        color: #d1d1d1;
-        flex-grow: 1;
-      }
-
-      .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.7);
-        z-index: 1000;
-      }
-      .modal-content {
-        background-color: #262626;
-        margin: 10% auto;
-        padding: 20px;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 800px;
-        max-height: 80vh;
-        overflow: auto;
-      }
-      .modal-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-      }
-      .modal-header h2 {
-        margin: 0;
-      }
-      .close {
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-        color: #fff;
-      }
-      textarea {
-        width: 100%;
-        height: 400px;
-        background-color: #1a1a1a;
-        color: #d1d4dc;
-        border: 1px solid #444;
-        border-radius: 5px;
-        padding: 10px;
-        font-family: monospace;
-        font-size: 14px;
-      }
-
-      button {
-        padding: 8px 16px;
-        border-radius: 5px;
-        border: none;
-        cursor: pointer;
-        font-size: 0.9em;
-        color: #fff;
-        margin-bottom: 5px;
-      }
-      .green-btn {
-        background-color: #4caf50;
-      }
-      .red-btn {
-        background-color: #f44336;
-      }
-      .blue-btn {
-        background-color: #2196f3;
-      }
-      .yellow-btn {
-        background-color: #ff9800;
-      }
-
-      .toast {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        border-radius: 5px;
-        color: #fff;
-        font-weight: bold;
-        z-index: 2000;
-        animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 3s forwards;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        max-width: 350px;
-        word-wrap: break-word;
-      }
-      .toast.green { background-color: #4caf50; }
-      .toast.red { background-color: #f44336; }
-      @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-      }
-      @keyframes fadeOut {
-        from { opacity: 1; }
-        to { opacity: 0; }
-      }
-
-      @media (max-width: 900px) {
-        .chart-grid {
-          flex-direction: column;
-        }
-        .chart-container {
-          max-width: 95vw;
-          flex: 1 1 95vw;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="/static/styles.css">
   </head>
   <body>
     <div class="container">
+      <div class="app-header">
+        <h1>UMA Scalper</h1>
+        <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
+      </div>
       <div class="chart-grid">
         <div class="chart-container" id="ceChartContainer">
           <div class="chart-header">
             <div class="left-buttons">
               <button class="yellow-btn" id="mkt-btn-CE">MKT</button>
-              <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
             </div>
             <div class="chart-title" id="chart-title-CE">Call Option</div>
             <div class="right-buttons">
               <button class="blue-btn" id="buy-btn-CE">High</button>
-              <button class="red-btn" id="sell-btn-CE">CANCEL</button>
+              <button class="red-btn" id="sell-btn-CE">CNCL</button>
             </div>
           </div>
           <div id="chart-CE"></div>
@@ -233,12 +31,11 @@
         <div class="chart-container" id="peChartContainer">
           <div class="chart-header">
             <div class="left-buttons">
-              <button class="red-btn" id="sell-btn-PE">CANCEL</button>
+              <button class="red-btn" id="sell-btn-PE">CNCL</button>
               <button class="blue-btn" id="buy-btn-PE">High</button>
             </div>
             <div class="chart-title" id="chart-title-PE">Put Option</div>
             <div class="right-buttons">
-              <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
               <button class="yellow-btn" id="mkt-btn-PE">MKT</button>
             </div>
           </div>
