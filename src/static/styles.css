@@ -74,7 +74,7 @@ body {
   background-color: var(--bg-secondary);
   border-radius: 8px;
   padding: 10px;
-  padding-bottom: 10px;
+  padding-bottom: 30px;
   box-shadow: 0 4px 8px var(--shadow);
   box-sizing: border-box;
   max-width: 49vw;
