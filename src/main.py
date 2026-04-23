@@ -329,7 +329,7 @@ async def get_positions_summary() -> JSONResponse:
     Returns positions summary: active positions, order count, m2m, realized pnl.
     """
     try:
-        positions = Helper.api().positions
+        positions = Helper.api().broker.get_positions()
         orders = Helper.orders()
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
@@ -337,11 +337,11 @@ async def get_positions_summary() -> JSONResponse:
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
 
-        active_orders = 0
+        active_orders_count = 0
         for o in valid_orders:
             status = o.get("status", "")
             if status in ["OPEN", "PENDING", "TRIGGER_PENDING"]:
-                active_orders += 1
+                active_orders_count += 1
 
         m2m = 0.0
         realized = 0.0
@@ -356,7 +356,7 @@ async def get_positions_summary() -> JSONResponse:
             content={
                 "positions": active_positions,
                 "position_count": len(active_positions),
-                "active_orders": active_orders,
+                "active_orders": active_orders_count,
                 "order_count": total_orders,
                 "m2m": round(m2m, 2),
                 "realized_pnl": round(realized, 2),
@@ -364,7 +364,6 @@ async def get_positions_summary() -> JSONResponse:
         )
     except Exception as e:
         logging.error(f"Error getting positions summary: {e}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.get("/api/historical/{symbol}")
