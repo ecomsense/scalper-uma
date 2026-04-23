@@ -37,6 +37,10 @@ window.addEventListener("DOMContentLoaded", () => {
 				const date = new Date(time * 1000);
 				return date.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false });
 			},
+			rightMargin: 10,
+		},
+		priceScale: {
+			rightMargin: 10,
 		},
 	};
 
