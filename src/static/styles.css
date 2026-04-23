@@ -103,10 +103,11 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
+  height: 50px;
   background-color: var(--bg-secondary);
   display: flex;
   justify-content: space-around;
-  padding: 10px 0;
+  align-items: center;
   border-top: 2px solid var(--border-color);
   z-index: 100;
 }
