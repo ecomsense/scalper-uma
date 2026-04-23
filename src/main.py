@@ -570,7 +570,6 @@ async def sse_candlestick_endpoint(
 async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
         last_msg = ""
-        last_position_check = 0
         while True:
             await asyncio.sleep(0.5)
             try:
@@ -583,18 +582,14 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                         print(order_msg, "/n", "ORDER UPDATE FROM WEBSOCKET")
                         yield {"event": "order_msg", "data": msg_str}
                         orders_cache = Helper.orders()
-                        valid_orders = [o for o in orders_cache if o and o.get("order_id")]
+                        valid_orders = [
+                            o for o in orders_cache if o and o.get("order_id")
+                        ]
                         if valid_orders:
-                            yield {"event": "order_update", "data": json.dumps(orders_cache)}
-
-                import time
-                current_time = int(time.time())
-                if current_time - last_position_check >= 5:
-                    last_position_check = current_time
-                    orders_cache = Helper.orders()
-                    valid_orders = [o for o in orders_cache if o and o.get("order_id")]
-                    if valid_orders:
-                        yield {"event": "order_update", "data": json.dumps(orders_cache)}
+                            yield {
+                                "event": "order_update",
+                                "data": json.dumps(orders_cache),
+                            }
 
             except Exception as e:
                 print("Order SSE error:", e)

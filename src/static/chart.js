@@ -319,9 +319,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					showToast(toastMsg, !isBuy);
 				} catch (err) { console.error("Order msg parse error:", err); }
 			});
-			orderSource.addEventListener("order_update", () => {
-				updatePositionsSummary();
-			});
 
 			document.getElementById("chart-title-CE").textContent = symbols[1];
 			setupChart("chart-CE", symbols[1], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
