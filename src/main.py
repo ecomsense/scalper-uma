@@ -254,17 +254,19 @@ def get_settings() -> Dict[str, Any]:
 def nullify(symbol: str = "") -> None:
     try:
         ws = None
-        if hasattr(Helper.api(), 'broker') and hasattr(Helper.api().broker, '_ws'):
+        if hasattr(Helper.api(), "broker") and hasattr(Helper.api().broker, "_ws"):
             ws = Helper.api().broker._ws
-        
+
         ltp = None
         if ws and ws.ltp:
-            tokens_nearest = getattr(Helper.api(), 'tokens_nearest', {})
+            tokens_nearest = getattr(Helper.api(), "tokens_nearest", {})
             if symbol and tokens_nearest:
-                token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
+                token = next(
+                    (k for k, v in tokens_nearest.items() if v == symbol), None
+                )
                 if token and token in ws.ltp:
                     ltp = ws.ltp[token]
-        
+
         orders = Helper.orders()
         if orders:
             for item in orders:
@@ -278,7 +280,7 @@ def nullify(symbol: str = "") -> None:
         else:
             Helper.close_positions()
     except Exception as e:
-        logging.error(f"Error in nullify: {e}")
+        logging.error(f"Error in null ify: {e}")
         print_exc()
 
 
@@ -450,7 +452,6 @@ async def place_buy_order(
     logging.debug(f"Order request received: {payload}")
     logging.debug(f"app.state.quantity: {request.app.state.quantity}")
 
-    nullify()
     symbol = payload.get("symbol", "DUMMY").upper()
     if symbol != "DUMMY":
         settings = get_settings()
@@ -507,7 +508,21 @@ async def place_buy_order(
 async def reset(symbol: str = "") -> JSONResponse:
     if symbol:
         logging.info(f"Sell request for symbol: {symbol}")
-        nullify(symbol)
+        try:
+            api = Helper.api()
+            ws = api.broker._ws if hasattr(api, 'broker') and hasattr(api.broker, '_ws') else None
+            ltp = None
+            if ws and ws.ltp:
+                tokens_nearest = api.tokens_nearest if hasattr(api, 'tokens_nearest') else {}
+                token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
+                if token and token in ws.ltp:
+                    ltp = ws.ltp[token]
+            if ltp:
+                Helper.close_all_for_symbol(symbol, ltp)
+            else:
+                Helper.close_all_for_symbol(symbol, 0)
+        except Exception as e:
+            logging.error(f"Error in sell endpoint: {e}")
         return JSONResponse(
             content={
                 "message": f"reset completed for {symbol}",
