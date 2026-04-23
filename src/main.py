@@ -618,7 +618,7 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                 orders_cache = Helper.orders()
                 valid_orders = [o for o in orders_cache if o and o.get("order_id")]
                 if valid_orders:
-                    yield {"event": "order_update", "data": json.dumps(orders_cache)}
+                    yield {"event": "order_summary", "data": json.dumps(orders_cache)}
             else:
                 await asyncio.sleep(0.1)
 
