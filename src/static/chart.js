@@ -239,7 +239,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		loadHistorical().then(() => startLiveUpdates());
 
 		document.getElementById(buttonIds.high).onclick = () => {
-			updatePositionsSummary();
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
 				showToast("Need at least 2 candles to place order", true);
@@ -266,7 +265,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		document.getElementById(buttonIds.mktbuy).onclick = () => {
-			updatePositionsSummary();
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
 				showToast("Need at least 2 candles to place order", true);
@@ -296,7 +294,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		document.getElementById(buttonIds.reset).onclick = () => {
-			updatePositionsSummary();
 			clearAllLines();
 			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" });
 		};
