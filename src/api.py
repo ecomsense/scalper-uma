@@ -83,6 +83,9 @@ class Helper:
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
         cls._orders = None
         order_book = cls.api().orders
+        if not order_book or (isinstance(order_book, list) and len(order_book) == 1 and not order_book[0]):
+            cls._api = login()
+            order_book = cls._api.orders
         cls._orders = post_order_hook(*order_book)
         return cls._orders
 
