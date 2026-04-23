@@ -41,8 +41,15 @@ class Helper:
 
     @classmethod
     def one_side(cls, bargs: Dict[str, Any]) -> Optional[str]:
+        order_type = bargs.get("order_type", "LIMIT")
+        symbol = bargs.get("symbol", "UNKNOWN")
+        side = bargs.get("side", "UNKNOWN")
+        price = bargs.get("price", 0)
+        trigger_price = bargs.get("trigger_price", 0)
+        logging.debug(f"[one_side] >>> ORDER REQUEST: symbol={symbol}, side={side}, order_type={order_type}, price={price}, trigger={trigger_price}")
         try:
             resp = cls._api.order_place(**bargs)
+            logging.debug(f"[one_side] <<< ORDER RESPONSE: {resp}")
             return resp
         except Exception as e:
             message = f"helper error {e} while placing order {bargs}"
@@ -161,6 +168,7 @@ class Helper:
                         resp = cls._api.order_place(**args)
                         logging.debug(f"api responded with {resp}")
                     elif quantity > 0:
+                        price = float(pos["lp"]) + 2
                         args = dict(
                             symbol=pos["symbol"],
                             quantity=quantity,
@@ -168,7 +176,7 @@ class Helper:
                             product=pos["prd"],
                             side="S",
                             order_type="LMT",
-                            price=0.5,
+                            price=price,
                             trigger_price=0,
                             exchange=pos["exchange"],
                             tag="close",
