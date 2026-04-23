@@ -57,6 +57,12 @@ body {
   color: var(--text-primary);
 }
 
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  padding-right: 10px;
+}
+
 .chart-grid {
   display: flex;
   flex-grow: 1;

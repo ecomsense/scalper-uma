@@ -751,6 +751,23 @@ async def update_settings(
         )
 
 
+@app.get("/api/admin/logs")
+async def get_logs() -> JSONResponse:
+    """
+    Get server log file content.
+    """
+    try:
+        log_path = Path(S_DATA) / "log.txt"
+        with open(log_path, "r") as f:
+            lines = f.readlines()
+            content = "".join(lines[-500:])
+        return JSONResponse(content={"content": content, "status": "success"})
+    except Exception as e:
+        return JSONResponse(
+            content={"message": str(e), "status": "error"}, status_code=500
+        )
+
+
 @app.get("/api/chart/settings")
 async def get_chart_settings() -> JSONResponse:
     """
