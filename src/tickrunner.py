@@ -119,6 +119,8 @@ class TickRunner:
     def exit_trade(self) -> None:
         try:
             item = get_dict_from_list(self.exit_id)
+            order_status = item.get("status", "NOT FOUND") if item else "NO ORDER"
+            logging.info(f"EXIT CHECK: order_id={self.exit_id}, status={order_status}")
             if item and item.get("status", None) in ["COMPLETE", "REJECTED", "CANCELED"]:
                 logging.info(f"Exit {item.get('status')}: {self.exit_id}, clearing")
                 self.fn = "create"
@@ -149,12 +151,17 @@ class TickRunner:
         try:
             self.ltps = {}
             ws_ltp = self.ws.ltp
+            ws_keys = list(ws_ltp.keys())
             for ws_token, trading_symbol in self.tokens_nearest.items():
                 if ws_token in ws_ltp:
                     self.ltps[trading_symbol] = ws_ltp[ws_token]
+            ltps_keys = list(self.ltps.keys())
             if self.entry_id and self.fn != "create":
                 ltp_val = self.ltps.get(self.symbol, "NOT FOUND")
-                logging.info(f"TickRunner: {self.fn} entry={self.entry_id}, symbol={self.symbol}, ltp={ltp_val}, ws_keys={list(ws_ltp.keys())[:3]}")
+                logging.info(f"TRADE CHECK: fn={self.fn}, entry_id={self.entry_id}, symbol={self.symbol}")
+                logging.info(f"TRADE CHECK: tokens_nearest={self.tokens_nearest}")
+                logging.info(f"TRADE CHECK: ws_ltp keys={ws_keys}, ltps={ltps_keys}")
+                logging.info(f"TRADE CHECK: target={self.target_price}, exit={self.exit_price}, ltp={ltp_val}")
             getattr(self, self.fn)()
         except Exception as e:
             logging.error(f"{e} run_state_machine")
