@@ -435,6 +435,8 @@ async def place_buy_order(
             if order_details["tag"] != "no_tag":
                 order_details["target_price"] = cost_price + (cost_price - exit_price)
 
+            Helper.cancel_other_orders(symbol, order_id, "BUY")
+
             blacklist = ["side", "price", "trigger_price", "order_type"]
             for key in blacklist:
                 order_details.pop(key, None)

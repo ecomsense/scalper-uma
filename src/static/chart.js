@@ -281,9 +281,13 @@ window.addEventListener("DOMContentLoaded", () => {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, ltp: curr.close, price: curr.close + 2, order_type: "LIMIT",
+					symbol, ltp: curr.close, price: curr.close + 2, order_type: "MKT",
 					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
+			}).then(r => r.json()).then(data => {
+				if (data.order && data.order.entry_id) {
+					showToast("Cleaned up other orders", false);
+				}
 			});
 		};
 
