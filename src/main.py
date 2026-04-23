@@ -320,7 +320,8 @@ async def get_positions_summary() -> JSONResponse:
     """
     try:
         positions = Helper.api().positions
-        orders = Helper.api().orders
+        raw_orders = Helper.api().orders
+        orders = Helper.orders()
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
         total_orders = len(orders) if orders else 0
