@@ -47,15 +47,18 @@ def verify_api_key(x_api_key: str = Header(...)) -> str:
 
 IST = tz("Asia/Kolkata")
 
+
 def touch_marker():
     """Touch the marker file to signal settings changed."""
     MARKER_FILE.touch()
+
 
 def get_marker_mtime() -> float:
     """Get marker file modification time."""
     if MARKER_FILE.exists():
         return MARKER_FILE.stat().st_mtime
     return 0
+
 
 def get_settings_timestamp() -> float:
     """Get settings file modification time."""
@@ -64,13 +67,14 @@ def get_settings_timestamp() -> float:
         return settings_path.stat().st_mtime
     return 0
 
+
 async def trading_session_start(app: FastAPI):
     """Start the trading session (called by scheduler or on settings change)."""
     logging.info("Starting trading session...")
-    
+
     # Clear trade.json on session start - manually managed trades
     O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
-    
+
     # Cancel existing runner if any
     if hasattr(app.state, "runner_task"):
         app.state.runner_task.cancel()
@@ -80,86 +84,87 @@ async def trading_session_start(app: FastAPI):
             pass
         except Exception:
             pass
-    
+
     # Get fresh settings
     user_settings = get_settings()
-    
+
     try:
         api = Helper.api()
-        
+
         # Get ATM from index LTP using websocket
         index_token = f"{user_settings['exchange']}|{user_settings['token']}"
         ws = Wserver(api, [index_token])
-        
+
         # Wait for websocket to get LTP (max 30 seconds)
         max_wait = 60
         waited = 0
         while not ws.ltp and waited < max_wait:
             await asyncio.sleep(0.5)
             waited += 1
-        
+
         if not ws.ltp:
             logging.error("Failed to get LTP from websocket")
             return
-        
+
         ltp_of_underlying = list(ws.ltp.values())[0]
         logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
-        
+
         # Now create strategy and subscribe to options
         sgy = Strategy(user_settings, ltp_of_underlying)
         tokens = list(sgy.tokens_for_all_trading_symbols.keys())
-        
+
         if not tokens:
             logging.warning("No tokens found for options")
             return
-        
+
         # Subscribe to options on existing websocket
         all_tokens = tokens + [index_token]
         ws.subscribe(all_tokens)
-        
+
         # Wait for options LTP
         waited = 0
         while len(ws.ltp) < len(all_tokens) and waited < max_wait:
             await asyncio.sleep(0.5)
             waited += 1
-        
+
         logging.info(f"Got quotes for {len(ws.ltp)} symbols")
-        
+
         symbol_nearest_to_premium: List[str] = []
         for ce_or_pe in ["CE", "PE"]:
             res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
             if res:
                 symbol_nearest_to_premium.append(res)
-        
+
         tokens_nearest: Dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
             symbol_nearest_to_premium
         )
-        
+
         app.state.tokens_nearest = tokens_nearest
         app.state.ws = ws
         app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
         logging.debug(
             f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}"
         )
-        
+
         all_tokens_map = sgy.tokens_for_all_trading_symbols
         logging.info(f"Passing {len(all_tokens_map)} tokens to TickRunner")
         runner = TickRunner(ws, all_tokens_map)
         task = asyncio.create_task(runner.run())
         app.state.runner_task = task
         app.state.is_trading = True
-        
+
         logging.info(f"Nearest symbols: {tokens_nearest}")
         logging.info("✅ Trading session started.")
-        
+
     except Exception as e:
         logging.error(f"Failed to start trading session: {e}")
         print_exc()
 
+
 async def trading_session_stop(app: FastAPI):
     """Stop the trading session (called by scheduler or on settings change)."""
     logging.info("Stopping trading session...")
-    
+
     if hasattr(app.state, "runner_task") and app.state.runner_task:
         app.state.runner_task.cancel()
         try:
@@ -169,9 +174,10 @@ async def trading_session_stop(app: FastAPI):
         except Exception:
             pass
         app.state.runner_task = None
-    
+
     Helper.close_positions()
     logging.info("✅ Trading session stopped.")
+
 
 def schedule_trading_session(app: FastAPI):
     """Schedule trading session start/stop based on market hours."""
@@ -181,22 +187,23 @@ def schedule_trading_session(app: FastAPI):
             SCHEDULER.remove_job(job_id)
         except Exception:
             pass
-    
+
     SCHEDULER.add_job(
         trading_session_start,
         trigger=CronTrigger(day_of_week="mon-fri", hour=9, minute=14),
         id="start_session",
         args=[app],
     )
-    
+
     SCHEDULER.add_job(
         trading_session_stop,
         trigger=CronTrigger(day_of_week="mon-fri", hour=23, minute=59),
         id="stop_session",
         args=[app],
     )
-    
+
     logging.info("Trading session scheduled: 09:14-23:59 Mon-Fri IST (TESTING)")
+
 
 CANDLESTICK_TIMEFRAME_SECONDS: int = 60
 CANDLESTICK_TIMEFRAME_STR: str = "1min"
@@ -269,12 +276,12 @@ async def lifespan(app: FastAPI):
     schedule_trading_session(app)
     SCHEDULER.start()
     logging.info("✅ Scheduler started.")
-    
+
     # Start trading session immediately (always, for testing)
     await trading_session_start(app)
-    
+
     yield
-    
+
     # Shutdown: stop scheduler and trading session
     await trading_session_stop(app)
     SCHEDULER.shutdown()
@@ -326,7 +333,7 @@ async def get_positions_summary() -> JSONResponse:
         orders = Helper.orders()
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
-        
+
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
 
@@ -368,7 +375,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
     try:
         tokens_nearest = request.app.state.tokens_nearest
         logging.info(f"historical: symbol={symbol}, tokens_nearest={tokens_nearest}")
-        
+
         ws_token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
         if not ws_token:
             logging.warning(f"historical: ws_token not found for {symbol}")
@@ -376,11 +383,15 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
-        logging.info(f"historical: before Helper.historical: Helper._api={Helper._api}, Helper._api.broker={Helper._api.broker}")
+        logging.info(
+            f"historical: before Helper.historical: Helper._api={Helper._api}, Helper._api.broker={Helper._api.broker}"
+        )
         logging.info(f"historical: calling broker: exchange={exchange}, token={token}")
 
         historical_data = Helper.historical(exchange, token)
-        logging.info(f"historical: got {len(historical_data) if historical_data else 0} rows")
+        logging.info(
+            f"historical: got {len(historical_data) if historical_data else 0} rows"
+        )
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
@@ -560,8 +571,9 @@ async def sse_candlestick_endpoint(
 async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
         last_msg = ""
+        last_position_check = 0
         while True:
-            await asyncio.sleep(1.5)
+            await asyncio.sleep(0.5)
             try:
                 ws = request.app.state.ws
                 order_msg = ws.order_update.get("message")
@@ -571,17 +583,22 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                         last_msg = msg_str
                         print(order_msg, "/n", "ORDER UPDATE FROM WEBSOCKET")
                         yield {"event": "order_msg", "data": msg_str}
-                orders_cache = Helper.orders()
-                valid_orders = [o for o in orders_cache if o and o.get("order_id")]
-                if valid_orders:
-                    yield {"event": "order_update", "data": json.dumps(orders_cache)}
+                        orders_cache = Helper.orders()
+                        valid_orders = [o for o in orders_cache if o and o.get("order_id")]
+                        if valid_orders:
+                            yield {"event": "order_update", "data": json.dumps(orders_cache)}
+
+                import time
+                current_time = int(time.time())
+                if current_time - last_position_check >= 5:
+                    last_position_check = current_time
+                    orders_cache = Helper.orders()
+                    valid_orders = [o for o in orders_cache if o and o.get("order_id")]
+                    if valid_orders:
+                        yield {"event": "order_update", "data": json.dumps(orders_cache)}
 
             except Exception as e:
                 print("Order SSE error:", e)
-                yield {
-                    "event": "order_update",
-                    "data": json.dumps([]),
-                }
 
     return EventSourceResponse(event_generator())
 
@@ -594,7 +611,9 @@ async def restart_trading_session(request: Request) -> JSONResponse:
     try:
         await trading_session_stop(request.app)
         await trading_session_start(request.app)
-        return JSONResponse(content={"message": "Trading session restarted", "status": "success"})
+        return JSONResponse(
+            content={"message": "Trading session restarted", "status": "success"}
+        )
     except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to restart: {e}", "status": "error"},
@@ -609,7 +628,9 @@ async def stop_trading_session(request: Request) -> JSONResponse:
     """
     try:
         await trading_session_stop(request.app)
-        return JSONResponse(content={"message": "Trading session stopped", "status": "success"})
+        return JSONResponse(
+            content={"message": "Trading session stopped", "status": "success"}
+        )
     except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to stop: {e}", "status": "error"},
@@ -624,12 +645,10 @@ async def start_trading_session(request: Request) -> JSONResponse:
     """
     try:
         await trading_session_start(request.app)
-        return JSONResponse(content={"message": "Trading session started", "status": "success"})
-    except Exception as e:
         return JSONResponse(
-            content={"message": f"Failed to start: {e}", "status": "error"},
-            status_code=500,
+            content={"message": "Trading session started", "status": "success"}
         )
+    except Exception as e:
         return JSONResponse(
             content={"message": f"Failed to start: {e}", "status": "error"},
             status_code=500,
@@ -653,7 +672,9 @@ async def get_settings_file() -> JSONResponse:
 
 
 @app.post("/api/admin/settings")
-async def update_settings(request: Request, settings_data: Dict[str, Any] = Body(...)) -> JSONResponse:
+async def update_settings(
+    request: Request, settings_data: Dict[str, Any] = Body(...)
+) -> JSONResponse:
     """
     Update settings.yml content and restart trading session.
     """
@@ -670,6 +691,7 @@ async def update_settings(request: Request, settings_data: Dict[str, Any] = Body
         except Exception as e:
             logging.error(f"Error in trading_session_stop: {e}")
             import traceback
+
             logging.error(traceback.format_exc())
         logging.info("Starting trading session...")
         try:
@@ -678,6 +700,7 @@ async def update_settings(request: Request, settings_data: Dict[str, Any] = Body
         except Exception as e:
             logging.error(f"Error in trading_session_start: {e}")
             import traceback
+
             logging.error(traceback.format_exc())
         return JSONResponse(
             content={
@@ -688,6 +711,7 @@ async def update_settings(request: Request, settings_data: Dict[str, Any] = Body
     except Exception as e:
         logging.error(f"Error in update_settings: {e}")
         import traceback
+
         logging.error(traceback.format_exc())
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
@@ -703,7 +727,9 @@ async def get_chart_settings() -> JSONResponse:
         ma = O_SETG.get("ma", [])
         base = O_SETG.get("base", "NIFTY")
         base_settings = O_SETG.get(base, {})
-        profit = base_settings.get("profit", 5) if isinstance(base_settings, dict) else 5
+        profit = (
+            base_settings.get("profit", 5) if isinstance(base_settings, dict) else 5
+        )
         return JSONResponse(
             content={
                 "ma": ma,
