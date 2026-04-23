@@ -130,15 +130,12 @@ class TickRunner:
                 ws_ltp_keys = list(self.ws.ltp.keys())
                 logging.info(f"exit_trade: symbol={self.symbol} in tokens_nearest={self.symbol in self.tokens_nearest} in ltps={self.symbol in self.ltps}, ws_ltp_keys={ws_ltp_keys[:3]}..., ltp={ltp}")
                 if ltp and (ltp > self.target_price or ltp < self.exit_price):
-                    logging.info(f"Target reached for {self.exit_id}, modifying to market")
+                    logging.info(f"Target reached for {self.exit_id}, modifying to LIMIT")
                     kwargs = dict(
                         symbol=self.symbol,
                         order_id=self.exit_id,
                         quantity=self.quantity,
                         exchange=self.exchange,
-                        order_type="LMT",
-                        price=0.05,
-                        trigger_price=0,
                     )
                     Helper.modify_order(kwargs)
                     self.fn = "create"
