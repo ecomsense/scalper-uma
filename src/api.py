@@ -82,7 +82,9 @@ class Helper:
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
         cls._orders = None
-        order_book = cls.api().orders
+        order_book = cls.api().broker.get_order_book()
+        if not order_book or len(order_book) == 0:
+            order_book = [{}]
         cls._orders = post_order_hook(*order_book)
         return cls._orders
 
