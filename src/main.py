@@ -572,7 +572,9 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                         print(order_msg, "/n", "ORDER UPDATE FROM WEBSOCKET")
                         yield {"event": "order_msg", "data": msg_str}
                 orders_cache = Helper.orders()
-                yield {"event": "order_update", "data": json.dumps(orders_cache)}
+                valid_orders = [o for o in orders_cache if o and o.get("order_id")]
+                if valid_orders:
+                    yield {"event": "order_update", "data": json.dumps(orders_cache)}
 
             except Exception as e:
                 print("Order SSE error:", e)
