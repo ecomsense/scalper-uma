@@ -2,6 +2,7 @@ from __future__ import annotations
 from traceback import print_exc
 from importlib import import_module
 from typing import Dict, List, Optional, Any
+import time
 from src.constants import O_CNFG, logging
 from stock_brokers.flattrade.api_helper import post_order_hook
 
@@ -177,6 +178,58 @@ class Helper:
         except Exception as e:
             logging.error(f"while closing positions")
             print_exc()
+
+    @classmethod
+    def close_all_for_symbol(cls, symbol: str, ltp: float, max_retries: int = 5) -> None:
+        slippage = 0.50
+        for loop in range(max_retries):
+            try:
+                current_slippage = slippage * (loop + 1)
+                cls.cancel_all_orders(symbol)
+                time.sleep(1)
+                positions = cls.api().positions
+                open_positions = [p for p in positions if p and p.get("symbol") == symbol and p.get("quantity", 0) != 0]
+                if not open_positions:
+                    logging.info(f"All positions closed for {symbol}")
+                    return
+                for pos in open_positions:
+                    time.sleep(1)
+                    quantity = abs(pos["quantity"])
+                    sell_price = ltp - current_slippage
+                    buy_price = ltp + current_slippage
+                    if pos["quantity"] < 0:
+                        args = dict(
+                            symbol=symbol,
+                            quantity=quantity,
+                            disclosed_quantity=quantity,
+                            product=pos.get("prd", "M"),
+                            side="B",
+                            order_type="LMT",
+                            price=buy_price,
+                            trigger_price=0,
+                            exchange="NFO",
+                            tag=f"close_loop_{loop}",
+                        )
+                        resp = cls._api.order_place(**args)
+                        logging.info(f"Close BUY {symbol} qty={quantity} @ {buy_price} (slippage={current_slippage}): {resp}")
+                    elif pos["quantity"] > 0:
+                        args = dict(
+                            symbol=symbol,
+                            quantity=quantity,
+                            disclosed_quantity=quantity,
+                            product=pos.get("prd", "M"),
+                            side="S",
+                            order_type="LMT",
+                            price=sell_price,
+                            trigger_price=0,
+                            exchange="NFO",
+                            tag=f"close_loop_{loop}",
+                        )
+                        resp = cls._api.order_place(**args)
+                        logging.info(f"Close SELL {symbol} qty={quantity} @ {sell_price} (slippage={current_slippage}): {resp}")
+                time.sleep(2)
+            except Exception as e:
+                logging.error(f"Error in close_all_for_symbol loop {loop}: {e}")
 
     @classmethod
     def mtm(cls) -> float:
