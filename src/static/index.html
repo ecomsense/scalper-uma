@@ -11,7 +11,10 @@
     <div class="container">
       <div class="app-header">
         <h1>UMA Scalper</h1>
-        <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
+        <div class="header-buttons">
+          <button class="blue-btn" onclick="openLogsModal()">Logs</button>
+          <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
+        </div>
       </div>
       <div class="chart-grid">
         <div class="chart-container" id="ceChartContainer">
@@ -66,6 +69,21 @@
           <button class="blue-btn" onclick="loadSettings()">Load Current</button>
         </div>
         <div id="settingsMessage" style="margin-top: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div id="logsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Server Logs</h2>
+          <span class="close" onclick="closeLogsModal()">&times;</span>
+        </div>
+        <textarea id="logsEditor" readonly></textarea>
+        <div style="margin-top: 10px;">
+          <button class="blue-btn" onclick="loadLogs()">Refresh</button>
+        </div>
+        <div id="logsMessage" style="margin-top: 10px;"></div>
       </div>
     </div>
 
@@ -139,6 +157,31 @@
       function closeSettingsModal() {
         document.getElementById('settingsModal').style.display = 'none';
         document.getElementById('settingsMessage').innerHTML = '';
+      }
+
+      async function loadLogs() {
+        try {
+          const response = await fetch('/api/admin/logs');
+          const data = await response.json();
+          if (data.status === 'success') {
+            document.getElementById('logsEditor').value = data.content;
+          } else {
+            document.getElementById('logsMessage').innerHTML =
+              '<span style="color: red;">Error: ' + data.message + '</span>';
+          }
+        } catch (error) {
+          document.getElementById('logsMessage').innerHTML =
+            '<span style="color: red;">Error: ' + error + '</span>';
+        }
+      }
+
+      function openLogsModal() {
+        document.getElementById('logsModal').style.display = 'block';
+        loadLogs();
+      }
+
+      function closeLogsModal() {
+        document.getElementById('logsModal').style.display = 'none';
       }
     </script>
     <script src="/static/chart.js?v=55"></script>
