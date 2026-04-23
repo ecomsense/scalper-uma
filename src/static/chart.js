@@ -274,14 +274,14 @@ window.addEventListener("DOMContentLoaded", () => {
 			const stopPrice = prev.low;
 			const targetPrice = buyPrice + profit;
 			clearAllLines();
-			drawBuyLine(buyPrice);
+			drawBuyLine(curr.close);
 			drawStopLine(stopPrice);
 			drawTargetLine(targetPrice);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, ltp: curr.close, price: curr.close + 2, order_type: "MKT",
+					symbol, ltp: curr.close, price: curr.close + 2, order_type: "LMT",
 					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
 			}).then(r => r.json()).then(data => {
