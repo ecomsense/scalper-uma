@@ -30,7 +30,7 @@ HTPASSWD_PASS: str = "trader123"
 
 def factory(file_in_data_dir: str) -> None:
     if not O_FUTL.is_file_exists(file_in_data_dir):
-        print("creating data dir")
+        logging.debug("creating data dir")
         O_FUTL.add_path(file_in_data_dir)
     else:
         O_FUTL.nuke_file(file_in_data_dir)
@@ -51,7 +51,6 @@ def get_or_create_jwt_token() -> str:
     else:
         token = secrets.token_urlsafe(32)
         O_FUTL.write_file(JWT_TOKEN_FILE, token)
-        print(f"JWT token generated and saved to {JWT_TOKEN_FILE}")
         return token
 
 
@@ -60,17 +59,12 @@ def create_htpasswd() -> None:
         password_hash = hashlib.sha1(HTPASSWD_PASS.encode()).hexdigest()
         htpasswd_line = f"{HTPASSWD_USER}:{{SHA}}{base64.b64encode(bytes.fromhex(password_hash)).decode()}"
         O_FUTL.write_file(HTPASSWD_FILE, htpasswd_line)
-        print(f"htpasswd created at {HTPASSWD_FILE}")
-        print(f"  User: {HTPASSWD_USER}")
-        print(f"  Pass: {HTPASSWD_PASS}")
 
 
 def yml_to_obj(arg: Optional[str] = None) -> Dict[str, Any]:
     if not arg:
         parent = path.dirname(path.abspath(__file__))
-        print(f"{parent=}")
         grand_parent_path = path.dirname(parent)
-        print(f"{grand_parent_path=}")
         folder = path.basename(grand_parent_path)
         lst = folder.split("-")
         file = "_".join(reversed(lst))
@@ -81,10 +75,8 @@ def yml_to_obj(arg: Optional[str] = None) -> Dict[str, Any]:
     flag = O_FUTL.is_file_exists(file)
 
     if not flag and arg:
-        print(f"using default {file=}")
         O_FUTL.copy_file("./factory/", "./data/", "settings.yml")
     elif not flag and arg is None:
-        print(f"fill the {file=} file and try again")
         __import__("sys").exit()
 
     return O_FUTL.get_lst_fm_yml(file)
@@ -95,7 +87,6 @@ def read_yml() -> tuple[Dict[str, Any], Dict[str, Any]]:
         O_CNFG = yml_to_obj()
         O_SETG = yml_to_obj("settings.yml")
     except Exception as e:
-        print(e)
         print_exc()
         __import__("sys").exit(1)
     else:
@@ -111,13 +102,6 @@ def load_env_settings():
     global O_CNFG, O_SETG
     get_settings.cache_clear()
     O_CNFG, O_SETG = read_yml()
-    print("Settings reloaded from file.")
-
-print("broker credentials" + "\n" + "*****************")
-pprint(O_CNFG)
-
-print("settings " + "\n" + "*****************")
-pprint(O_SETG)
 
 JWT_TOKEN: str = get_or_create_jwt_token()
 create_htpasswd()

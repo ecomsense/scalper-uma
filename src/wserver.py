@@ -47,6 +47,6 @@ if __name__ == "__main__":
     token = ["NSE|22", "NSE|34"]
     wserver = Wserver(Helper.api, token)
     while True:
-        print(wserver.ltp)
+        logging.debug(f"LTP: {wserver.ltp}")
         time.sleep(1)
         # wserver.tokens = ["NSE:25"]

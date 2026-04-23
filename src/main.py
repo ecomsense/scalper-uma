@@ -239,7 +239,7 @@ def aggregate_ticks_to_candlesticks(
 
         return candlesticks.reset_index(drop=True).to_dict(orient="records")
     except Exception as e:
-        print(f"{e} in aggregating")
+        logging.error(f"{e} in aggregating")
         return []
 
 
@@ -476,9 +476,9 @@ async def place_buy_order(
 
             order_type = order_details.get("order_type", "LIMIT")
             if order_type == "SL":
-                Helper.cancel_all_orders(symbol, order_id)
+                Helper.cancel_orders(symbol, keep_order_id=order_id)
             else:
-                Helper.cancel_other_orders(symbol, order_id, "BUY")
+                Helper.cancel_orders(symbol, keep_order_id=order_id, side="BUY")
 
             blacklist = ["side", "price", "trigger_price", "order_type"]
             for key in blacklist:
@@ -541,7 +541,7 @@ async def reset(symbol: str = "") -> JSONResponse:
 async def sse_candlestick_endpoint(
     symbol: str, request: Request
 ) -> EventSourceResponse:
-    print(f"[{time.time()}] SSE connection requested for symbol: {symbol}")
+    logging.debug(f"SSE connection requested for symbol: {symbol}")
 
     last_sent_candle: Optional[Dict[str, Any]] = None
 
@@ -618,7 +618,7 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                     msg_str = json.dumps(order_msg)
                     if msg_str != last_msg:
                         last_msg = msg_str
-                        print(order_msg, "/n", "ORDER UPDATE FROM WEBSOCKET")
+                        logging.debug(f"ORDER UPDATE FROM WEBSOCKET: {order_msg}")
                         yield {"event": "order_msg", "data": msg_str}
                         orders_cache = Helper.orders()
                         valid_orders = [
@@ -631,7 +631,7 @@ async def stream_all_orders(request: Request) -> EventSourceResponse:
                             }
 
             except Exception as e:
-                print("Order SSE error:", e)
+                logging.error(f"Order SSE error: {e}")
 
     return EventSourceResponse(event_generator())
 

@@ -10,7 +10,7 @@ from traceback import print_exc
 def get_exchange_token_map_finvasia(csvfile: str, exchange: str) -> None:
     if Fileutils().is_file_not_2day(csvfile):
         url = f"https://api.shoonya.com/{exchange}_symbols.txt.zip"
-        print(f"{url}")
+        logging.debug(f"Downloading symbols from {url}")
         df = pd.read_csv(url)
         df.to_csv(csvfile, index=False)
 
@@ -22,9 +22,9 @@ def get_exchange_token_map_flattrade(csvfile: str, exchange: str) -> None:
         elif exchange.upper() == "BFO":
             url = "https://flattrade.s3.ap-south-1.amazonaws.com/scripmaster/Bfo_Index_Derivatives.csv"
         else:
-            url = f"https://flattrade.s3.ap-south-1.amazonaws.com/scripmaster/Commodity.csv"
+            url = f"https://flattrade.s3.ap-south-1.amazonaws.com/scririmaster/Commodity.csv"
 
-        print(f"{url}")
+        logging.debug(f"Downloading symbols from {url}")
         df = pd.read_csv(url)
         df.rename(
             columns={
@@ -220,5 +220,4 @@ class Symbol:
 if __name__ == "__main__":
     symbols = Symbol("NFO", "NIFTY")
     dct_tokens = symbols.get_tokens(21500)
-    print(dct_tokens)
-    # print(symbols.find_option_type("BANKNIFTY28DEC23C47000"))
+    logging.info(f"Tokens: {dct_tokens}")
