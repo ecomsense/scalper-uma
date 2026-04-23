@@ -251,8 +251,20 @@ def get_settings() -> Dict[str, Any]:
     return settings
 
 
-def nullify() -> None:
+def nullify(symbol: str = "") -> None:
     try:
+        ws = None
+        if hasattr(Helper.api(), 'broker') and hasattr(Helper.api().broker, '_ws'):
+            ws = Helper.api().broker._ws
+        
+        ltp = None
+        if ws and ws.ltp:
+            tokens_nearest = getattr(Helper.api(), 'tokens_nearest', {})
+            if symbol and tokens_nearest:
+                token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
+                if token and token in ws.ltp:
+                    ltp = ws.ltp[token]
+        
         orders = Helper.orders()
         if orders:
             for item in orders:
@@ -260,9 +272,11 @@ def nullify() -> None:
                     order_id = item.get("order_id", None)
                     logging.info(f"cancelling open order {order_id}")
                     Helper.api().order_cancel(order_id)
-                    break
 
-        Helper.close_positions()
+        if ltp and symbol:
+            Helper.close_all_for_symbol(symbol, ltp)
+        else:
+            Helper.close_positions()
     except Exception as e:
         logging.error(f"Error in nullify: {e}")
         print_exc()
@@ -493,7 +507,7 @@ async def place_buy_order(
 async def reset(symbol: str = "") -> JSONResponse:
     if symbol:
         logging.info(f"Sell request for symbol: {symbol}")
-        nullify()
+        nullify(symbol)
         return JSONResponse(
             content={
                 "message": f"reset completed for {symbol}",
