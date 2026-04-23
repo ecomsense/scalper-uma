@@ -332,7 +332,7 @@ async def get_positions_summary() -> JSONResponse:
         api = Helper.api()
         if not api:
             raise Exception("Helper.api() returned None")
-        positions = api.broker.get_positions() or []
+        positions = api.positions or []
         orders = Helper.orders()
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
