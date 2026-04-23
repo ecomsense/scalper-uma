@@ -608,30 +608,19 @@ async def sse_candlestick_endpoint(
 @app.get("/sse/orders")
 async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
-        last_msg = ""
         while True:
-            await asyncio.sleep(0.5)
-            try:
-                ws = request.app.state.ws
-                order_msg = ws.order_update.get("message")
-                if order_msg:
-                    msg_str = json.dumps(order_msg)
-                    if msg_str != last_msg:
-                        last_msg = msg_str
-                        logging.debug(f"ORDER UPDATE FROM WEBSOCKET: {order_msg}")
-                        yield {"event": "order_msg", "data": msg_str}
-                        orders_cache = Helper.orders()
-                        valid_orders = [
-                            o for o in orders_cache if o and o.get("order_id")
-                        ]
-                        if valid_orders:
-                            yield {
-                                "event": "order_update",
-                                "data": json.dumps(orders_cache),
-                            }
-
-            except Exception as e:
-                logging.error(f"Order SSE error: {e}")
+            ws = request.app.state.ws
+            if ws.order_updates:
+                order_msg = ws.order_updates.popleft()
+                msg_str = json.dumps(order_msg)
+                logging.debug(f"SSE sending order_msg: {order_msg}")
+                yield {"event": "order_msg", "data": msg_str}
+                orders_cache = Helper.orders()
+                valid_orders = [o for o in orders_cache if o and o.get("order_id")]
+                if valid_orders:
+                    yield {"event": "order_update", "data": json.dumps(orders_cache)}
+            else:
+                await asyncio.sleep(0.1)
 
     return EventSourceResponse(event_generator())
 

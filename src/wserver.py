@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import deque
 from typing import Dict, List, Any, Optional, Callable
 from src.constants import logging
 import time
@@ -7,7 +8,7 @@ import time
 class Wserver:
     socket_opened: bool = False
     ltp: Dict[str, float] = {}
-    order_update: Dict[str, Any] = {}
+    order_updates: deque = deque(maxlen=100)
 
     def __init__(self, session: Any, tokens: List[str]) -> None:
         self.api = session
@@ -25,8 +26,8 @@ class Wserver:
         self.api.broker.subscribe(self.tokens, feed_type="d")
 
     def event_handler_order_update(self, message: Dict[str, Any]) -> None:
-        self.order_update["message"] = message
-        logging.debug(message)
+        self.order_updates.append(message)
+        logging.debug(f"order_updates count: {len(self.order_updates)}")
 
     def event_handler_quote_update(self, message: Dict[str, Any]) -> None:
         val = message.get("lp", False)
