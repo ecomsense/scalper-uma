@@ -68,6 +68,9 @@ async def trading_session_start(app: FastAPI):
     """Start the trading session (called by scheduler or on settings change)."""
     logging.info("Starting trading session...")
     
+    # Clear trade.json on session start - manually managed trades
+    O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
+    
     # Cancel existing runner if any
     if hasattr(app.state, "runner_task"):
         app.state.runner_task.cancel()
