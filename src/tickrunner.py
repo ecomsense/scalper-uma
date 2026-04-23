@@ -153,7 +153,8 @@ class TickRunner:
                 if ws_token in ws_ltp:
                     self.ltps[trading_symbol] = ws_ltp[ws_token]
             if self.entry_id and self.fn != "create":
-                logging.info(f"TickRunner: {self.fn} entry={self.entry_id}")
+                ltp_val = self.ltps.get(self.symbol, "NOT FOUND")
+                logging.info(f"TickRunner: {self.fn} entry={self.entry_id}, symbol={self.symbol}, ltp={ltp_val}, ws_keys={list(ws_ltp.keys())[:3]}")
             getattr(self, self.fn)()
         except Exception as e:
             logging.error(f"{e} run_state_machine")
