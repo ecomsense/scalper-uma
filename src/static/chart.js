@@ -4,8 +4,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		return;
 	}
 
-	let lastOrderCount = -1;
-
 	window.updatePositionsSummary = function() {
 		fetch("/api/positions/summary")
 			.then(r => r.json())
@@ -14,25 +12,10 @@ window.addEventListener("DOMContentLoaded", () => {
 				const positionCount = data.position_count || 0;
 				const realizedPnl = data.realized_pnl || 0;
 
-				// First update: only if order_count > 0 OR positions exist with realized pnl
-				if (lastOrderCount === -1) {
-					if (orderCount > 0 || positionCount > 0 || realizedPnl > 0) {
-						lastOrderCount = orderCount;
-					} else {
-						return; // Skip, wait for first activity
-					}
-				} else {
-					// Subsequent: if order_count goes from >0 to 0, check if still have positions/pnl
-					if (lastOrderCount > 0 && orderCount === 0) {
-						if (positionCount === 0 && realizedPnl === 0) {
-							console.error("Order count dropped to 0 and no positions - not updating panel");
-							return;
-						}
-						// Still have positions or pnl - continue showing
-					}
-					if (orderCount > 0 || positionCount > 0 || realizedPnl > 0) {
-						lastOrderCount = orderCount;
-					}
+				// Always show if we have activity (orders OR positions OR realized pnl)
+				if (orderCount === 0 && positionCount === 0 && realizedPnl === 0) {
+					// No activity at all - skip this update
+					return;
 				}
 
 				document.getElementById("pos-count").textContent = positionCount;
