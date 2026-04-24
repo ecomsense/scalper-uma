@@ -183,7 +183,37 @@ program:
 ```python
 hour = now_ist.hour
 minute = now_ist.minute
-within_trading_hours = (hour > 9 or (hour == 9 and minute >= 14)) and hour < 15 or (hour == 15 and minute < 30)
+within_trading_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 or (hour == 23 and minute < 59)
+```
+
+Where schedule 9:15-23:59 is hardcoded by developer:
+- Start: 9:15 (hour > 9 or (hour == 9 and minute >= 15))
+- End: 23:59 (hour < 23 or (hour == 23 and minute < 59))
+
+### Schedule Check on Startup
+
+**Symptom**: App starts trading session even when outside market hours.
+
+**Root Cause**: Lifespan always calls `trading_session_start()` without checking schedule.
+
+**Fix**: Check schedule in lifespan before starting:
+```python
+async def lifespan(app: FastAPI):
+    now_utc = datetime.now(timezone.utc)
+    now_ist = now_utc + timedelta(hours=5, minutes=30)
+    hour = now_ist.hour
+    minute = now_ist.minute
+    day = now_ist.strftime("%a")
+    
+    in_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 or (hour == 23 and minute < 59)
+    is_trading_day = day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    
+    if in_hours and is_trading_day:
+        await trading_session_start(app)
+    else:
+        logging.info("Outside schedule, skipping...")
+    yield
+    await trading_session_stop(app)
 ```
 
 ### Frontend Modals Not Showing Data
@@ -246,6 +276,8 @@ and:
 1. **Always call `Helper.api()` before broker API calls** - Don't assume session is valid
 2. **Never run multiple uvicorn processes** - Causes race conditions
 3. **Use ONE method to start server** - Either systemctl OR nohup, never both
-4. **NSE market hours are 9:14-15:30 IST** - Not 9:14-23:59
+4. **Schedule is hardcoded (9:15-23:59)** - Not external config
 5. **Modal fetch must be async** - Wait for data before showing modal
 6. **Auto-fetch on page load** - Otherwise panel shows stale/empty data
+7. **Always use proper time comparison** - Never string comparison for time
+8. **Check schedule on startup** - Use lifespan to conditionally start/stop trading
