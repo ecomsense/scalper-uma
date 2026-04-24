@@ -261,26 +261,15 @@ window.addEventListener("DOMContentLoaded", () => {
 					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
 			}).then(r => r.json()).then(data => {
-				if (data.status === "success") {
-					showToast("BUY placed: " + symbol, false);
-				} else if (data.order && data.order.entry_id) {
+				if (data.order && data.order.entry_id) {
 					showToast("Cleaned up other orders", false);
-				} else {
-					showToast("Order failed: " + (data.message || "Unknown"), true);
 				}
 			});
 		};
 
 		document.getElementById(buttonIds.reset).onclick = () => {
 			clearAllLines();
-			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" })
-			.then(r => r.json()).then(data => {
-				if (data.status === "success") {
-					showToast("SELL placed: " + symbol, false);
-				} else {
-					showToast("Sell failed: " + (data.message || "Unknown"), true);
-				}
-			});
+			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" });
 		};
 	}
 
@@ -305,7 +294,10 @@ window.addEventListener("DOMContentLoaded", () => {
 					const orderSymbol = msg.tsym;
 					const price = msg.price || msg.ltp;
 
-					// Draw entry line on matching chart
+					// Show toast for SSE order update (fallback since lines aren't working)
+					showToast((isBuy ? "BUY" : "SELL") + " " + orderSymbol + " @ " + price, false);
+
+					// Try to draw entry line on matching chart
 					if (window.chartFunctions && window.chartFunctions[orderSymbol]) {
 						window.chartFunctions[orderSymbol](price, isBuy);
 					}
