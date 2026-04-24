@@ -271,8 +271,23 @@ def get_settings() -> Dict[str, Any]:
 # Server runs 24/7, no scheduler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start trading session immediately
-    await trading_session_start(app)
+    # Check schedule and start/stop accordingly
+    now_utc = datetime.now(timezone.utc)
+    now_ist = now_utc + timedelta(hours=5, minutes=30)
+    hour = now_ist.hour
+    minute = now_ist.minute
+    day = now_ist.strftime("%a")
+    
+    # Schedule: 9:15 to 23:59
+    in_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 or (hour == 23 and minute < 59)
+    is_trading_day = day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    
+    if in_hours and is_trading_day:
+        logging.info(f"Within schedule ({now_ist.strftime('%H:%M')}), starting trading session...")
+        await trading_session_start(app)
+    else:
+        logging.info(f"Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session...")
+    
     logging.info("✅ Trading session started.")
 
     yield
