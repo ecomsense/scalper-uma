@@ -4,44 +4,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		return;
 	}
 
-	window.updatePositionsSummary = function() {
-		const cached = localStorage.getItem("summary_cache");
-		if (!cached) return;
-		
-		let data;
-		try {
-			data = JSON.parse(cached);
-		} catch (e) {
-			return;
-		}
-		
-		const orderCount = data.order_count || 0;
-		const positionCount = data.position_count || 0;
-		const realizedPnl = data.realized_pnl || 0;
-
-		if (orderCount === 0 && positionCount === 0 && realizedPnl === 0) {
-			return;
-		}
-
-		document.getElementById("pos-count").textContent = positionCount;
-		document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + orderCount;
-		const m2mEl = document.getElementById("m2m");
-		const realEl = document.getElementById("realized");
-		m2mEl.textContent = (data.m2m || 0).toFixed(2);
-		realEl.textContent = realizedPnl.toFixed(2);
-		m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
-		realEl.parentElement.classList.toggle("negative", realizedPnl < 0);
-	};
-
-	window.fetchSummaryCache = function() {
-		fetch("/api/summary")
-			.then(r => r.json())
-			.then(data => {
-				localStorage.setItem("summary_cache", JSON.stringify(data));
-			})
-			.catch(console.error);
-	};
-
 	const chartOptions = {
 		layout: { background: { color: "#1a202c" }, textColor: "#d1d4dc" },
 		grid: { vertLines: { color: "#2b2b43" }, horzLines: { color: "#2b2b43" } },
@@ -284,10 +246,9 @@ window.addEventListener("DOMContentLoaded", () => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 
 			const orderSource = new EventSource("/sse/orders");
-			console.log("SSE /sse/orders connected"); // PROVE CONNECTION WORKS
-			setInterval(fetchSummaryCache, 5000);
+			console.log("SSE /sse/orders connected");
 			orderSource.addEventListener("order_msg", (e) => {
-				console.log("SSE order_msg:", e.data); // PROVE EVENT FIRED
+				console.log("SSE order_msg:", e.data);
 				try {
 					const msg = JSON.parse(e.data);
 					const status = msg.status || msg.ost || "";
@@ -298,7 +259,6 @@ window.addEventListener("DOMContentLoaded", () => {
 					const orderSymbol = msg.tsym;
 					const price = msg.price || msg.ltp;
 
-					// Show toast for SSE order update (since lines aren't working)
 					showToast((isBuy ? "BUY" : "SELL") + " " + orderSymbol + " @ " + price, false);
 
 					// Draw entry line on matching chart
@@ -312,7 +272,5 @@ window.addEventListener("DOMContentLoaded", () => {
 			setupChart("chart-CE", symbols[1], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
 			document.getElementById("chart-title-PE").textContent = symbols[0];
 			setupChart("chart-PE", symbols[0], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
-
-			updatePositionsSummary();
 		});
 });
