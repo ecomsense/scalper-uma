@@ -690,14 +690,28 @@ async def get_chart_settings() -> JSONResponse:
 
 
 @app.get("/api/admin/status")
-async def get_status() -> JSONResponse:
+async def get_admin_status(request: Request) -> JSONResponse:
     """
     Get server status and API key.
     """
+    # Show current time in IST
+    import datetime
+    now_utc = datetime.datetime.now(datetime.timezone.utc)
+    now_ist = now_utc + datetime.timedelta(hours=5, minutes=30)
+    hhmm = now_ist.strftime("%H:%M")
+    day = now_ist.strftime("%a")
+    
+    is_trading = getattr(request.app.state, "is_trading", False)
+    
     return JSONResponse(
         content={
             "status": "running",
             "api_key": O_CNFG.get("api_secret", ""),
             "message": "Server is running. Use admin endpoints to manage settings.",
+            "current_time_utc": now_utc.strftime("%H:%M %Z"),
+            "current_time_ist": hhmm,
+            "day_of_week": day,
+            "is_trading": is_trading,
+            "within_trading_hours": "09:14" <= hhmm <= "23:59" and day in ["Mon", "Tue", "Wed", "Thu", "Fri"],
         }
     )
