@@ -248,37 +248,6 @@ def get_settings() -> Dict[str, Any]:
     return settings
 
 
-def nullify(symbol: str = "") -> None:
-    try:
-        ws = None
-        if hasattr(Helper.api(), "broker") and hasattr(Helper.api().broker, "_ws"):
-            ws = Helper.api().broker._ws
-
-        ltp = None
-        if ws and ws.ltp:
-            tokens_nearest = getattr(Helper.api(), "tokens_nearest", {})
-            if symbol and tokens_nearest:
-                token = next(
-                    (k for k, v in tokens_nearest.items() if v == symbol), None
-                )
-                if token and token in ws.ltp:
-                    ltp = ws.ltp[token]
-
-        orders = Helper.orders()
-        if orders:
-            for item in orders:
-                if (item["status"] == "OPEN") or (item["status"] == "TRIGGER_PENDING"):
-                    order_id = item.get("order_id", None)
-                    logging.info(f"cancelling open order {order_id}")
-                    Helper.api().order_cancel(order_id)
-
-        if ltp and symbol:
-            Helper.close_all_for_symbol(symbol, ltp)
-    except Exception as e:
-        logging.error(f"Error in null ify: {e}")
-        print_exc()
-
-
 # --- Application Lifespan Event ---
 # Server runs 24/7, scheduler handles trading session
 @asynccontextmanager
@@ -481,45 +450,13 @@ async def place_buy_order(
 
 @app.get("/api/trade/sell")
 async def reset(symbol: str = "") -> JSONResponse:
-    if symbol:
-        logging.info(f"Sell request for symbol: {symbol}")
-        try:
-            api = Helper.api()
-            ws = (
-                api.broker._ws
-                if hasattr(api, "broker") and hasattr(api.broker, "_ws")
-                else None
-            )
-            ltp = None
-            if ws and ws.ltp:
-                tokens_nearest = (
-                    api.tokens_nearest if hasattr(api, "tokens_nearest") else {}
-                )
-                token = next(
-                    (k for k, v in tokens_nearest.items() if v == symbol), None
-                )
-                if token and token in ws.ltp:
-                    ltp = ws.ltp[token]
-            if ltp:
-                Helper.close_all_for_symbol(symbol, ltp)
-            else:
-                Helper.close_all_for_symbol(symbol, 0)
-        except Exception as e:
-            logging.error(f"Error in sell endpoint: {e}")
-        return JSONResponse(
-            content={
-                "message": f"reset completed for {symbol}",
-                "status": "success",
-            }
-        )
-    else:
-        nullify()
-        return JSONResponse(
-            content={
-                "message": "reset completed",
-                "status": "success",
-            }
-        )
+    Helper.close_all_for_symbol(symbol, ltp)
+    return JSONResponse(
+        content={
+            "message": "reset completed",
+            "status": "success",
+        }
+    )
 
 
 # --- SSE Endpoint for Streaming Candlesticks ---
