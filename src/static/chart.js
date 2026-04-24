@@ -5,8 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	window.updatePositionsSummary = function() {
-		// Always get fresh data from cache stored by interval
-		const cached = localStorage.getItem("positions_summary");
+		const cached = localStorage.getItem("summary_cache");
 		if (!cached) return;
 		
 		let data;
@@ -20,7 +19,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		const positionCount = data.position_count || 0;
 		const realizedPnl = data.realized_pnl || 0;
 
-		// Always show if we have activity (orders OR positions OR realized pnl)
 		if (orderCount === 0 && positionCount === 0 && realizedPnl === 0) {
 			return;
 		}
@@ -35,12 +33,11 @@ window.addEventListener("DOMContentLoaded", () => {
 		realEl.parentElement.classList.toggle("negative", realizedPnl < 0);
 	};
 
-	// NEW: Separate function to fetch and cache positions every 5 seconds
-	window.fetchPositionsCache = function() {
-		fetch("/api/positions/summary")
+	window.fetchSummaryCache = function() {
+		fetch("/api/summary")
 			.then(r => r.json())
 			.then(data => {
-				localStorage.setItem("positions_summary", JSON.stringify(data));
+				localStorage.setItem("summary_cache", JSON.stringify(data));
 			})
 			.catch(console.error);
 	};
@@ -154,13 +151,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		// Price line for buy/sell entry - single line replaces previous
 		let entryLine = null;
-		function clearAllLines() {
-			if (entryLine) { 
-				try { candleSeries.removePriceLine(entryLine); } catch(e) {} 
-				entryLine = null; 
-			}
-		}
-
 		function drawEntryLine(price, isBuy) {
 			clearAllLines();
 			entryLine = candleSeries.createPriceLine({
@@ -245,7 +235,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			const buyPrice = prev.high + 0.05;
 			const stopPrice = prev.low;
 			const targetPrice = buyPrice + profit;
-			clearAllLines();
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -267,7 +256,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			const buyPrice = curr.close + 2;
 			const stopPrice = prev.low;
 			const targetPrice = buyPrice + profit;
-			clearAllLines();
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -283,7 +271,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		document.getElementById(buttonIds.reset).onclick = () => {
-			clearAllLines();
 			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" });
 		};
 	}
@@ -298,7 +285,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			const orderSource = new EventSource("/sse/orders");
 			console.log("SSE /sse/orders connected"); // PROVE CONNECTION WORKS
-			setInterval(fetchPositionsCache, 5000);
+			setInterval(fetchSummaryCache, 5000);
 			orderSource.addEventListener("order_msg", (e) => {
 				console.log("SSE order_msg:", e.data); // PROVE EVENT FIRED
 				try {

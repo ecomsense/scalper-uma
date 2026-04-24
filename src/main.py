@@ -303,26 +303,17 @@ async def get_available_symbols(request: Request) -> JSONResponse:
     return JSONResponse(content=symbols)
 
 
-@app.get("/api/positions/summary")
-async def get_positions_summary(request: Request) -> JSONResponse:
+@app.get("/api/summary")
+async def get_summary(request: Request) -> JSONResponse:
     """
-    Returns positions summary: active positions, order count, m2m, realized pnl.
+    Returns both positions and orders summary.
     """
     try:
         content = Helper.summary()
         return JSONResponse(content)
     except Exception as e:
-        logging.error(f"Error getting positions summary: {e}")
-        return JSONResponse(
-            content={
-                "positions": [],
-                "position_count": 0,
-                "active_orders": 0,
-                "order_count": 0,
-                "m2m": 0.0,
-                "realized_pnl": 0.0,
-            }
-        )
+        logging.error(f"Error getting summary: {e}")
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 @app.get("/api/orders")
