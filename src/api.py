@@ -49,6 +49,8 @@ class Helper:
         price = bargs.get("price", 0)
         trigger_price = bargs.get("trigger_price", 0)
         logging.debug(f"[one_side] >>> ORDER REQUEST: symbol={symbol}, side={side}, order_type={order_type}, price={price}, trigger={trigger_price}")
+        logging.error(f"[one_side] full bargs: {bargs}")
+        logging.error(f"[one_side] cls._api: {cls._api}")
         try:
             resp = cls._api.order_place(**bargs)
             logging.debug(f"[one_side] <<< ORDER RESPONSE: {resp}")
