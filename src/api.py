@@ -80,7 +80,7 @@ class Helper:
             logging.error(f"Error cancelling orders: {e}")
 
     @classmethod
-    def orders(cls) -> Optional[List[Dict[str, Any]]:
+    def orders(cls) -> Optional[List[Dict[str, Any]]]:
         return cls.api().orders
 
     @classmethod
