@@ -154,32 +154,24 @@ This caused race conditions where:
 - Use ONE method to start the server (either systemctl OR nohup, never both)
 - Always kill all processes before restart: `fuser -k 8000/tcp` or `pkill -f uvicorn`
 
-### Trading Hours Bug
+### Trading Hours Bug (String vs Proper Time Comparison)
 
-**Symptom**: `within_trading_hours` showed `false` even when it was 22:49 IST (within 9:14-23:59).
-
-**Root Cause**: Code checked for market hours 9:14-23:59, but NSE market closes at 15:30 IST. The check was:
-```python
-within_trading_hours = "9:14" <= hhmm <= "23:59"  # Wrong!
-```
-
-NSE market hours are 9:14-15:30 IST. Update settings.yml program stop to "15:30":
-```yaml
-program:
-  start: "09:14"
-  stop: "15:30"
-```
-
-### Time Comparison Bug (String vs Proper Comparison)
-
-**Symptom**: `within_trading_hours` returned `false` even during market hours.
+**Symptom**: `within_trading_hours` showed `false` even when it was 22:49 IST (within 9:15-23:59).
 
 **Root Cause**: String comparison doesn't work for time:
-- Code used: `"9:14" <= hhmm <= "23:59"` 
-- String comparison compares character by character
-- `'9'` (ASCII 57) > `'2'` (ASCII 50) → Always fails!
+- Code used: `"9:14" <= hhmm <= "23:59"` (no leading zero on hour)
+- String comparison compares character by character:
+  - First char: `'9'` (ASCII 57) > `'2'` (ASCII 50) → **FAILS immediately!**
+  - This is why `within_trading_hours` was always `false`
 
-**Fix**: Use proper datetime/time comparison:
+**Example**:
+```python
+hhmm = "22:49"
+print("9:14" <= hhmm)  # False! Because '9' > '2'
+print("09:14" <= hhmm)  # True! Because '0' < '2'
+```
+
+**Fix**: Use proper integer time comparison:
 ```python
 hour = now_ist.hour
 minute = now_ist.minute
@@ -187,8 +179,8 @@ within_trading_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 
 ```
 
 Where schedule 9:15-23:59 is hardcoded by developer:
-- Start: 9:15 (hour > 9 or (hour == 9 and minute >= 15))
-- End: 23:59 (hour < 23 or (hour == 23 and minute < 59))
+- Start: 9:15 `(hour > 9 or (hour == 9 and minute >= 15))`
+- End: 23:59 `(hour < 23 or (hour == 23 and minute < 59))`
 
 ### Schedule Check on Startup
 
