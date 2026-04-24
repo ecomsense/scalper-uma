@@ -221,8 +221,16 @@
           if (data.orders && data.orders.length > 0) {
             data.orders.forEach(o => {
               const status = o.status || '';
-              const time = o.broker_timestamp || o.exchange_timestamp || o.order_timestamp || '';
-              const timeStr = time ? new Date(time).toLocaleTimeString() : '';
+              const time = o.norentm || o.broker_timestamp || o.exchange_timestamp || o.order_timestamp || '';
+              let timeStr = '';
+              if (time) {
+                const match = time.match(/(\d{2}):(\d{2}):(\d{2})\s+(\d{2})-(\d{2})-(\d{4})/);
+                if (match) {
+                  timeStr = match[1] + ':' + match[2] + ':' + match[3];
+                } else {
+                  timeStr = new Date(time).toLocaleTimeString();
+                }
+              }
               const statusStr = status.toUpperCase();
               let statusBg = '';
               if (statusStr === 'REJECTED') {
