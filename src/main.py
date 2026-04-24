@@ -323,6 +323,17 @@ async def get_summary(request: Request) -> JSONResponse:
     Returns both positions and orders summary.
     """
     try:
+        api = Helper.api()
+        if not api:
+            return JSONResponse(content={"error": "api not initialized"}, status_code=500)
+        
+        try:
+            orders_result = api.orders()
+            positions_result = api.positions()
+        except Exception as e:
+            logging.error(f"Error calling api methods: {e}")
+            return JSONResponse(content={"error": str(e)}, status_code=500)
+        
         content = Helper.summary()
         return JSONResponse(content)
     except Exception as e:
