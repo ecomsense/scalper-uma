@@ -693,10 +693,15 @@ async def get_admin_status(request: Request) -> JSONResponse:
 
     is_trading = getattr(request.app.state, "is_trading", False)
 
-    current_time_obj = datetime.strptime(hhmm, "%H:%M").time()
-    start_time_obj = time(9, 14)
-    end_time_obj = time(15, 30)
-    within_trading_hours = start_time_obj <= current_time_obj <= end_time_obj
+    try:
+        current_time_obj = datetime.strptime(hhmm, "%H:%M").time()
+        start_time_obj = time(9, 14)
+        end_time_obj = time(15, 30)
+        within_trading_hours = start_time_obj <= current_time_obj <= end_time_obj
+    except Exception as e:
+        logging.error(f"Time parse error: {e}, hhmm={hhmm}")
+        within_trading_hours = False
+    
     is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
     return JSONResponse(
