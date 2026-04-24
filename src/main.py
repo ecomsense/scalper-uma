@@ -348,6 +348,8 @@ async def get_positions_summary() -> JSONResponse:
         positions = api.positions or []
         orders = Helper.orders()
         logging.info(f"pos_summary: {len(positions)} positions, {len(orders)} orders")
+        for o in orders:
+            logging.info(f"order: {o.get('order_id')} status={o.get('status')}")
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
         closed_positions = [p for p in positions if p and p.get("quantity", 0) == 0 and p.get("rpnl", 0) != 0]
