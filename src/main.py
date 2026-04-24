@@ -264,20 +264,18 @@ def get_settings() -> Dict[str, Any]:
 
 
 # --- Application Lifespan Event ---
-# Server runs 24/7, scheduler handles trading session
+# Server runs 24/7, no scheduler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Schedule trading start/stop (hardcoded: 9:14-23:59 Mon-Fri)
-    schedule_trading_session(app)
-    SCHEDULER.start()
-    logging.info("✅ Scheduler started.")
-
+    # Start trading session immediately
+    await trading_session_start(app)
+    logging.info("✅ Trading session started.")
+    
     yield
-
-    # Shutdown: stop scheduler and trading session
+    
+    # Shutdown: stop trading session
     await trading_session_stop(app)
-    SCHEDULER.shutdown()
-    logging.info("✅ Scheduler shutdown.")
+    logging.info("✅ Trading session stopped.")
 
 
 # --- FastAPI App Initialization ---
