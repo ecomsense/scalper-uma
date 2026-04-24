@@ -243,7 +243,11 @@ class Helper:
         logging.debug("summary() called")
         orders = cls.orders()
         positions = cls.positions()
-        logging.debug(f"orders count: {len(orders) if orders else 0}, positions count: {len(positions) if positions else 0}")
+        logging.debug(f"orders type: {type(orders)}, positions type: {type(positions)}")
+        if orders and len(orders) > 0:
+            logging.debug(f"first order keys: {list(orders[0].keys()) if isinstance(orders[0], dict) else type(orders[0])}")
+        if positions and len(positions) > 0:
+            logging.debug(f"first position keys: {list(positions[0].keys()) if isinstance(positions[0], dict) else type(positions[0])}")
         
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
