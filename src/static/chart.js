@@ -284,15 +284,22 @@ window.addEventListener("DOMContentLoaded", () => {
 			const orderSource = new EventSource("/sse/orders");
 			setInterval(updatePositionsSummary, 5000);
 			orderSource.addEventListener("order_msg", (e) => {
+				console.log("SSE order_msg raw:", e.data); // DEBUG
 				try {
 					const msg = JSON.parse(e.data);
+					console.log("SSE order_msg parsed:", msg); // DEBUG
 					const status = msg.status || msg.ost || "";
 					const validStatuses = ["trigger_pending", "COMPLETE", "OPEN", "PENDING"];
-					if (!validStatuses.includes(status)) return;
+					if (!validStatuses.includes(status)) {
+						console.log("SSE status not in valid list:", status); // DEBUG
+						return;
+					}
 
 					const isBuy = msg.bs === "B";
 					const orderSymbol = msg.tsym;
 					const price = msg.price || msg.ltp;
+					console.log("SSE isBuy:", isBuy, "symbol:", orderSymbol, "price:", price); // DEBUG
+					console.log("SSE window.chartFunctions keys:", Object.keys(window.chartFunctions || {})); // DEBUG
 
 					// Show toast for SSE order update (fallback since lines aren't working)
 					showToast((isBuy ? "BUY" : "SELL") + " " + orderSymbol + " @ " + price, false);
