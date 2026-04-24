@@ -257,9 +257,6 @@ async def lifespan(app: FastAPI):
     SCHEDULER.start()
     logging.info("✅ Scheduler started.")
 
-    # Start trading session immediately (always, for testing)
-    await trading_session_start(app)
-
     yield
 
     # Shutdown: stop scheduler and trading session
