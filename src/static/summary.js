@@ -1,4 +1,4 @@
-console.log("summary.js v9 - starting");
+console.log("summary.js v10 - starting");
 
 function doFetch() {
     console.log("Fetching /api/summary...");
@@ -12,10 +12,11 @@ function doFetch() {
         .catch(e => console.error("API error:", e));
 }
 
-window.addEventListener("DOMContentLoaded", function() {
-    console.log("Page loaded, fetching summary...");
-    doFetch();
-});
+// Disable auto-fetch to prevent browser hanging
+// window.addEventListener("DOMContentLoaded", function() {
+//     console.log("Page loaded, fetching summary...");
+//     doFetch();
+// });
 
 function updateFromCache() {
     const cached = localStorage.getItem("summary_cache");
