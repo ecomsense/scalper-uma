@@ -4,12 +4,34 @@ window.addEventListener("DOMContentLoaded", () => {
 		return;
 	}
 
+	let lastOrderCount = -1;
+
 	window.updatePositionsSummary = function() {
 		fetch("/api/positions/summary")
 			.then(r => r.json())
 			.then(data => {
+				const orderCount = data.order_count || 0;
+
+				// First update: only if order_count > 0
+				if (lastOrderCount === -1) {
+					if (orderCount > 0) {
+						lastOrderCount = orderCount;
+					} else {
+						return; // Skip, wait for first order
+					}
+				} else {
+					// Subsequent: if order_count goes from >0 to 0, something wrong - don't update
+					if (lastOrderCount > 0 && orderCount === 0) {
+						console.error("Order count dropped to 0 - not updating panel");
+						return;
+					}
+					if (orderCount > 0) {
+						lastOrderCount = orderCount;
+					}
+				}
+
 				document.getElementById("pos-count").textContent = data.position_count || 0;
-				document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + (data.order_count || 0);
+				document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + orderCount;
 				const m2mEl = document.getElementById("m2m");
 				const realEl = document.getElementById("realized");
 				m2mEl.textContent = (data.m2m || 0).toFixed(2);
@@ -127,63 +149,33 @@ window.addEventListener("DOMContentLoaded", () => {
 			maSeries.push({ series, config });
 		});
 
-		// Price lines for buy/stop/target - each chart has its own
-		let buyLine = null;
-		let stopLine = null;
-		let targetLine = null;
+		// Price line for buy/sell entry - single line replaces previous
+		let entryLine = null;
 		function clearAllLines() {
-			if (buyLine) { 
-				try { candleSeries.removePriceLine(buyLine); } catch(e) {} 
-				buyLine = null; 
-			}
-			if (stopLine) { 
-				try { candleSeries.removePriceLine(stopLine); } catch(e) {} 
-				stopLine = null; 
-			}
-			if (targetLine) { 
-				try { candleSeries.removePriceLine(targetLine); } catch(e) {} 
-				targetLine = null; 
+			if (entryLine) { 
+				try { candleSeries.removePriceLine(entryLine); } catch(e) {} 
+				entryLine = null; 
 			}
 		}
 
-		function drawBuyLine(price) {
+		function drawEntryLine(price, isBuy) {
 			clearAllLines();
-			buyLine = candleSeries.createPriceLine({
+			entryLine = candleSeries.createPriceLine({
 				price: price,
-				color: '#4CAF50',
+				color: isBuy ? '#4CAF50' : '#f44336',
 				lineWidth: 2,
 				lineStyle: 2,
 				axisLabelVisible: true,
-				title: 'Buy',
+				title: isBuy ? 'BUY' : 'SELL',
 			});
 		}
 
-		function drawStopLine(price) {
-			stopLine = candleSeries.createPriceLine({
-				price: price,
-				color: '#f44336',
-				lineWidth: 2,
-				lineStyle: 2,
-				axisLabelVisible: true,
-				title: 'STP',
-			});
-		}
-
-		function drawTargetLine(price) {
-			targetLine = candleSeries.createPriceLine({
-				price: price,
-				color: '#2196F3',
-				lineWidth: 2,
-				lineStyle: 2,
-				axisLabelVisible: true,
-				title: 'TGT',
-			});
-		}
+		// Expose drawEntryLine globally for SSE handler
+		window.chartFunctions = window.chartFunctions || {};
+		window.chartFunctions[symbol] = drawEntryLine;
 
 		// Remove test lines - will draw when trade placed
-		// window.drawBuyLine(50);
-		// window.drawStopLine(48);
-		// window.drawTargetLine(55);
+		// window.drawEntryLine(50, true);
 
 		let candleData = [];
 
@@ -251,9 +243,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			const stopPrice = prev.low;
 			const targetPrice = buyPrice + profit;
 			clearAllLines();
-			drawBuyLine(buyPrice);
-			drawStopLine(stopPrice);
-			drawTargetLine(targetPrice);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -276,9 +265,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			const stopPrice = prev.low;
 			const targetPrice = buyPrice + profit;
 			clearAllLines();
-			drawBuyLine(curr.close);
-			drawStopLine(stopPrice);
-			drawTargetLine(targetPrice);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -317,8 +303,13 @@ window.addEventListener("DOMContentLoaded", () => {
 					if (!validStatuses.includes(status)) return;
 
 					const isBuy = msg.bs === "B";
-					let toastMsg = (isBuy ? "Buy " : "Sell ") + (msg.tsym || "Order");
-					showToast(toastMsg, !isBuy);
+					const orderSymbol = msg.tsym;
+					const price = msg.price || msg.ltp;
+
+					// Draw entry line on matching chart
+					if (window.chartFunctions && window.chartFunctions[orderSymbol]) {
+						window.chartFunctions[orderSymbol](price, isBuy);
+					}
 				} catch (err) { console.error("Order msg parse error:", err); }
 			});
 
