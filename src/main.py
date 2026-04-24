@@ -401,12 +401,9 @@ async def get_orders(request: Request) -> JSONResponse:
     """
     try:
         orders = Helper.orders()
-        logging.info(f"orders count: {len(orders) if orders else 0}")
         return JSONResponse(content={"orders": orders})
     except Exception as e:
         logging.error(f"Error getting orders: {e}")
-        import traceback
-        traceback.print_exc()
         return JSONResponse(content={"orders": []})
 
 
