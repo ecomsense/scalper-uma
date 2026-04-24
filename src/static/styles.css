@@ -128,6 +128,16 @@ body {
   margin-right: 5px;
 }
 
+.panel-item a {
+  color: #4da6ff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.panel-item a:hover {
+  text-decoration: underline;
+}
+
 .panel-item span:last-child {
   color: var(--green);
 }
