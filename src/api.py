@@ -81,10 +81,11 @@ class Helper:
 
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
-        order_book = cls.api().orders()
-        if not order_book or len(order_book) == 0:
+        raw_orders = cls.api().orders()
+        if not raw_orders or len(raw_orders) == 0:
             return []
-        return order_book
+        transformed = post_order_hook(*raw_orders)
+        return transformed
 
     @classmethod
     def historical(
