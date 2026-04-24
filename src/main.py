@@ -323,6 +323,8 @@ async def get_summary(request: Request) -> JSONResponse:
     Returns both positions and orders summary.
     """
     try:
+        api = Helper.api()
+        logging.info(f"Helper._api is None: {Helper._api is None}")
         content = Helper.summary()
         return JSONResponse(content)
     except Exception as e:
