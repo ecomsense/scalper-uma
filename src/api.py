@@ -52,10 +52,12 @@ class Helper:
         try:
             resp = cls._api.order_place(**bargs)
             logging.debug(f"[one_side] <<< ORDER RESPONSE: {resp}")
+            if not resp:
+                logging.error(f"[one_side] order_place returned None for {symbol}")
             return resp
         except Exception as e:
             message = f"helper error {e} while placing order {bargs}"
-            logging.warning(message)
+            logging.error(message)
             print_exc()
             return None
 
