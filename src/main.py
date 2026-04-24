@@ -400,8 +400,7 @@ async def get_orders(request: Request) -> JSONResponse:
     Returns all orders.
     """
     try:
-        api = Helper.api()
-        orders = api.orders
+        orders = Helper.orders()
         logging.info(f"Orders count: {len(orders) if orders else 0}")
         return JSONResponse(content={"orders": orders})
     except Exception as e:
