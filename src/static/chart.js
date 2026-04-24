@@ -5,27 +5,42 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	window.updatePositionsSummary = function() {
+		// Always get fresh data from cache stored by interval
+		const cached = localStorage.getItem("positions_summary");
+		if (!cached) return;
+		
+		let data;
+		try {
+			data = JSON.parse(cached);
+		} catch (e) {
+			return;
+		}
+		
+		const orderCount = data.order_count || 0;
+		const positionCount = data.position_count || 0;
+		const realizedPnl = data.realized_pnl || 0;
+
+		// Always show if we have activity (orders OR positions OR realized pnl)
+		if (orderCount === 0 && positionCount === 0 && realizedPnl === 0) {
+			return;
+		}
+
+		document.getElementById("pos-count").textContent = positionCount;
+		document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + orderCount;
+		const m2mEl = document.getElementById("m2m");
+		const realEl = document.getElementById("realized");
+		m2mEl.textContent = (data.m2m || 0).toFixed(2);
+		realEl.textContent = realizedPnl.toFixed(2);
+		m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
+		realEl.parentElement.classList.toggle("negative", realizedPnl < 0);
+	};
+
+	// NEW: Separate function to fetch and cache positions every 5 seconds
+	window.fetchPositionsCache = function() {
 		fetch("/api/positions/summary")
 			.then(r => r.json())
 			.then(data => {
-				const orderCount = data.order_count || 0;
-				const positionCount = data.position_count || 0;
-				const realizedPnl = data.realized_pnl || 0;
-
-				// Always show if we have activity (orders OR positions OR realized pnl)
-				if (orderCount === 0 && positionCount === 0 && realizedPnl === 0) {
-					// No activity at all - skip this update
-					return;
-				}
-
-				document.getElementById("pos-count").textContent = positionCount;
-				document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + orderCount;
-				const m2mEl = document.getElementById("m2m");
-				const realEl = document.getElementById("realized");
-				m2mEl.textContent = (data.m2m || 0).toFixed(2);
-				realEl.textContent = realizedPnl.toFixed(2);
-				m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
-				realEl.parentElement.classList.toggle("negative", realizedPnl < 0);
+				localStorage.setItem("positions_summary", JSON.stringify(data));
 			})
 			.catch(console.error);
 	};
@@ -283,7 +298,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 			const orderSource = new EventSource("/sse/orders");
 			console.log("SSE /sse/orders connected"); // PROVE CONNECTION WORKS
-			setInterval(updatePositionsSummary, 5000);
+			setInterval(fetchPositionsCache, 5000);
 			orderSource.addEventListener("order_msg", (e) => {
 				console.log("SSE order_msg:", e.data); // PROVE EVENT FIRED
 				try {
