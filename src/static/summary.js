@@ -43,9 +43,13 @@ window.fetchSummaryCache = function() { doFetch(); };
 
 window.showPositionsModal = function() {
     const cached = localStorage.getItem("summary_cache");
-    if (!cached) return;
+    if (!cached) {
+        console.log("No cached data, fetching...");
+        fetchSummaryCache();
+        return;
+    }
     let data;
-    try { data = JSON.parse(cached); } catch (e) { return; }
+    try { data = JSON.parse(cached); } catch (e) { console.error(e); return; }
     const positions = data.positions || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
@@ -64,9 +68,13 @@ window.showPositionsModal = function() {
 
 window.showOrdersModal = function() {
     const cached = localStorage.getItem("summary_cache");
-    if (!cached) return;
+    if (!cached) {
+        console.log("No cached data, fetching...");
+        fetchSummaryCache();
+        return;
+    }
     let data;
-    try { data = JSON.parse(cached); } catch (e) { return; }
+    try { data = JSON.parse(cached); } catch (e) { console.error(e); return; }
     const orders = data.orders || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">OrderID</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
