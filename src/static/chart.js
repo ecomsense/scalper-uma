@@ -282,8 +282,10 @@ window.addEventListener("DOMContentLoaded", () => {
 			if (!Array.isArray(symbols) || symbols.length < 2) return;
 
 			const orderSource = new EventSource("/sse/orders");
+			console.log("SSE /sse/orders connected"); // PROVE CONNECTION WORKS
 			setInterval(updatePositionsSummary, 5000);
 			orderSource.addEventListener("order_msg", (e) => {
+				console.log("SSE order_msg:", e.data); // PROVE EVENT FIRED
 				try {
 					const msg = JSON.parse(e.data);
 					const status = msg.status || msg.ost || "";
