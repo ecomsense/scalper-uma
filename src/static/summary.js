@@ -1,4 +1,4 @@
-console.log("summary.js v7 - starting");
+console.log("summary.js v8 - starting");
 
 function doFetch() {
     console.log("Fetching /api/summary...");
@@ -41,15 +41,26 @@ function updateFromCache() {
 
 window.fetchSummaryCache = function() { doFetch(); };
 
-window.showPositionsModal = function() {
-    const cached = localStorage.getItem("summary_cache");
-    if (!cached) {
-        console.log("No cached data, fetching...");
-        fetchSummaryCache();
-        return;
+async function showPositionsModal() {
+    let data = null;
+    let cached = localStorage.getItem("summary_cache");
+    if (cached) {
+        try { data = JSON.parse(cached); } catch (e) {}
     }
-    let data;
-    try { data = JSON.parse(cached); } catch (e) { console.error(e); return; }
+    if (!data) {
+        console.log("No cached data, fetching...");
+        await new Promise(function(resolve) {
+            fetch("/api/summary")
+                .then(r => r.json())
+                .then(function(d) {
+                    localStorage.setItem("summary_cache", JSON.stringify(d));
+                    data = d;
+                    resolve();
+                })
+                .catch(function(e) { console.error(e); resolve(); });
+        });
+        if (!data) return;
+    }
     const positions = data.positions || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
@@ -64,17 +75,28 @@ window.showPositionsModal = function() {
     html += '</table>';
     document.getElementById("positionsTable").innerHTML = html;
     document.getElementById("positionsModal").style.display = "block";
-};
+}
 
-window.showOrdersModal = function() {
-    const cached = localStorage.getItem("summary_cache");
-    if (!cached) {
-        console.log("No cached data, fetching...");
-        fetchSummaryCache();
-        return;
+async function showOrdersModal() {
+    let data = null;
+    let cached = localStorage.getItem("summary_cache");
+    if (cached) {
+        try { data = JSON.parse(cached); } catch (e) {}
     }
-    let data;
-    try { data = JSON.parse(cached); } catch (e) { console.error(e); return; }
+    if (!data) {
+        console.log("No cached data, fetching...");
+        await new Promise(function(resolve) {
+            fetch("/api/summary")
+                .then(r => r.json())
+                .then(function(d) {
+                    localStorage.setItem("summary_cache", JSON.stringify(d));
+                    data = d;
+                    resolve();
+                })
+                .catch(function(e) { console.error(e); resolve(); });
+        });
+        if (!data) return;
+    }
     const orders = data.orders || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">OrderID</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
@@ -95,6 +117,6 @@ window.showOrdersModal = function() {
     html += '</table>';
     document.getElementById("ordersTable").innerHTML = html;
     document.getElementById("ordersModal").style.display = "block";
-};
+}
 
-console.log("summary.js v7 - ready");
+console.log("summary.js v8 - ready");
