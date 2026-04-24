@@ -683,30 +683,31 @@ async def get_admin_status(request: Request) -> JSONResponse:
     """
     Get server status and API key.
     """
-    # Show current time in IST
-    import datetime
+    try:
+        now_utc = datetime.now(timezone.utc)
+        now_ist = now_utc + timedelta(hours=5, minutes=30)
+        hhmm = now_ist.strftime("%H:%M")
+        day = now_ist.strftime("%a")
 
-    now_utc = datetime.now(timezone.utc)
-    now_ist = now_utc + timedelta(hours=5, minutes=30)
-    hhmm = now_ist.strftime("%H:%M")
-    day = now_ist.strftime("%a")
+        is_trading = getattr(request.app.state, "is_trading", False)
+        
+        hour = now_ist.hour
+        minute = now_ist.minute
+        within_trading_hours = (hour > 9 or (hour == 9 and minute >= 14)) and hour < 15 or (hour == 15 and minute < 30)
+        is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
-    is_trading = getattr(request.app.state, "is_trading", False)
-    
-    hour = now_ist.hour
-    minute = now_ist.minute
-    within_trading_hours = (hour > 9 or (hour == 9 and minute >= 14)) and hour < 15 or (hour == 15 and minute < 30)
-    is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
-
-    return JSONResponse(
-        content={
-            "status": "running",
-            "api_key": O_CNFG.get("api_secret", ""),
-            "message": "Server is running. Use admin endpoints to manage settings.",
-            "current_time_utc": now_utc.strftime("%H:%M %Z"),
-            "current_time_ist": hhmm,
-            "day_of_week": day,
-            "is_trading": is_trading,
-            "within_trading_hours": within_trading_hours,
-        }
-    )
+        return JSONResponse(
+            content={
+                "status": "running",
+                "api_key": O_CNFG.get("api_secret", ""),
+                "message": "Server is running. Use admin endpoints to manage settings.",
+                "current_time_utc": now_utc.strftime("%H:%M %Z"),
+                "current_time_ist": hhmm,
+                "day_of_week": day,
+                "is_trading": is_trading,
+                "within_trading_hours": within_trading_hours,
+            }
+        )
+    except Exception as e:
+        import traceback
+        return JSONResponse(content={"error": str(e), "trace": traceback.format_exc()}, status_code=500)
