@@ -323,11 +323,6 @@ async def get_summary(request: Request) -> JSONResponse:
     Returns both positions and orders summary.
     """
     try:
-        api = Helper.api()
-        logging.info(f"Helper._api is None: {Helper._api is None}")
-        orders_result = api.orders if hasattr(api, 'orders') else None
-        positions_result = api.positions if hasattr(api, 'positions') else None
-        logging.info(f"orders result type: {type(orders_result)}, positions result type: {type(positions_result)}")
         content = Helper.summary()
         return JSONResponse(content)
     except Exception as e:
