@@ -337,11 +337,14 @@ async def get_available_symbols(request: Request) -> JSONResponse:
 
 
 @app.get("/api/positions/summary")
-async def get_positions_summary() -> JSONResponse:
+async def get_positions_summary(request: Request, fresh: bool = False) -> JSONResponse:
     """
     Returns positions summary: active positions, order count, m2m, realized pnl.
+    If fresh=true, create new session to get live data from broker.
     """
     try:
+        if fresh:
+            Helper._api = None
         api = Helper.api()
         if not api:
             raise Exception("Helper.api() returned None")
@@ -395,24 +398,18 @@ async def get_positions_summary() -> JSONResponse:
 
 
 @app.get("/api/orders")
-async def get_orders() -> JSONResponse:
-    """Returns all orders."""
+async def get_orders(request: Request, fresh: bool = False) -> JSONResponse:
+    """
+    Returns all orders. If fresh=true, create new session.
+    """
     try:
+        if fresh:
+            Helper._api = None
         orders = Helper.orders()
         return JSONResponse(content={"orders": orders})
     except Exception as e:
         logging.error(f"Error getting orders: {e}")
         return JSONResponse(content={"orders": []})
-        return JSONResponse(
-            content={
-                "positions": [],
-                "position_count": 0,
-                "active_orders": 0,
-                "order_count": 0,
-                "m2m": 0.0,
-                "realized_pnl": 0.0,
-            }
-        )
 
 
 @app.get("/api/historical/{symbol}")
