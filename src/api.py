@@ -236,18 +236,17 @@ class Helper:
                 m2m += pos.get("urmtom", 0)
             realized += pos.get("rpnl", 0)
 
-        return len(positions), len(display_positions), round(m2m, 2), round(realized, 2)
-        
+        return positions, len(display_positions), round(m2m, 2), round(realized, 2)
 
     @classmethod
     def summary(cls):
         active_orders_count, total_orders = cls.order_summary()
         if total_orders > 0:
-            pos_len, display_pos_len, m2m, realized = cls.position_summary()
+            positions, display_pos_len, m2m, realized = cls.position_summary()
             cls._summary = {
                 "active_orders": active_orders_count,
                 "order_count": total_orders,
-                "positions": pos_len,
+                "positions": positions,
                 "position_count": display_pos_len,
                 "m2m": m2m,
                 "realized_pnl": realized,
