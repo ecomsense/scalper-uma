@@ -11,33 +11,38 @@ window.addEventListener("DOMContentLoaded", () => {
 			.then(r => r.json())
 			.then(data => {
 				const orderCount = data.order_count || 0;
+				const positionCount = data.position_count || 0;
+				const realizedPnl = data.realized_pnl || 0;
 
-				// First update: only if order_count > 0
+				// First update: only if order_count > 0 OR positions exist with realized pnl
 				if (lastOrderCount === -1) {
-					if (orderCount > 0) {
+					if (orderCount > 0 || positionCount > 0 || realizedPnl > 0) {
 						lastOrderCount = orderCount;
 					} else {
-						return; // Skip, wait for first order
+						return; // Skip, wait for first activity
 					}
 				} else {
-					// Subsequent: if order_count goes from >0 to 0, something wrong - don't update
+					// Subsequent: if order_count goes from >0 to 0, check if still have positions/pnl
 					if (lastOrderCount > 0 && orderCount === 0) {
-						console.error("Order count dropped to 0 - not updating panel");
-						return;
+						if (positionCount === 0 && realizedPnl === 0) {
+							console.error("Order count dropped to 0 and no positions - not updating panel");
+							return;
+						}
+						// Still have positions or pnl - continue showing
 					}
-					if (orderCount > 0) {
+					if (orderCount > 0 || positionCount > 0 || realizedPnl > 0) {
 						lastOrderCount = orderCount;
 					}
 				}
 
-				document.getElementById("pos-count").textContent = data.position_count || 0;
+				document.getElementById("pos-count").textContent = positionCount;
 				document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + orderCount;
 				const m2mEl = document.getElementById("m2m");
 				const realEl = document.getElementById("realized");
 				m2mEl.textContent = (data.m2m || 0).toFixed(2);
-				realEl.textContent = (data.realized_pnl || 0).toFixed(2);
+				realEl.textContent = realizedPnl.toFixed(2);
 				m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
-				realEl.parentElement.classList.toggle("negative", data.realized_pnl < 0);
+				realEl.parentElement.classList.toggle("negative", realizedPnl < 0);
 			})
 			.catch(console.error);
 	};
