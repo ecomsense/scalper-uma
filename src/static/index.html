@@ -129,6 +129,23 @@
 
       function openSettingsModal() {
         document.getElementById('settingsModal').style.display = 'block';
+        loadSettings();
+      }
+
+      function loadSettings() {
+        fetch("/api/admin/settings")
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === "success") {
+              document.getElementById("settingsEditor").value = data.content;
+              document.getElementById("settingsMessage").textContent = "Loaded";
+            } else {
+              document.getElementById("settingsMessage").textContent = "Error: " + data.message;
+            }
+          })
+          .catch(e => {
+            document.getElementById("settingsMessage").textContent = "Error: " + e;
+          });
       }
 
       function closeSettingsModal() {
