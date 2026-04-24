@@ -81,7 +81,7 @@ class Helper:
 
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
-        raw_orders = cls.api().orders()
+        raw_orders = cls.api().orders
         if not raw_orders or len(raw_orders) == 0:
             return []
         transformed = post_order_hook(*raw_orders)
