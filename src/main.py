@@ -400,17 +400,12 @@ async def get_orders(request: Request) -> JSONResponse:
     Returns all orders.
     """
     try:
-        api = request.app.state.api if hasattr(request.app.state, 'api') else None
-        if not api:
-            logging.warning("No api in app.state, creating new session")
-            api = Helper.api()
+        api = Helper.api()
         orders = api.orders
         logging.info(f"Orders count: {len(orders) if orders else 0}")
         return JSONResponse(content={"orders": orders})
     except Exception as e:
         logging.error(f"Error getting orders: {e}")
-        import traceback
-        traceback.print_exc()
         return JSONResponse(content={"orders": []})
 
 

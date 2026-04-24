@@ -36,9 +36,12 @@ class Helper:
     @classmethod
     def api(cls) -> Any:
         if cls._api is None:
+            logging.info("Creating NEW broker session")
             cls._api = login()
             cls._initialized = True
             logging.info("Singleton session created")
+        else:
+            logging.info("Using existing session")
         return cls._api
 
     @classmethod
