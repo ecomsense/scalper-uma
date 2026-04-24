@@ -50,8 +50,8 @@
     </div>
 
     <div class="bottom-panel">
-      <div class="panel-item"><span class="label">Positions:</span> <span id="pos-count">0</span></div>
-      <div class="panel-item"><span class="label">Orders:</span> <span id="order-count">0</span></div>
+      <div class="panel-item"><span class="label">Positions:</span> <span id="pos-count">0</span> <button class="small-btn" onclick="showPositionsModal()">Details</button></div>
+      <div class="panel-item"><span class="label">Orders:</span> <span id="order-count">0</span> <button class="small-btn" onclick="showOrdersModal()">Details</button></div>
       <div class="panel-item"><span class="label">M2M:</span> <span id="m2m">0.00</span></div>
       <div class="panel-item"><span class="label">Realized:</span> <span id="realized">0.00</span></div>
     </div>
@@ -84,6 +84,28 @@
           <button class="blue-btn" onclick="loadLogs()">Refresh</button>
         </div>
         <div id="logsMessage" style="margin-top: 10px;"></div>
+      </div>
+    </div>
+
+    <!-- Positions Modal -->
+    <div id="positionsModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Positions</h2>
+          <span class="close" onclick="closePositionsModal()">&times;</span>
+        </div>
+        <div id="positionsTable"></div>
+      </div>
+    </div>
+
+    <!-- Orders Modal -->
+    <div id="ordersModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Orders</h2>
+          <span class="close" onclick="closeOrdersModal()">&times;</span>
+        </div>
+        <div id="ordersTable"></div>
       </div>
     </div>
 
@@ -157,6 +179,67 @@
       function closeSettingsModal() {
         document.getElementById('settingsModal').style.display = 'none';
         document.getElementById('settingsMessage').innerHTML = '';
+      }
+
+      async function showPositionsModal() {
+        document.getElementById('positionsModal').style.display = 'block';
+        try {
+          const response = await fetch('/api/positions/summary');
+          const data = await response.json();
+          let html = '<table style="width:100%;border-collapse:collapse;">';
+          html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
+          if (data.positions && data.positions.length > 0) {
+            data.positions.forEach(p => {
+              html += '<tr>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.symbol || '') + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.quantity || 0) + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.rpnl || 0) + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.urmtom || 0) + '</td>';
+              html += '</tr>';
+            });
+          } else {
+            html += '<tr><td colspan="4" style="border:1px solid #ddd;padding:8px;text-align:center;">No positions</td></tr>';
+          }
+          html += '</table>';
+          document.getElementById('positionsTable').innerHTML = html;
+        } catch (error) {
+          document.getElementById('positionsTable').innerHTML = '<span style="color:red;">Error: ' + error + '</span>';
+        }
+      }
+
+      function closePositionsModal() {
+        document.getElementById('positionsModal').style.display = 'none';
+      }
+
+      async function showOrdersModal() {
+        document.getElementById('ordersModal').style.display = 'block';
+        try {
+          const response = await fetch('/api/orders');
+          const data = await response.json();
+          let html = '<table style="width:100%;border-collapse:collapse;">';
+          html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">OrderID</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
+          if (data.orders && data.orders.length > 0) {
+            data.orders.forEach(o => {
+              html += '<tr>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.tsym || o.symbol || '') + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.order_id || '') + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.side || o.trantype || '') + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.status || '') + '</td>';
+              html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.price || o.prc || '') + '</td>';
+              html += '</tr>';
+            });
+          } else {
+            html += '<tr><td colspan="5" style="border:1px solid #ddd;padding:8px;text-align:center;">No orders</td></tr>';
+          }
+          html += '</table>';
+          document.getElementById('ordersTable').innerHTML = html;
+        } catch (error) {
+          document.getElementById('ordersTable').innerHTML = '<span style="color:red;">Error: ' + error + '</span>';
+        }
+      }
+
+      function closeOrdersModal() {
+        document.getElementById('ordersModal').style.display = 'none';
       }
 
       async function loadLogs() {

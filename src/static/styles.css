@@ -207,6 +207,15 @@ button {
   border: none;
   cursor: pointer;
   font-size: 0.9em;
+}
+
+.small-btn {
+  padding: 4px 8px !important;
+  font-size: 0.75em !important;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
   color: var(--text-primary);
   margin-bottom: 5px;
 }
