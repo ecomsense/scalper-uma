@@ -85,7 +85,6 @@ class Helper:
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
         result = cls.api().orders
-        logging.info(f"Raw orders result type: {type(result)}")
         if isinstance(result, dict) and "orders" in result:
             return result["orders"]
         return result or []
