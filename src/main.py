@@ -641,13 +641,20 @@ async def update_settings(
     request: Request, settings_data: Dict[str, Any] = Body(...)
 ) -> JSONResponse:
     """
-    Update settings.yml content and restart trading session.
+    Update settings.yml content and stop trading session.
+    Scheduler will restart based on schedule.
     """
     try:
         settings_path = Path(S_DATA) / "settings.yml"
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
+        
+        await trading_session_stop(request.app)
+        
+        return JSONResponse(
+            content={"message": "Settings saved. Trading session stopped.", "status": "success"}
+        )
     except Exception as e:
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
