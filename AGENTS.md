@@ -170,6 +170,22 @@ program:
   stop: "15:30"
 ```
 
+### Time Comparison Bug (String vs Proper Comparison)
+
+**Symptom**: `within_trading_hours` returned `false` even during market hours.
+
+**Root Cause**: String comparison doesn't work for time:
+- Code used: `"9:14" <= hhmm <= "23:59"` 
+- String comparison compares character by character
+- `'9'` (ASCII 57) > `'2'` (ASCII 50) → Always fails!
+
+**Fix**: Use proper datetime/time comparison:
+```python
+hour = now_ist.hour
+minute = now_ist.minute
+within_trading_hours = (hour > 9 or (hour == 9 and minute >= 14)) and hour < 15 or (hour == 15 and minute < 30)
+```
+
 ### Frontend Modals Not Showing Data
 
 **Symptom**: Clicking "Details" for Positions/Orders showed empty modals.
