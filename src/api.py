@@ -207,6 +207,53 @@ class Helper:
         finally:
             return pnl
 
+    @classmethod
+    def order_summary(cls):
+        orders = cls.orders()
+
+        active_orders_count = 0
+        valid_orders = [o for o in orders if o and o.get("order_id")]
+        total_orders = len(valid_orders)
+
+        if total_orders > 0:
+            active_orders_count = 0
+            for o in valid_orders:
+                status = o.get("status", "")
+                if status in ["OPEN", "PENDING", "TRIGGER_PENDING"]:
+                    active_orders_count += 1
+        return active_orders_count, total_orders
+
+    @classmethod
+    def position_summary(cls):
+        positions = cls.positions()
+        display_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
+
+        m2m = 0.0
+        realized = 0.0
+        for pos in positions:
+            qty = pos.get("quantity", 0)
+            if qty != 0:
+                m2m += pos.get("urmtom", 0)
+            realized += pos.get("rpnl", 0)
+
+        return len(positions), len(display_positions), round(m2m, 2), round(realized, 2)
+        
+
+    @classmethod
+    def summary(cls):
+        active_orders_count, total_orders = cls.order_summary()
+        if total_orders > 0:
+            pos_len, display_pos_len, m2m, realized = cls.position_summary()
+            cls._summary = {
+                "active_orders": active_orders_count,
+                "order_count": total_orders,
+                "positions": pos_len,
+                "position_count": display_pos_len,
+                "m2m": m2m,
+                "realized_pnl": realized,
+            }
+        return cls._summary
+
 
 if __name__ == "__main__":
     import pandas as pd
