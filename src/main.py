@@ -183,38 +183,42 @@ def schedule_trading_session(app: FastAPI):
     program = settings.get("program", {})
     start_time = program.get("start", "09:14")
     stop_time = program.get("stop", "23:59")
-    
+
     # Parse times
     start_parts = start_time.split(":")
     stop_parts = stop_time.split(":")
-    
+
     start_hour = int(start_parts[0])
     start_minute = int(start_parts[1]) if len(start_parts) > 1 else 0
     stop_hour = int(stop_parts[0])
     stop_minute = int(stop_parts[1]) if len(stop_parts) > 1 else 0
-    
+
     # Clear existing jobs if any
     for job_id in ["start_session", "stop_session"]:
         try:
             SCHEDULER.remove_job(job_id)
         except Exception:
             pass
-    
+
     SCHEDULER.add_job(
         trading_session_start,
-        trigger=CronTrigger(day_of_week="mon-fri", hour=start_hour, minute=start_minute),
+        trigger=CronTrigger(
+            day_of_week="mon-fri", hour=start_hour, minute=start_minute
+        ),
         id="start_session",
         args=[app],
     )
-    
+
     SCHEDULER.add_job(
         trading_session_stop,
         trigger=CronTrigger(day_of_week="mon-fri", hour=stop_hour, minute=stop_minute),
         id="stop_session",
         args=[app],
     )
-    
-    logging.info(f"Trading session scheduled: {start_time}-{stop_time} Mon-Fri IST (from settings)")
+
+    logging.info(
+        f"Trading session scheduled: {start_time}-{stop_time} Mon-Fri IST (from settings)"
+    )
 
 
 CANDLESTICK_TIMEFRAME_SECONDS: int = 60
@@ -270,9 +274,9 @@ async def lifespan(app: FastAPI):
     # Start trading session immediately
     await trading_session_start(app)
     logging.info("✅ Trading session started.")
-    
+
     yield
-    
+
     # Shutdown: stop trading session
     await trading_session_stop(app)
     logging.info("✅ Trading session stopped.")
@@ -625,36 +629,7 @@ async def update_settings(
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        touch_marker()
-        logging.info("Settings saved, stopping trading session...")
-        try:
-            await trading_session_stop(request.app)
-            logging.info("Trading session stopped successfully.")
-        except Exception as e:
-            logging.error(f"Error in trading_session_stop: {e}")
-            import traceback
-
-            logging.error(traceback.format_exc())
-        logging.info("Starting trading session...")
-        try:
-            await trading_session_start(request.app)
-            logging.info("Trading session started successfully.")
-        except Exception as e:
-            logging.error(f"Error in trading_session_start: {e}")
-            import traceback
-
-            logging.error(traceback.format_exc())
-        return JSONResponse(
-            content={
-                "message": "Settings saved. Trading session restarted.",
-                "status": "success",
-            }
-        )
     except Exception as e:
-        logging.error(f"Error in update_settings: {e}")
-        import traceback
-
-        logging.error(traceback.format_exc())
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
         )
@@ -706,13 +681,14 @@ async def get_admin_status(request: Request) -> JSONResponse:
     """
     # Show current time in IST
     import datetime
+
     now_utc = datetime.datetime.now(datetime.timezone.utc)
     now_ist = now_utc + datetime.timedelta(hours=5, minutes=30)
     hhmm = now_ist.strftime("%H:%M")
     day = now_ist.strftime("%a")
-    
+
     is_trading = getattr(request.app.state, "is_trading", False)
-    
+
     return JSONResponse(
         content={
             "status": "running",
@@ -722,6 +698,7 @@ async def get_admin_status(request: Request) -> JSONResponse:
             "current_time_ist": hhmm,
             "day_of_week": day,
             "is_trading": is_trading,
-            "within_trading_hours": "09:14" <= hhmm <= "23:59" and day in ["Mon", "Tue", "Wed", "Thu", "Fri"],
+            "within_trading_hours": "9:14" <= hhmm <= "23:59"
+            and day in ["Mon", "Tue", "Wed", "Thu", "Fri"],
         }
     )
