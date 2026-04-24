@@ -84,7 +84,11 @@ class Helper:
         raw_orders = cls.api().orders
         if not raw_orders or len(raw_orders) == 0:
             return []
-        return raw_orders
+        transformed = post_order_hook(*raw_orders)
+        for o in transformed:
+            if not o.get("order_id"):
+                o["order_id"] = o.get("exchange_order_id")
+        return transformed
 
     @classmethod
     def historical(
