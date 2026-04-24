@@ -79,7 +79,7 @@ class Helper:
         except Exception as e:
             logging.error(f"Error cancelling orders: {e}")
 
-@classmethod
+    @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
         raw_orders = cls.api().orders
         if not raw_orders or len(raw_orders) == 0:
