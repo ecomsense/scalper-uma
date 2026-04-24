@@ -33,7 +33,7 @@ SCHEDULER = AsyncIOScheduler()
 from contextlib import asynccontextmanager
 
 from pytz import timezone as tz
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, time
 from typing import Dict, List, Any, Optional
 
 
@@ -701,8 +701,10 @@ async def get_admin_status(request: Request) -> JSONResponse:
             "current_time_utc": now_utc.strftime("%H:%M %Z"),
             "current_time_ist": hhmm,
             "day_of_week": day,
-            "is_trading": is_trading,
-            "within_trading_hours": "9:14" <= hhmm <= "23:59"
-            and day in ["Mon", "Tue", "Wed", "Thu", "Fri"],
+            is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
+            current_time_obj = datetime.strptime(hhmm, "%H:%M").time()
+            start_time_obj = time(9, 14)
+            end_time_obj = time(15, 30)
+            within_market_hours = start_time_obj <= current_time_obj <= end_time_obj
         }
     )
