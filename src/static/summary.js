@@ -1,4 +1,4 @@
-// Summary module - fetches and caches positions + orders from broker
+console.log("summary.js v7 - starting");
 
 function doFetch() {
     console.log("Fetching /api/summary...");
@@ -49,7 +49,7 @@ window.showPositionsModal = function() {
     const positions = data.positions || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
-    positions.forEach(p => {
+    positions.forEach(function(p) {
         html += '<tr>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.quantity || 0) + '</td>';
@@ -70,7 +70,7 @@ window.showOrdersModal = function() {
     const orders = data.orders || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">OrderID</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
-    orders.forEach(o => {
+    orders.forEach(function(o) {
         const status = o.status || '';
         let bg = '';
         if (status === 'COMPLETE') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
@@ -88,3 +88,5 @@ window.showOrdersModal = function() {
     document.getElementById("ordersTable").innerHTML = html;
     document.getElementById("ordersModal").style.display = "block";
 };
+
+console.log("summary.js v7 - ready");
