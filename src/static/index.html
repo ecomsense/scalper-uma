@@ -148,6 +148,22 @@
           });
       }
 
+      function saveSettings() {
+        const content = document.getElementById("settingsEditor").value;
+        fetch("/api/admin/settings", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({content})
+        })
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById("settingsMessage").textContent = data.status === "success" ? "Saved!" : "Error: " + data.message;
+          })
+          .catch(e => {
+            document.getElementById("settingsMessage").textContent = "Error: " + e;
+          });
+      }
+
       function closeSettingsModal() {
         document.getElementById('settingsModal').style.display = 'none';
       }
