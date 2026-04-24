@@ -240,9 +240,10 @@ class Helper:
 
     @classmethod
     def summary(cls):
-        # Always get fresh data
+        logging.debug("summary() called")
         orders = cls.orders()
         positions = cls.positions()
+        logging.debug(f"orders count: {len(orders) if orders else 0}, positions count: {len(positions) if positions else 0}")
         
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
