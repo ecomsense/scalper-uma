@@ -87,7 +87,7 @@ class Helper:
         transformed = post_order_hook(*raw_orders)
         for o in transformed:
             if not o.get("order_id"):
-                o["order_id"] = o.get("exchange_order_id")
+                o["order_id"] = o.get("norenordno")
         return transformed
 
     @classmethod
