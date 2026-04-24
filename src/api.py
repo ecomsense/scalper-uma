@@ -81,7 +81,7 @@ class Helper:
 
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
-        order_book = cls.api().broker.get_order_book()
+        order_book = cls.api().orders()
         if not order_book or len(order_book) == 0:
             return []
         return order_book
