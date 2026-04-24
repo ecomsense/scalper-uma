@@ -349,6 +349,8 @@ async def get_positions_summary() -> JSONResponse:
         orders = Helper.orders()
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
+        closed_positions = [p for p in positions if p and p.get("quantity", 0) == 0 and p.get("rpnl", 0) != 0]
+        display_positions = active_positions + closed_positions
 
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
@@ -361,17 +363,17 @@ async def get_positions_summary() -> JSONResponse:
 
         m2m = 0.0
         realized = 0.0
-        for pos in positions:
-            if pos:
-                qty = pos.get("quantity", 0)
-                if qty != 0:
-                    m2m += pos.get("urmtom", 0)
-                realized += pos.get("rpnl", 0)
+        all_positions = [p for p in positions if p]
+        for pos in all_positions:
+            qty = pos.get("quantity", 0)
+            if qty != 0:
+                m2m += pos.get("urmtom", 0)
+            realized += pos.get("rpnl", 0)
 
         return JSONResponse(
             content={
-                "positions": active_positions,
-                "position_count": len(active_positions),
+                "positions": display_positions,
+                "position_count": len(display_positions),
                 "active_orders": active_orders_count,
                 "order_count": total_orders,
                 "m2m": round(m2m, 2),
@@ -380,6 +382,16 @@ async def get_positions_summary() -> JSONResponse:
         )
     except Exception as e:
         logging.error(f"Error getting positions summary: {e}")
+        return JSONResponse(
+            content={
+                "positions": [],
+                "position_count": 0,
+                "active_orders": 0,
+                "order_count": 0,
+                "m2m": 0.0,
+                "realized_pnl": 0.0,
+            }
+        )
         return JSONResponse(
             content={
                 "positions": [],
