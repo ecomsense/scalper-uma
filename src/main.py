@@ -686,8 +686,8 @@ async def get_admin_status(request: Request) -> JSONResponse:
     # Show current time in IST
     import datetime
 
-    now_utc = datetime.datetime.now(datetime.timezone.utc)
-    now_ist = now_utc + datetime.timedelta(hours=5, minutes=30)
+    now_utc = datetime.now(timezone.utc)
+    now_ist = now_utc + timedelta(hours=5, minutes=30)
     hhmm = now_ist.strftime("%H:%M")
     day = now_ist.strftime("%a")
 
