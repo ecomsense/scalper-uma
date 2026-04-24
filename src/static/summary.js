@@ -21,22 +21,22 @@ window.showPositionsModal = function() {
     }
     
     const positions = data.positions || [];
-    const displayPositions = positions.filter(p => p && p.quantity != 0);
     
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
     
-    if (displayPositions.length > 0) {
-        displayPositions.forEach(p => {
+    if (positions.length > 0) {
+        positions.forEach(p => {
+            const qty = p.quantity || 0;
             html += '<tr>';
-            html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.symbol || '') + '</td>';
-            html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.quantity || 0) + '</td>';
+            html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
+            html += '<td style="border:1px solid #ddd;padding:8px;">' + qty + '</td>';
             html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.rpnl || 0) + '</td>';
             html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.urmtom || 0) + '</td>';
             html += '</tr>';
         });
     } else {
-        html += '<tr><td colspan="4" style="border:1px solid #ddd;padding:8px;text-align:center;">No open positions</td></tr>';
+        html += '<tr><td colspan="4" style="border:1px solid #ddd;padding:8px;text-align:center;">No positions</td></tr>';
     }
     html += '</table>';
     
