@@ -81,7 +81,10 @@ class Helper:
 
     @classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
-        return cls.api().orders
+        result = cls.api().orders
+        if isinstance(result, dict) and "orders" in result:
+            return result["orders"]
+        return result or []
 
     @classmethod
     def historical(
