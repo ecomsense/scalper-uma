@@ -693,7 +693,8 @@ async def get_admin_status(request: Request) -> JSONResponse:
         
         hour = now_ist.hour
         minute = now_ist.minute
-        within_trading_hours = (hour > 9 or (hour == 9 and minute >= 14)) and hour < 15 or (hour == 15 and minute < 30)
+        # Hardcoded schedule: 9:15 to 23:59
+        within_trading_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 or (hour == 23 and minute < 59)
         is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
         return JSONResponse(
