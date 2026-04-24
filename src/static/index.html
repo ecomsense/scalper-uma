@@ -184,7 +184,7 @@
       async function showPositionsModal() {
         document.getElementById('positionsModal').style.display = 'block';
         try {
-          const response = await fetch('/api/positions/summary?fresh=true');
+          const response = await fetch('/api/positions/summary');
           const data = await response.json();
           let html = '<table style="width:100%;border-collapse:collapse;">';
           html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
@@ -214,7 +214,7 @@
       async function showOrdersModal() {
         document.getElementById('ordersModal').style.display = 'block';
         try {
-          const response = await fetch('/api/orders?fresh=true');
+          const response = await fetch('/api/orders');
           const data = await response.json();
           let html = '<table style="width:100%;border-collapse:collapse;">';
           html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">OrderID</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
