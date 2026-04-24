@@ -261,15 +261,26 @@ window.addEventListener("DOMContentLoaded", () => {
 					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
 			}).then(r => r.json()).then(data => {
-				if (data.order && data.order.entry_id) {
+				if (data.status === "success") {
+					showToast("BUY order placed: " + symbol, false);
+				} else if (data.order && data.order.entry_id) {
 					showToast("Cleaned up other orders", false);
+				} else {
+					showToast("Order failed: " + (data.message || "Unknown error"), true);
 				}
 			});
 		};
 
 		document.getElementById(buttonIds.reset).onclick = () => {
 			clearAllLines();
-			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" });
+			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" })
+			.then(r => r.json()).then(data => {
+				if (data.status === "success") {
+					showToast("SELL order placed: " + symbol, false);
+				} else {
+					showToast("Sell failed: " + (data.message || "Unknown error"), true);
+				}
+			});
 		};
 	}
 
