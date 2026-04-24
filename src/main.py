@@ -693,6 +693,12 @@ async def get_admin_status(request: Request) -> JSONResponse:
 
     is_trading = getattr(request.app.state, "is_trading", False)
 
+    current_time_obj = datetime.strptime(hhmm, "%H:%M").time()
+    start_time_obj = time(9, 14)
+    end_time_obj = time(15, 30)
+    within_trading_hours = start_time_obj <= current_time_obj <= end_time_obj
+    is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
+
     return JSONResponse(
         content={
             "status": "running",
@@ -701,10 +707,7 @@ async def get_admin_status(request: Request) -> JSONResponse:
             "current_time_utc": now_utc.strftime("%H:%M %Z"),
             "current_time_ist": hhmm,
             "day_of_week": day,
-            is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
-            current_time_obj = datetime.strptime(hhmm, "%H:%M").time()
-            start_time_obj = time(9, 14)
-            end_time_obj = time(15, 30)
-            within_market_hours = start_time_obj <= current_time_obj <= end_time_obj
+            "is_trading": is_trading,
+            "within_trading_hours": within_trading_hours,
         }
     )
