@@ -352,17 +352,6 @@ async def get_positions_summary() -> JSONResponse:
         closed_positions = [p for p in positions if p and p.get("quantity", 0) == 0 and p.get("rpnl", 0) != 0]
         display_positions = active_positions + closed_positions
 
-
-@app.get("/api/orders")
-async def get_orders() -> JSONResponse:
-    """Returns all orders."""
-    try:
-        orders = Helper.orders()
-        return JSONResponse(content={"orders": orders})
-    except Exception as e:
-        logging.error(f"Error getting orders: {e}")
-        return JSONResponse(content={"orders": []})
-
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
 
@@ -403,6 +392,17 @@ async def get_orders() -> JSONResponse:
                 "realized_pnl": 0.0,
             }
         )
+
+
+@app.get("/api/orders")
+async def get_orders() -> JSONResponse:
+    """Returns all orders."""
+    try:
+        orders = Helper.orders()
+        return JSONResponse(content={"orders": orders})
+    except Exception as e:
+        logging.error(f"Error getting orders: {e}")
+        return JSONResponse(content={"orders": []})
         return JSONResponse(
             content={
                 "positions": [],
