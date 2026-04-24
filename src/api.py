@@ -79,15 +79,9 @@ class Helper:
         except Exception as e:
             logging.error(f"Error cancelling orders: {e}")
 
-    @classmethod
+@classmethod
     def orders(cls) -> Optional[List[Dict[str, Any]]]:
-        logging.info("Helper.orders() called")
-        try:
-            raw_orders = cls.api().orders
-            logging.info(f"Raw orders: {type(raw_orders)}, len={len(raw_orders) if raw_orders else 0}")
-        except Exception as e:
-            logging.error(f"Error accessing orders: {e}")
-            return []
+        raw_orders = cls.api().orders
         if not raw_orders or len(raw_orders) == 0:
             return []
         transformed = post_order_hook(*raw_orders)
