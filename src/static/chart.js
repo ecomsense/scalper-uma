@@ -5,7 +5,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	}
 
 	window.updatePositionsSummary = function() {
-		fetch("/api/positions/summary")
+		fetch("/api/positions/summary?fresh=true")
 			.then(r => r.json())
 			.then(data => {
 				const orderCount = data.order_count || 0;
