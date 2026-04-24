@@ -347,6 +347,7 @@ async def get_positions_summary() -> JSONResponse:
             raise Exception("Helper.api() returned None")
         positions = api.positions or []
         orders = Helper.orders()
+        logging.info(f"pos_summary: {len(positions)} positions, {len(orders)} orders")
 
         active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
         closed_positions = [p for p in positions if p and p.get("quantity", 0) == 0 and p.get("rpnl", 0) != 0]
