@@ -177,29 +177,44 @@ async def trading_session_stop(app: FastAPI):
 
 
 def schedule_trading_session(app: FastAPI):
-    """Schedule trading session start/stop based on market hours."""
+    """Schedule trading session start/stop based on settings file."""
+    # Read times from settings
+    settings = get_settings()
+    program = settings.get("program", {})
+    start_time = program.get("start", "09:14")
+    stop_time = program.get("stop", "23:59")
+    
+    # Parse times
+    start_parts = start_time.split(":")
+    stop_parts = stop_time.split(":")
+    
+    start_hour = int(start_parts[0])
+    start_minute = int(start_parts[1]) if len(start_parts) > 1 else 0
+    stop_hour = int(stop_parts[0])
+    stop_minute = int(stop_parts[1]) if len(stop_parts) > 1 else 0
+    
     # Clear existing jobs if any
     for job_id in ["start_session", "stop_session"]:
         try:
             SCHEDULER.remove_job(job_id)
         except Exception:
             pass
-
+    
     SCHEDULER.add_job(
         trading_session_start,
-        trigger=CronTrigger(day_of_week="mon-fri", hour=9, minute=14),
+        trigger=CronTrigger(day_of_week="mon-fri", hour=start_hour, minute=start_minute),
         id="start_session",
         args=[app],
     )
-
+    
     SCHEDULER.add_job(
         trading_session_stop,
-        trigger=CronTrigger(day_of_week="mon-fri", hour=23, minute=59),
+        trigger=CronTrigger(day_of_week="mon-fri", hour=stop_hour, minute=stop_minute),
         id="stop_session",
         args=[app],
     )
-
-    logging.info("Trading session scheduled: 09:14-23:59 Mon-Fri IST (TESTING)")
+    
+    logging.info(f"Trading session scheduled: {start_time}-{stop_time} Mon-Fri IST (from settings)")
 
 
 CANDLESTICK_TIMEFRAME_SECONDS: int = 60
