@@ -1,15 +1,47 @@
 // Summary module - fetches and caches positions + orders from broker
 
-window.fetchSummaryCache = function() {
-    fetch("/api/summary")
-        .then(r => r.json())
-        .then(data => {
-            localStorage.setItem("summary_cache", JSON.stringify(data));
-        })
-        .catch(console.error);
-};
+(function() {
+    function doFetch() {
+        fetch("/api/summary")
+            .then(r => r.json())
+            .then(data => {
+                localStorage.setItem("summary_cache", JSON.stringify(data));
+                updateFromCache();
+            })
+            .catch(console.error);
+    }
 
-window.showPositionsModal = function() {
+    function updateFromCache() {
+        const cached = localStorage.getItem("summary_cache");
+        if (!cached) return;
+        
+        let data;
+        try {
+            data = JSON.parse(cached);
+        } catch (e) {
+            return;
+        }
+        
+        const orderCount = data.order_count || 0;
+        const positionCount = data.position_count || 0;
+        const realizedPnl = data.realized_pnl || 0;
+
+        if (orderCount === 0 && positionCount === 0 && realizedPnl === 0) {
+            return;
+        }
+
+        document.getElementById("pos-count").textContent = positionCount;
+        document.getElementById("order-count").textContent = (data.active_orders || 0) + "/" + orderCount;
+        const m2mEl = document.getElementById("m2m");
+        const realEl = document.getElementById("realized");
+        m2mEl.textContent = (data.m2m || 0).toFixed(2);
+        realEl.textContent = realizedPnl.toFixed(2);
+        m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
+        realEl.parentElement.classList.toggle("negative", realizedPnl < 0);
+    }
+
+    window.fetchSummaryCache = function() { doFetch(); };
+    window.showPositionsModal = function() {
     const cached = localStorage.getItem("summary_cache");
     if (!cached) return;
     
@@ -87,4 +119,8 @@ window.showOrdersModal = function() {
     
     document.getElementById("ordersTable").innerHTML = html;
     document.getElementById("ordersModal").style.display = "block";
-};
+}
+
+    setInterval(doFetch, 5000);
+    doFetch();
+})();
