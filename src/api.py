@@ -80,15 +80,8 @@ class Helper:
             logging.error(f"Error cancelling orders: {e}")
 
     @classmethod
-    def orders(cls) -> Optional[List[Dict[str, Any]]]:
-        raw_orders = cls.api().orders
-        if not raw_orders or len(raw_orders) == 0:
-            return []
-        transformed = post_order_hook(*raw_orders)
-        for o in transformed:
-            if not o.get("order_id"):
-                o["order_id"] = o.get("norenordno")
-        return transformed
+    def orders(cls) -> Optional[List[Dict[str, Any]]:
+        return cls.api().orders
 
     @classmethod
     def historical(
