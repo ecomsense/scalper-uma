@@ -31,11 +31,14 @@ def login() -> Any:
 class Helper:
     _api: Optional[Any] = None
     _orders: Optional[List[Dict[str, Any]]] = None
+    _initialized: bool = False
 
     @classmethod
     def api(cls) -> Any:
         if cls._api is None:
             cls._api = login()
+            cls._initialized = True
+            logging.info("Singleton session created")
         return cls._api
 
     @classmethod
