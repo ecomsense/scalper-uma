@@ -17,9 +17,7 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import asyncio
-import time
 import json
-import os
 from src.tickrunner import TickRunner
 from src.wserver import Wserver
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -342,44 +340,8 @@ async def get_positions_summary(request: Request) -> JSONResponse:
     Returns positions summary: active positions, order count, m2m, realized pnl.
     """
     try:
-        api = Helper.api()
-        if not api:
-            raise Exception("Helper.api() returned None")
-        positions = api.positions or []
-        orders = Helper.orders()
-
-        active_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
-        closed_positions = [p for p in positions if p and p.get("quantity", 0) == 0 and p.get("rpnl", 0) != 0]
-        display_positions = active_positions + closed_positions
-
-        valid_orders = [o for o in orders if o and o.get("order_id")]
-        total_orders = len(valid_orders)
-
-        active_orders_count = 0
-        for o in valid_orders:
-            status = o.get("status", "")
-            if status in ["OPEN", "PENDING", "TRIGGER_PENDING"]:
-                active_orders_count += 1
-
-        m2m = 0.0
-        realized = 0.0
-        all_positions = [p for p in positions if p]
-        for pos in all_positions:
-            qty = pos.get("quantity", 0)
-            if qty != 0:
-                m2m += pos.get("urmtom", 0)
-            realized += pos.get("rpnl", 0)
-
-        return JSONResponse(
-            content={
-                "positions": display_positions,
-                "position_count": len(display_positions),
-                "active_orders": active_orders_count,
-                "order_count": total_orders,
-                "m2m": round(m2m, 2),
-                "realized_pnl": round(realized, 2),
-            }
-        )
+        content = Helper.summary()
+        return JSONResponse(content)
     except Exception as e:
         logging.error(f"Error getting positions summary: {e}")
         return JSONResponse(
@@ -523,11 +485,19 @@ async def reset(symbol: str = "") -> JSONResponse:
         logging.info(f"Sell request for symbol: {symbol}")
         try:
             api = Helper.api()
-            ws = api.broker._ws if hasattr(api, 'broker') and hasattr(api.broker, '_ws') else None
+            ws = (
+                api.broker._ws
+                if hasattr(api, "broker") and hasattr(api.broker, "_ws")
+                else None
+            )
             ltp = None
             if ws and ws.ltp:
-                tokens_nearest = api.tokens_nearest if hasattr(api, 'tokens_nearest') else {}
-                token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
+                tokens_nearest = (
+                    api.tokens_nearest if hasattr(api, "tokens_nearest") else {}
+                )
+                token = next(
+                    (k for k, v in tokens_nearest.items() if v == symbol), None
+                )
                 if token and token in ws.ltp:
                     ltp = ws.ltp[token]
             if ltp:
