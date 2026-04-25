@@ -311,13 +311,25 @@ async def serve_root(request: Request):
     if not is_trading:
         return HTMLResponse("""
         <!DOCTYPE html>
-        <html>
-        <head><title>Scalper-UMA</title></head>
-        <body style="font-family:Arial;text-align:center;padding-top:100px;background:#1a1a2e;color:#fff;">
-            <h1>Application is on scheduled sleep</h1>
-            <p id="clock"></p>
-            <p>Trading hours: 09:14 - 23:59 IST</p>
-            <p>Trading days: Mon, Tue, Wed, Thu, Fri</p>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>UMA Scalper</title>
+            <link rel="stylesheet" href="/static/styles.css">
+        </head>
+        <body>
+            <div class="container">
+                <div class="app-header">
+                    <h1>UMA Scalper</h1>
+                </div>
+                <div style="text-align:center;padding-top:100px;background:var(--bg-primary);color:var(--text-primary);min-height:calc(100vh - 60px);">
+                    <h1>Application is on scheduled sleep</h1>
+                    <p style="font-size:1.2em;margin:20px 0;" id="clock"></p>
+                    <p style="font-size:1.1em;margin:15px 0;">Trading hours: 09:14 - 23:59 IST</p>
+                    <p style="font-size:1.1em;margin:15px 0;">Trading days: Mon, Tue, Wed, Thu, Fri</p>
+                </div>
+            </div>
             <script>
               function updateClock() {
                 const now = new Date();
