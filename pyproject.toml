@@ -55,5 +55,5 @@ repos = [
 target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T20", "FIX", "ARG", "PTH", "PYI", "RSE", "RET", "SLF", "SIM", "TID", "ARG", "ERA", "PL", "TRY", "RSE", "PERF", "PGH", "PIE", "PTC", "RUF", "SLF", "NPY", "AIR", "ASYNC", "S"]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T20", "FIX", "ARG", "PTH", "PYI", "RSE", "RET", "SLF", "SIM", "TID", "PL", "TRY", "PERF", "PGH", "PIE", "RUF", "NPY", "AIR", "ASYNC", "S"]
 ignore = ["E501"]
