@@ -31,7 +31,7 @@ from src.wserver import Wserver
 
 MARKER_FILE = Path(S_DATA) / "settings.marker"
 SCHEDULER = AsyncIOScheduler()
-from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager, suppress
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -105,7 +105,7 @@ async def trading_session_start(app: FastAPI):
             logging.error("Failed to get LTP from websocket")
             return
 
-        ltp_of_underlying = list(ws.ltp.values())[0]
+        ltp_of_underlying = next(iter(ws.ltp.values()))
         logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
 
         # Now create strategy and subscribe to options
@@ -117,7 +117,7 @@ async def trading_session_start(app: FastAPI):
             return
 
         # Subscribe to options on existing websocket
-        all_tokens = tokens + [index_token]
+        all_tokens = [*tokens, index_token]
         ws.subscribe(all_tokens)
 
         # Wait for options LTP
@@ -196,10 +196,8 @@ def schedule_trading_session(app: FastAPI):
 
     # Clear existing jobs if any
     for job_id in ["start_session", "stop_session"]:
-        try:
+        with suppress(Exception):
             SCHEDULER.remove_job(job_id)
-        except Exception:
-            pass
 
     SCHEDULER.add_job(
         trading_session_start,
@@ -264,8 +262,7 @@ def aggregate_ticks_to_candlesticks(
 @lru_cache(maxsize=1)
 def get_settings() -> dict[str, Any]:
     base = O_SETG["base"]
-    settings = O_SETG[base] | dct_sym[base]
-    return settings
+    return O_SETG[base] | dct_sym[base]
 
 
 # --- Application Lifespan Event ---
@@ -566,7 +563,7 @@ async def sse_candlestick_endpoint(
         token_symbols = request.app.state.tokens_nearest
 
         try:
-            token_symbol = [k for k, v in token_symbols.items() if v == symbol][0]
+            token_symbol = next(k for k, v in token_symbols.items() if v == symbol)
         except (KeyError, IndexError):
             return
 

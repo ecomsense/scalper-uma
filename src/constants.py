@@ -13,7 +13,7 @@ HTPASSWD_FILE = str(path.abspath("./data/.htpasswd"))
 TRADE_JSON = str(path.abspath("./data/trade.json"))
 
 
-def yml_to_obj(arg: str = None) -> dict[str, Any]:
+def yml_to_obj(arg: str | None = None) -> dict[str, Any]:
     if arg:
         file = S_DATA + "/" + arg
     else:
