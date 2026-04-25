@@ -315,8 +315,19 @@ async def serve_root(request: Request):
         <head><title>Scalper-UMA</title></head>
         <body style="font-family:Arial;text-align:center;padding-top:100px;background:#1a1a2e;color:#fff;">
             <h1>Application is on scheduled sleep</h1>
+            <p id="clock"></p>
             <p>Trading hours: 09:14 - 23:59 IST</p>
-            <p>Will resume automatically when market opens.</p>
+            <p>Trading days: Mon, Tue, Wed, Thu, Fri</p>
+            <script>
+              function updateClock() {
+                const now = new Date();
+                const ist = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Kolkata'}));
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                document.getElementById('clock').innerText = days[ist.getDay()] + ', ' + ist.toLocaleTimeString('en-US', {timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}) + ' IST';
+              }
+              updateClock();
+              setInterval(updateClock, 1000);
+            </script>
         </body>
         </html>
         """)

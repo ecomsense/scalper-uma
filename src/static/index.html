@@ -10,7 +10,7 @@
   <body>
     <div class="container">
       <div class="app-header">
-        <h1>UMA Scalper</h1>
+        <h1>UMA Scalper <span id="clock" style="font-size:0.5em;opacity:0.7;"></span></h1>
         <div class="header-buttons">
           <button class="blue-btn" onclick="openLogsModal()">Logs</button>
           <button class="blue-btn" onclick="openSettingsModal()">Settings</button>
@@ -111,6 +111,16 @@
 
     <script src="/static/summary.js?v=9"></script>
     <script>
+      function updateClock() {
+        const now = new Date();
+        const ist = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Kolkata'}));
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        var el = document.getElementById('clock');
+        if (el) el.innerText = days[ist.getDay()] + ', ' + ist.toLocaleTimeString('en-US', {timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}) + ' IST';
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+
       function closePositionsModal() {
         document.getElementById('positionsModal').style.display = 'none';
       }

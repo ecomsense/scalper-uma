@@ -1,0 +1,23 @@
+[project]
+name = "scalper-uma"
+version = "0.1.0"
+description = "Options trading bot"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "wheel",
+    "setuptools==58.2.0",
+    "pyopenssl==21.0",
+    "numpy==1.26.4",
+    "pandas",
+    "PyYAML",
+    "pendulum",
+    "pyotp",
+    "stock-brokers @ git+https://github.com/ecomsense/stock-brokers",
+    "toolkit @ git+https://github.com/pannet1/toolkit",
+    "fastapi[standard]",
+    "sse-starlette",
+    "requests",
+    "websocket-client",
+    "pytz",
+]
