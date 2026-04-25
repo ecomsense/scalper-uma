@@ -327,11 +327,15 @@ async def serve_root(request: Request):
                         <button class="blue-btn" onclick="document.getElementById('settingsModal').style.display='block'">Settings</button>
                     </div>
                 </div>
-                <div style="text-align:center;padding-top:100px;background:var(--bg-primary);color:var(--text-primary);min-height:calc(100vh - 120px);">
-                    <h1>Application is on scheduled sleep</h1>
-                    <p style="font-size:1.2em;margin:20px 0;" id="clock"></p>
-                    <p style="font-size:1.1em;margin:15px 0;">Trading hours: 09:14 - 23:59 IST</p>
-                    <p style="font-size:1.1em;margin:15px 0;">Trading days: Mon, Tue, Wed, Thu, Fri</p>
+                <div class="chart-grid">
+                    <div class="chart-container" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
+                        <div style="text-align:center;">
+                            <h2>Application is on scheduled sleep</h2>
+                            <p style="font-size:1.2em;margin:20px 0;" id="clock"></p>
+                            <p style="font-size:1.1em;margin:15px 0;">Trading hours: 09:14 - 23:59 IST</p>
+                            <p style="font-size:1.1em;margin:15px 0;">Trading days: Mon, Tue, Wed, Thu, Fri</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="footer" style="text-align:center;padding:15px;background:var(--bg-header);border-top:2px solid var(--border-color);">
                     <span style="color:var(--text-primary);">made with :heart by </span><a href="https://ecomsense.in" target="_blank" style="color:var(--accent-color);text-decoration:none;">ecomsense.in</a>
