@@ -10,6 +10,8 @@ from src.constants import (
     S_DATA,
     HTPASSWD_FILE,
     dct_sym,
+    O_SETG,
+    O_CNFG,
 )
 from functools import lru_cache
 import pandas as pd
