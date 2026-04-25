@@ -65,7 +65,7 @@ class Helper:
 
     @classmethod
     def cancel_orders(
-        cls, symbol: str, keep_order_id: str = None, side: str = None
+        cls, symbol: str, keep_order_id: str | None = None, side: str | None = None
     ) -> None:
         try:
             orders = cls.orders()
@@ -125,8 +125,7 @@ class Helper:
     def modify_order(cls, kwargs: dict[str, Any]) -> Any | None:
         try:
             if next((v for v in kwargs.values() if v is not None), None):
-                resp = cls.api().order_modify(**kwargs)
-                return resp
+                return cls.api().order_modify(**kwargs)
         except Exception as e:
             message = f"helper error {e} while modifying order"
             logging.warning(message)
@@ -158,35 +157,35 @@ class Helper:
                     sell_price = ltp - current_slippage
                     buy_price = ltp + current_slippage
                     if pos["quantity"] < 0:
-                        args = dict(
-                            symbol=symbol,
-                            quantity=quantity,
-                            disclosed_quantity=quantity,
-                            product=pos.get("prd", "M"),
-                            side="B",
-                            order_type="LMT",
-                            price=buy_price,
-                            trigger_price=0,
-                            exchange="NFO",
-                            tag=f"close_loop_{loop}",
-                        )
+                        args = {
+                            "symbol": symbol,
+                            "quantity": quantity,
+                            "disclosed_quantity": quantity,
+                            "product": pos.get("prd", "M"),
+                            "side": "B",
+                            "order_type": "LMT",
+                            "price": buy_price,
+                            "trigger_price": 0,
+                            "exchange": "NFO",
+                            "tag": f"close_loop_{loop}",
+                        }
                         resp = cls.api().order_place(**args)
                         logging.info(
                             f"Close BUY {symbol} qty={quantity} @ {buy_price} (slippage={current_slippage}): {resp}"
                         )
                     elif pos["quantity"] > 0:
-                        args = dict(
-                            symbol=symbol,
-                            quantity=quantity,
-                            disclosed_quantity=quantity,
-                            product=pos.get("prd", "M"),
-                            side="S",
-                            order_type="LMT",
-                            price=sell_price,
-                            trigger_price=0,
-                            exchange="NFO",
-                            tag=f"close_loop_{loop}",
-                        )
+                        args = {
+                            "symbol": symbol,
+                            "quantity": quantity,
+                            "disclosed_quantity": quantity,
+                            "product": pos.get("prd", "M"),
+                            "side": "S",
+                            "order_type": "LMT",
+                            "price": sell_price,
+                            "trigger_price": 0,
+                            "exchange": "NFO",
+                            "tag": f"close_loop_{loop}",
+                        }
                         resp = cls.api().order_place(**args)
                         logging.info(
                             f"Close SELL {symbol} qty={quantity} @ {sell_price} (slippage={current_slippage}): {resp}"

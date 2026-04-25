@@ -177,10 +177,9 @@ class Symbol:
 
             logging.info(symbol_differences)
             # Find the symbol with the lowest difference
-            closest_symbol = min(
+            return min(
                 symbol_differences, key=symbol_differences.get, default=None
             )
-            return closest_symbol
         except Exception as e:
             logging.error(f"{e} Symbol: find closest premium")
             print_exc()
