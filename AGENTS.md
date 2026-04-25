@@ -273,3 +273,53 @@ and:
 6. **Auto-fetch on page load** - Otherwise panel shows stale/empty data
 7. **Always use proper time comparison** - Never string comparison for time
 8. **Check schedule on startup** - Use lifespan to conditionally start/stop trading
+
+## Dev Tools
+
+### Scripts Location
+- `~/Scripts/git_hooks/` - Common scripts for all projects
+
+### Scripts
+| Script | Purpose |
+|--------|--------|
+| `dev-check.sh` | Syntax + lint + tests locally |
+| `deploy.sh` | Commit + push + restart server |
+| `install-dev.sh` | Setup dev environment |
+
+### Usage
+```bash
+# Local checks (runs syntax + lint + tests)
+dev-check.sh
+
+# Deploy to server
+deploy.sh "commit message"
+```
+
+### Git Hooks (Auto-run on commit)
+Pre-commit hooks run automatically on `git commit`:
+- Syntax check (`python -m py_compile`)
+- Lint check (`ruff check --fix`)
+- Run tests (`pytest`)
+
+**Setup in new project:**
+```bash
+cp ~/Scripts/git_hooks/.pre-commit-config.yaml /path/to/project/
+cd /path/to/project && uv run pre-commit install
+```
+
+### Workflow
+```bash
+# 1. Make code changes
+# 2. Test locally (optional)
+dev-check.sh
+
+# 3. Commit - hooks run automatically
+git add -A
+git commit -m "message"
+
+# 4. Deploy to server
+deploy.sh "message"
+```
+
+### Server Auto-Deploy (Not Set Up)
+Server can auto-pull from GitHub using cron/webhook. Left for later investigation.
