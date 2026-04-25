@@ -337,8 +337,8 @@ async def serve_root(request: Request):
                         </div>
                     </div>
                 </div>
-                <div class="footer" style="text-align:center;padding:15px;background:var(--bg-header);border-top:2px solid var(--border-color);">
-                    <span style="color:var(--text-primary);">made with :heart by </span><a href="https://ecomsense.in" target="_blank" style="color:var(--accent-color);text-decoration:none;">ecomsense.in</a>
+                <div class="footer">
+                    <span style="color:var(--text-primary);">made with </span><span style="color:red;">&#10084;</span><span style="color:var(--text-primary);"> by </span><a href="https://ecomsense.in" target="_blank" style="color:var(--accent-color);text-decoration:none;">ecomsense.in</a>
                 </div>
             </div>
             <div style="display:none;">
