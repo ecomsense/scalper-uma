@@ -92,6 +92,13 @@ def load_env_settings():
     _ensure_loaded()
 
 
+# Eagerly load on import
+_O_CNFG, _O_SETG = read_yml()
+
+# Module-level exports
+O_CNFG = _O_CNFG
+O_SETG = _O_SETG
+
 # Default logging (INFO level until settings load)
 logging: Logger = Logger(30)
 
