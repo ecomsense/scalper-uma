@@ -3,10 +3,11 @@ from traceback import print_exc
 from importlib import import_module
 from typing import Dict, List, Optional, Any
 import time
-from src.constants import O_CNFG, logging
+from src.constants import access_cnfg, logging
 
 
 def login() -> Any:
+    O_CNFG = access_cnfg()
     broker_name = O_CNFG.get("broker", None)
     if not broker_name:
         raise ValueError("broker not specified in credential file")
@@ -18,7 +19,8 @@ def login() -> Any:
     BrokerClass = getattr(broker_module, broker_name.capitalize())
 
     logging.debug(f"Broker credentials: {O_CNFG}")
-    broker_object = BrokerClass(**O_CNFG)
+    cnfg = access_cnfg()
+    broker_object = BrokerClass(**cnfg)
     if broker_object.authenticate():
         logging.info("api connected")
         return broker_object
