@@ -1,14 +1,15 @@
 from __future__ import annotations
+
 import asyncio
 from os import path
-from typing import Dict, Optional, Any
+from typing import Any
 
 from src.api import Helper
-from src.constants import logging, O_FUTL, TRADE_JSON
+from src.constants import O_FUTL, TRADE_JSON, logging
 from src.wserver import Wserver
 
 
-def get_dict_from_list(order_id: str) -> Dict[str, Any]:
+def get_dict_from_list(order_id: str) -> dict[str, Any]:
     try:
         orders = Helper.orders()
         if orders:
@@ -28,19 +29,19 @@ def get_dict_from_list(order_id: str) -> Dict[str, Any]:
 
 
 class TickRunner:
-    def __init__(self, ws: Wserver, tokens_nearest: Dict[str, str]) -> None:
+    def __init__(self, ws: Wserver, tokens_nearest: dict[str, str]) -> None:
         self.ws = ws
         self.tokens_nearest = tokens_nearest
         self.fn: str = "create"
-        self.ltps: Dict[str, float] = {}
+        self.ltps: dict[str, float] = {}
         self.symbol: str = ""
         self.quantity: int = 0
         self.exchange: str = ""
         self.tag: str = ""
         self.entry_id: str = ""
         self.exit_id: str = ""
-        self.exit_price: Optional[float] = None
-        self.target_price: Optional[float] = None
+        self.exit_price: float | None = None
+        self.target_price: float | None = None
         self._load_trade_from_file()
 
     def _load_trade_from_file(self) -> None:

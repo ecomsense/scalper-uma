@@ -1,10 +1,13 @@
 from __future__ import annotations
-import pandas as pd
+
 from datetime import datetime
-from toolkit.fileutils import Fileutils
-from typing import Dict, Optional, Any
-from src.constants import dct_sym, logging
 from traceback import print_exc
+from typing import Any
+
+import pandas as pd
+from toolkit.fileutils import Fileutils
+
+from src.constants import dct_sym, logging
 
 
 def get_exchange_token_map_finvasia(csvfile: str, exchange: str) -> None:
@@ -22,7 +25,7 @@ def get_exchange_token_map_flattrade(csvfile: str, exchange: str) -> None:
         elif exchange.upper() == "BFO":
             url = "https://flattrade.s3.ap-south-1.amazonaws.com/scripmaster/Bfo_Index_Derivatives.csv"
         else:
-            url = f"https://flattrade.s3.ap-south-1.amazonaws.com/scririmaster/Commodity.csv"
+            url = "https://flattrade.s3.ap-south-1.amazonaws.com/scririmaster/Commodity.csv"
 
         logging.debug(f"Downloading symbols from {url}")
         df = pd.read_csv(url)
@@ -55,7 +58,7 @@ class Symbol:
     None
     """
 
-    def __init__(self, exchange: str, base: Optional[str] = None, symbol: Optional[str] = None, expiry: Optional[str] = None) -> None:
+    def __init__(self, exchange: str, base: str | None = None, symbol: str | None = None, expiry: str | None = None) -> None:
         self._exchange = exchange
         self._base = base
         self._symbol = symbol
@@ -67,7 +70,7 @@ class Symbol:
         df = pd.read_csv(self.csvfile)
         df_sym = df[df["Symbol"] == self._symbol]
         expiries = df_sym["Expiry"].unique()
-        
+
         today = datetime.now()
         parsed = []
         for e in expiries:
@@ -76,16 +79,16 @@ class Symbol:
                 parsed.append((e, dt))
             except:
                 pass
-        
+
         parsed.sort(key=lambda x: x[1])
-        
+
         for exp_str, dt in parsed:
             if dt.date() > today.date():
                 return exp_str
-        
+
         return parsed[0][0] if parsed else None
 
-    def get_lot_size(self, strike: Optional[int] = None) -> int:
+    def get_lot_size(self, strike: int | None = None) -> int:
         df = pd.read_csv(self.csvfile)
         df_filtered = df[
             (df["Symbol"] == self._symbol) & (df["Expiry"] == self._expiry)
@@ -107,7 +110,7 @@ class Symbol:
             logging.error(f"{e} Symbol: in getting atm")
             print_exc()
 
-    def get_tokens(self, strike: int, depth: Optional[int] = None) -> Dict[str, str]:
+    def get_tokens(self, strike: int, depth: int | None = None) -> dict[str, str]:
         try:
             if depth is None:
                 depth = dct_sym[self._base]["depth"]
@@ -137,7 +140,7 @@ class Symbol:
             logging.error(f" {e} in Symbol while getting token")
             print_exc()
 
-    def find_option_type(self, tradingsymbol: str) -> Optional[str]:
+    def find_option_type(self, tradingsymbol: str) -> str | None:
         """
         Extracts option type from the CSV file if present.
         """
@@ -148,8 +151,8 @@ class Symbol:
         return None
 
     def find_closest_premium(
-        self, quotes: Dict[str, float], premium: float, contains: str
-    ) -> Optional[str]:
+        self, quotes: dict[str, float], premium: float, contains: str
+    ) -> str | None:
         try:
             df = pd.read_csv(self.csvfile)
 
@@ -165,7 +168,7 @@ class Symbol:
             }
 
             # Create a dictionary to store symbol to absolute difference mapping
-            symbol_differences: Dict[str, float] = {}
+            symbol_differences: dict[str, float] = {}
 
             for symbol, ltp in call_or_put_begins_with.items():
                 logging.info(f"Symbol:{symbol} difference {ltp} - {premium}")
@@ -184,7 +187,7 @@ class Symbol:
 
     def find_option_by_distance(
         self, atm: int, distance: int, c_or_p: str, dct_symbols: dict
-    ) -> Optional[Dict[str, Any]]:
+    ) -> dict[str, Any] | None:
         try:
             find_strike = (
                 atm + (distance * dct_sym[self._base]["diff"])
@@ -207,7 +210,7 @@ class Symbol:
             logging.error(f"{e} Symbol: while find_option_by_distance")
             print_exc()
 
-    def find_wstoken_from_tradingsymbol(self, tradingsymbols: list[str]) -> Dict[str, str]:
+    def find_wstoken_from_tradingsymbol(self, tradingsymbols: list[str]) -> dict[str, str]:
         df = pd.read_csv(self.csvfile)
         filtered_df = df[(df["TradingSymbol"]).isin(tradingsymbols)]
         tokens_found = filtered_df.assign(

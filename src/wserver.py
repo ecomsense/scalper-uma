@@ -1,16 +1,18 @@
 from __future__ import annotations
-from collections import deque
-from typing import Dict, List, Any, Optional, Callable
-from src.constants import logging
+
 import time
+from collections import deque
+from typing import Any
+
+from src.constants import logging
 
 
 class Wserver:
     socket_opened: bool = False
-    ltp: Dict[str, float] = {}
+    ltp: dict[str, float] = {}
     order_updates: deque = deque(maxlen=100)
 
-    def __init__(self, session: Any, tokens: List[str]) -> None:
+    def __init__(self, session: Any, tokens: list[str]) -> None:
         self.api = session
         self.tokens = tokens
         ret = self.api.broker.start_websocket(
@@ -25,16 +27,16 @@ class Wserver:
         self.socket_opened = True
         self.api.broker.subscribe(self.tokens, feed_type="d")
 
-    def event_handler_order_update(self, message: Dict[str, Any]) -> None:
+    def event_handler_order_update(self, message: dict[str, Any]) -> None:
         self.order_updates.append(message)
         logging.debug(f"order_updates count: {len(self.order_updates)}")
 
-    def event_handler_quote_update(self, message: Dict[str, Any]) -> None:
+    def event_handler_quote_update(self, message: dict[str, Any]) -> None:
         val = message.get("lp", False)
         if val:
             self.ltp[message["e"] + "|" + message["tk"]] = float(val)
 
-    def subscribe(self, tokens: List[str]) -> None:
+    def subscribe(self, tokens: list[str]) -> None:
         if self.socket_opened:
             self.api.broker.subscribe(tokens, feed_type="d")
             self.tokens = tokens

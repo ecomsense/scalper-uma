@@ -1,8 +1,10 @@
 from __future__ import annotations
-from traceback import print_exc
-from importlib import import_module
-from typing import Dict, List, Optional, Any
+
 import time
+from importlib import import_module
+from traceback import print_exc
+from typing import Any
+
 from src.constants import access_cnfg, logging
 
 
@@ -24,12 +26,11 @@ def login() -> Any:
     if broker_object.authenticate():
         logging.info("api connected")
         return broker_object
-    else:
-        logging.critical("failed to connect, exiting")
+    logging.critical("failed to connect, exiting")
 
 
 class Helper:
-    _api: Optional[Any] = None
+    _api: Any | None = None
 
     @classmethod
     def api(cls) -> Any:
@@ -41,7 +42,7 @@ class Helper:
         return cls._api
 
     @classmethod
-    def one_side(cls, bargs: Dict[str, Any]) -> Optional[str]:
+    def one_side(cls, bargs: dict[str, Any]) -> str | None:
         order_type = bargs.get("order_type", "LIMIT")
         symbol = bargs.get("symbol", "UNKNOWN")
         side = bargs.get("side", "UNKNOWN")
@@ -90,17 +91,17 @@ class Helper:
             logging.error(f"Error cancelling orders: {e}")
 
     @classmethod
-    def orders(cls) -> Optional[List[Dict[str, Any]]]:
+    def orders(cls) -> list[dict[str, Any]] | None:
         return cls.api().orders
 
     @classmethod
-    def positions(cls) -> Optional[List[Dict[str, Any]]]:
+    def positions(cls) -> list[dict[str, Any]] | None:
         return cls.api().positions
 
     @classmethod
     def historical(
         cls, exchange: str, token: str, interval: int = 1
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         try:
             logging.info(
                 f"historical: calling broker.get_time_price_series({exchange}, {token})"
@@ -121,7 +122,7 @@ class Helper:
             return []
 
     @classmethod
-    def modify_order(cls, kwargs: Dict[str, Any]) -> Optional[Any]:
+    def modify_order(cls, kwargs: dict[str, Any]) -> Any | None:
         try:
             if next((v for v in kwargs.values() if v is not None), None):
                 resp = cls.api().order_modify(**kwargs)
@@ -245,18 +246,18 @@ class Helper:
         # Always get fresh data
         orders = cls.orders()
         positions = cls.positions()
-        
+
         valid_orders = [o for o in orders if o and o.get("order_id")]
         total_orders = len(valid_orders)
-        
+
         active_orders_count = 0
         for o in valid_orders:
             status = o.get("status", "")
             if status in ["OPEN", "PENDING", "TRIGGER_PENDING"]:
                 active_orders_count += 1
-        
+
         display_positions = [p for p in positions if p and p.get("quantity", 0) != 0]
-        
+
         m2m = 0.0
         realized = 0.0
         for pos in positions:
@@ -264,7 +265,7 @@ class Helper:
             if qty != 0:
                 m2m += pos.get("urmtom", 0)
             realized += pos.get("rpnl", 0)
-        
+
         cls._summary = {
             "orders": valid_orders,
             "active_orders": active_orders_count,
@@ -279,6 +280,7 @@ class Helper:
 
 if __name__ == "__main__":
     import pandas as pd
+
     from src.constants import S_DATA
 
     Helper.api()

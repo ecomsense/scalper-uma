@@ -1,14 +1,14 @@
 from __future__ import annotations
-from typing import Dict, Optional
-from src.symbol import Symbol
+
 from src.constants import logging
+from src.symbol import Symbol
 
 
 class Strategy:
     PREM_SEARCH_DEPTH = 50
 
-    def __init__(self, user_settings: Dict[str, any], ltp_of_underlying: float) -> None:
-        self.tokens_for_all_trading_symbols: Dict[str, str] = {}
+    def __init__(self, user_settings: dict[str, any], ltp_of_underlying: float) -> None:
+        self.tokens_for_all_trading_symbols: dict[str, str] = {}
         expiry = user_settings.get("expiry")
         if not expiry:
             sym_tmp = Symbol(
@@ -18,7 +18,7 @@ class Strategy:
             )
             expiry = sym_tmp.get_next_expiry()
             user_settings["expiry"] = expiry
-        
+
         self.sym = Symbol(
             exchange=user_settings["option_exchange"],
             base=user_settings["symbol"],
@@ -32,8 +32,8 @@ class Strategy:
         self.user_settings = user_settings
 
     def find_trading_symbol_by_atm(
-        self, ce_or_pe: str, quotes: Dict[str, float]
-    ) -> Optional[str]:
+        self, ce_or_pe: str, quotes: dict[str, float]
+    ) -> str | None:
         symbols_for_info = list(self.tokens_for_all_trading_symbols.values())
         logging.info(
             f"symbols for which premiums is going to checked: {symbols_for_info}"

@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from os import path
-from typing import Dict, Any
+from typing import Any
+
 from toolkit.fileutils import Fileutils
 from toolkit.logger import Logger
 
@@ -11,7 +13,7 @@ HTPASSWD_FILE = str(path.abspath("./data/.htpasswd"))
 TRADE_JSON = str(path.abspath("./data/trade.json"))
 
 
-def yml_to_obj(arg: str = None) -> Dict[str, Any]:
+def yml_to_obj(arg: str = None) -> dict[str, Any]:
     if arg:
         file = S_DATA + "/" + arg
     else:
@@ -33,11 +35,11 @@ def yml_to_obj(arg: str = None) -> Dict[str, Any]:
     return O_FUTL.get_lst_fm_yml(file)
 
 
-def read_yml() -> tuple[Dict[str, Any], Dict[str, Any]]:
+def read_yml() -> tuple[dict[str, Any], dict[str, Any]]:
     try:
         O_CNFG = yml_to_obj()
         O_SETG = yml_to_obj("settings.yml")
-    except Exception as e:
+    except Exception:
         from traceback import print_exc
         print_exc()
         import sys
@@ -48,8 +50,8 @@ def read_yml() -> tuple[Dict[str, Any], Dict[str, Any]]:
 
 # Lazy loader - only load when first accessed
 _loaded = False
-_O_CNFG: Dict[str, Any] = {}
-_O_SETG: Dict[str, Any] = {}
+_O_CNFG: dict[str, Any] = {}
+_O_SETG: dict[str, Any] = {}
 
 
 def _ensure_loaded():
@@ -67,19 +69,19 @@ def __getattr__(name: str):
     raise AttributeError(f"module has no attribute '{name}'")
 
 
-def get_settings() -> tuple[Dict[str, Any], Dict[str, Any]]:
+def get_settings() -> tuple[dict[str, Any], dict[str, Any]]:
     """Lazy load settings - only reads config when first accessed."""
     _ensure_loaded()
     return _O_CNFG, _O_SETG
 
 
-def access_cnfg() -> Dict[str, Any]:
+def access_cnfg() -> dict[str, Any]:
     """Access O_CNFG. Use this for tests."""
     _ensure_loaded()
     return _O_CNFG
 
 
-def access_setg() -> Dict[str, Any]:
+def access_setg() -> dict[str, Any]:
     """Access O_SETG. Use this for tests."""
     _ensure_loaded()
     return _O_SETG
@@ -103,7 +105,7 @@ O_SETG = _O_SETG
 logging: Logger = Logger(30)
 
 
-dct_sym: Dict[str, Dict[str, Any]] = {
+dct_sym: dict[str, dict[str, Any]] = {
     "NIFTY": {"diff": 50, "index": "Nifty 50", "exchange": "NSE", "token": "26000", "depth": 9},
     "BANKNIFTY": {"diff": 100, "index": "Nifty Bank", "exchange": "NSE", "token": "26009", "depth": 25},
 }

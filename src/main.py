@@ -1,43 +1,41 @@
 # main.py
 from __future__ import annotations
-from src.api import Helper
-from src.constants import (
-    access_setg,
-    access_cnfg,
-    logging,
-    O_FUTL,
-    TRADE_JSON,
-    S_DATA,
-    HTPASSWD_FILE,
-    dct_sym,
-    O_SETG,
-    O_CNFG,
-)
-from functools import lru_cache
-import pandas as pd
-from fastapi import FastAPI, Body, Request, HTTPException, Depends, Header
-from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from pathlib import Path
+
 import asyncio
 import json
-from src.tickrunner import TickRunner
-from src.wserver import Wserver
+from functools import lru_cache
+from pathlib import Path
+from traceback import print_exc
+
+import pandas as pd
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-
+from fastapi import Body, FastAPI, Header, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from sse_starlette.sse import EventSourceResponse
+
+from src.api import Helper
+from src.constants import (
+    O_CNFG,
+    O_FUTL,
+    O_SETG,
+    S_DATA,
+    TRADE_JSON,
+    dct_sym,
+    logging,
+)
 from src.strategy import Strategy
-from src.constants import dct_sym
-from traceback import print_exc
+from src.tickrunner import TickRunner
+from src.wserver import Wserver
 
 MARKER_FILE = Path(S_DATA) / "settings.marker"
 SCHEDULER = AsyncIOScheduler()
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
 from pytz import timezone as tz
-from datetime import datetime, timezone, timedelta, time
-from typing import Dict, List, Any, Optional
 
 
 def verify_api_key(x_api_key: str = Header(...)) -> str:
@@ -130,13 +128,13 @@ async def trading_session_start(app: FastAPI):
 
         logging.info(f"Got quotes for {len(ws.ltp)} symbols")
 
-        symbol_nearest_to_premium: List[str] = []
+        symbol_nearest_to_premium: list[str] = []
         for ce_or_pe in ["CE", "PE"]:
             res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
             if res:
                 symbol_nearest_to_premium.append(res)
 
-        tokens_nearest: Dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
+        tokens_nearest: dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
             symbol_nearest_to_premium
         )
 
@@ -234,7 +232,7 @@ IST = timezone(IST_OFFSET)
 # --- Helper Functions for Candlestick Aggregation ---
 def aggregate_ticks_to_candlesticks(
     df: pd.DataFrame, timeframe_str: str = CANDLESTICK_TIMEFRAME_STR
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     try:
         if df.empty:
             return []
@@ -264,7 +262,7 @@ def aggregate_ticks_to_candlesticks(
 
 
 @lru_cache(maxsize=1)
-def get_settings() -> Dict[str, Any]:
+def get_settings() -> dict[str, Any]:
     base = O_SETG["base"]
     settings = O_SETG[base] | dct_sym[base]
     return settings
@@ -280,17 +278,17 @@ async def lifespan(app: FastAPI):
     hour = now_ist.hour
     minute = now_ist.minute
     day = now_ist.strftime("%a")
-    
+
     # Schedule: 9:15 to 23:59
-    in_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 or (hour == 23 and minute < 59)
+    in_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (hour == 23 and minute < 59)
     is_trading_day = day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
-    
+
     if in_hours and is_trading_day:
         logging.info(f"Within schedule ({now_ist.strftime('%H:%M')}), starting trading session...")
         await trading_session_start(app)
     else:
         logging.info(f"Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session...")
-    
+
     logging.info("✅ Trading session started.")
 
     yield
@@ -411,7 +409,7 @@ async def get_summary(request: Request) -> JSONResponse:
         api = Helper.api()
         if not api:
             return JSONResponse(content={"error": "api not initialized"}, status_code=500)
-        
+
         content = Helper.summary()
         return JSONResponse(content)
     except Exception as e:
@@ -485,7 +483,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
 @app.post("/api/trade/buy")
 async def place_buy_order(
-    request: Request, payload: Dict[str, Any] = Body(...)
+    request: Request, payload: dict[str, Any] = Body(...)
 ) -> JSONResponse:
     logging.debug(f"Order request received: {payload}")
     logging.debug(f"app.state.quantity: {request.app.state.quantity}")
@@ -560,7 +558,7 @@ async def sse_candlestick_endpoint(
 ) -> EventSourceResponse:
     logging.debug(f"SSE connection requested for symbol: {symbol}")
 
-    last_sent_candle: Optional[Dict[str, Any]] = None
+    last_sent_candle: dict[str, Any] | None = None
 
     async def event_generator():
         nonlocal last_sent_candle
@@ -616,7 +614,7 @@ async def sse_candlestick_endpoint(
 
                 yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
 
-            except Exception as e:
+            except Exception:
                 continue
 
     return EventSourceResponse(event_generator())
@@ -697,7 +695,7 @@ async def get_settings_file() -> JSONResponse:
     """
     try:
         settings_path = Path(S_DATA) / "settings.yml"
-        with open(settings_path, "r") as f:
+        with open(settings_path) as f:
             content = f.read()
         return JSONResponse(content={"content": content, "status": "success"})
     except Exception as e:
@@ -708,7 +706,7 @@ async def get_settings_file() -> JSONResponse:
 
 @app.post("/api/admin/settings")
 async def update_settings(
-    request: Request, settings_data: Dict[str, Any] = Body(...)
+    request: Request, settings_data: dict[str, Any] = Body(...)
 ) -> JSONResponse:
     """
     Update settings.yml content and stop trading session.
@@ -719,9 +717,9 @@ async def update_settings(
         content = settings_data.get("content", "")
         with open(settings_path, "w") as f:
             f.write(content)
-        
+
         await trading_session_stop(request.app)
-        
+
         return JSONResponse(
             content={"message": "Settings saved. Trading session stopped.", "status": "success"}
         )
@@ -738,7 +736,7 @@ async def get_logs() -> JSONResponse:
     """
     try:
         log_path = Path(S_DATA) / "log.txt"
-        with open(log_path, "r") as f:
+        with open(log_path) as f:
             lines = f.readlines()
             content = "".join(lines[-500:])
         return JSONResponse(content={"content": content, "status": "success"})
@@ -782,11 +780,11 @@ async def get_admin_status(request: Request) -> JSONResponse:
         day = now_ist.strftime("%a")
 
         is_trading = getattr(request.app.state, "is_trading", False)
-        
+
         hour = now_ist.hour
         minute = now_ist.minute
         # Hardcoded schedule: 9:15 to 23:59
-        within_trading_hours = (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23 or (hour == 23 and minute < 59)
+        within_trading_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (hour == 23 and minute < 59)
         is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
         return JSONResponse(
