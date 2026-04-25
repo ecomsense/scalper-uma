@@ -366,6 +366,7 @@ async def serve_root(request: Request):
             </div>
             <script>
               fetch('/api/admin/settings').then(r=>r.json()).then(d=>{if(d.status==='success')document.getElementById('settingsEditor').value=d.content;}).catch(e=>{});
+              fetch('/api/admin/logs').then(r=>r.text()).then(t=>document.getElementById('logsEditor').value=t).catch(e=>{});
             </script>
               const emojis = ["&#128564;", "&#127861;", "&#920043;", "&#127969;", "&#128166;", "&#128170;", "&#127804;"];
               const msgs = ["Zzz... sleeping", "Coffee break!", "Market siesta", "Hold your horses!", "Patience young padwan!", "Dreaming of profits...", "Counting sheep...", "Market meditation...", "Waiting for green candles..."];
