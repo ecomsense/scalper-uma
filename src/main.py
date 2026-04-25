@@ -322,13 +322,24 @@ async def serve_root(request: Request):
             <div class="container">
                 <div class="app-header">
                     <h1>UMA Scalper</h1>
+                    <div class="header-buttons">
+                        <button class="blue-btn" onclick="document.getElementById('logsModal').style.display='block'">Logs</button>
+                        <button class="blue-btn" onclick="document.getElementById('settingsModal').style.display='block'">Settings</button>
+                    </div>
                 </div>
-                <div style="text-align:center;padding-top:100px;background:var(--bg-primary);color:var(--text-primary);min-height:calc(100vh - 60px);">
+                <div style="text-align:center;padding-top:100px;background:var(--bg-primary);color:var(--text-primary);min-height:calc(100vh - 120px);">
                     <h1>Application is on scheduled sleep</h1>
                     <p style="font-size:1.2em;margin:20px 0;" id="clock"></p>
                     <p style="font-size:1.1em;margin:15px 0;">Trading hours: 09:14 - 23:59 IST</p>
                     <p style="font-size:1.1em;margin:15px 0;">Trading days: Mon, Tue, Wed, Thu, Fri</p>
                 </div>
+                <div class="footer" style="text-align:center;padding:15px;background:var(--bg-header);border-top:2px solid var(--border-color);">
+                    <span style="color:var(--text-primary);">made with :heart by </span><a href="https://ecomsense.in" target="_blank" style="color:var(--accent-color);text-decoration:none;">ecomsense.in</a>
+                </div>
+            </div>
+            <div style="display:none;">
+                <div id="logsModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Server Logs</h2><span class="close" onclick="document.getElementById('logsModal').style.display='none'">&times;</span></div><textarea id="logsEditor" readonly></textarea><div style="margin-top:10px;"><button class="blue-btn" onclick="fetch('/api/admin/logs').then(r=>r.text()).then(t=>document.getElementById('logsEditor').value=t)">Refresh</button></div></div></div>
+                <div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Settings</h2><span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span></div><p style="color:var(--text-secondary);">Settings not available during sleep</p></div></div>
             </div>
             <script>
               function updateClock() {
