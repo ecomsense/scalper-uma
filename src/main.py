@@ -330,7 +330,7 @@ async def serve_root(request: Request):
                 <div class="chart-grid">
                     <div class="chart-container" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
                         <div style="text-align:center;">
-                            <h2>Application is on scheduled sleep</h2>
+                            <h2 id="sleepMsg">Zzz... sleeping</h2>
                             <p style="font-size:1.2em;margin:20px 0;" id="clock"></p>
                             <p style="font-size:1.1em;margin:15px 0;">Trading hours: 09:14 - 23:59 IST</p>
                             <p style="font-size:1.1em;margin:15px 0;">Trading days: Mon, Tue, Wed, Thu, Fri</p>
@@ -346,6 +346,8 @@ async def serve_root(request: Request):
                 <div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Settings</h2><span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span></div><p style="color:var(--text-secondary);">Settings not available during sleep</p></div></div>
             </div>
             <script>
+              const msgs = ["Zzz... sleeping", "Coffee break!", "Market siesta", "Hold your horses!", "Patience young padwan!", "Dreaming of profits...", "Counting sheep...", "Market meditation..."];
+              document.getElementById('sleepMsg').innerText = msgs[Math.floor(Math.random() * msgs.length)];
               function updateClock() {
                 const now = new Date();
                 const ist = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Kolkata'}));
