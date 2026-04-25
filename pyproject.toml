@@ -21,3 +21,38 @@ dependencies = [
     "websocket-client",
     "pytz",
 ]
+
+[project.optional-dependencies]
+dev = ["pytest", "pre-commit"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.pre-commit]
+repos = [
+    {repo = "https://github.com/pre-commit/pre-commit-hooks", rev = "v4.6.0", hooks = [
+        {id = "trailing-whitespace"},
+        {id = "end-of-file-fixer"},
+        {id = "check-yaml"},
+        {id = "check-json"},
+        {id = "check-added-large-files"},
+        {id = "check-merge-conflict"},
+    ]},
+    {repo = "https://github.com/psf/black", rev = "25.1.0", hooks = [
+        {id = "black"},
+    ]},
+    {repo = "https://github.com/pycqa/ruff", rev = "v0.9.4", hooks = [
+        {id = "ruff"},
+        {id = "ruff-format"},
+    ]},
+]
+
+[tool.ruff]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T20", "FIX", "ARG", "PTH", "PYI", "RSE", "RET", "SLF", "SIM", "TID", "ARG", "ERA", "PL", "TRY", "RSE", "PERF", "PGH", "PIE", "PTC", "RUF", "SLF", "NPY", "AIR", "ASYNC", "S"]
+ignore = ["E501"]

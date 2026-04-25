@@ -56,7 +56,7 @@ class TestTickRunner:
         with open(TRADE_JSON, "w") as f:
             json.dump(trade_data, f)
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
 
@@ -87,7 +87,7 @@ class TestTickRunner:
         ]
         mock_helper.one_side.return_value = "26042100278880"
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         runner.run_state_machine()
@@ -120,7 +120,7 @@ class TestTickRunner:
             {"order_id": "26042100278879", "status": "REJECTED"}
         ]
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         runner.run_state_machine()
@@ -149,7 +149,7 @@ class TestTickRunner:
             {"order_id": "26042100278880", "status": "OPEN"}
         ]
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         runner.exit_id = "26042100278880"
@@ -187,7 +187,7 @@ class TestTickRunner:
             {"order_id": "26042100278880", "status": "COMPLETE"}
         ]
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         runner.exit_id = "26042100278880"
@@ -200,7 +200,7 @@ class TestTickRunner:
         assert runner.fn == "create"
 
     def test_create_clears_when_no_trade(self, mock_helper, mock_wserver, tokens_nearest):
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         assert runner.entry_id == ""
@@ -232,7 +232,7 @@ class TestTickRunner:
             {"order_id": "26042100278880", "status": "OPEN"}
         ]
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         runner.exit_id = "26042100278880"
@@ -268,7 +268,7 @@ class TestTickRunner:
             {"order_id": "26042100278880", "status": "OPEN"}
         ]
 
-        from src.tickrunner import TickRunner
+        from tickrunner import TickRunner
 
         runner = TickRunner(mock_wserver, tokens_nearest)
         runner.exit_id = "26042100278880"
