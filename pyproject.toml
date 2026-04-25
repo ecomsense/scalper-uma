@@ -13,6 +13,7 @@ dependencies = [
     "PyYAML",
     "pendulum",
     "pyotp",
+    "apscheduler",
     "stock-brokers @ git+https://github.com/ecomsense/stock-brokers",
     "toolkit @ git+https://github.com/pannet1/toolkit",
     "fastapi[standard]",
