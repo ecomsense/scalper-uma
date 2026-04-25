@@ -1,83 +1,34 @@
-"""
-description:
-    contains all the constants
-    creates yml files and necessary folders
-    for project
-"""
-
+from __future__ import annotations
 from os import path
-from traceback import print_exc
-from pprint import pprint
-from typing import Dict, Any, Optional
-from toolkit.logger import Logger
+from typing import Dict, Any
 from toolkit.fileutils import Fileutils
-import secrets
-import hashlib
-import base64
+from toolkit.logger import Logger
 
-O_FUTL: Fileutils = Fileutils()
-S_DATA: str = "./data/"
-
-S_LOG: str = S_DATA + "log.txt"
-TRADE_JSON: str = S_DATA + "trade.json"
-JWT_TOKEN_FILE: str = S_DATA + "jwt_token.txt"
-HTPASSWD_FILE: str = S_DATA + ".htpasswd"
-
-SERVER: str = "localhost:8000"
-HTPASSWD_USER: str = "trader"
-HTPASSWD_PASS: str = "trader123"
+O_FUTL = Fileutils()
+S_DATA = str(path.abspath("./data"))
+S_LOG = str(path.abspath("./data/log.txt"))
+HTPASSWD_FILE = str(path.abspath("./data/.htpasswd"))
+TRADE_JSON = str(path.abspath("./data/trade.json"))
 
 
-def factory(file_in_data_dir: str) -> None:
-    if not O_FUTL.is_file_exists(file_in_data_dir):
-        logging.debug("creating data dir")
-        O_FUTL.add_path(file_in_data_dir)
+def yml_to_obj(arg: str = None) -> Dict[str, Any]:
+    if arg:
+        file = S_DATA + "/" + arg
     else:
-        O_FUTL.nuke_file(file_in_data_dir)
-
-
-lst = [S_LOG]
-for item in lst:
-    factory(item)
-
-if not O_FUTL.is_file_exists(TRADE_JSON):
-    O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
-
-
-def get_or_create_jwt_token() -> str:
-    if O_FUTL.is_file_exists(JWT_TOKEN_FILE):
-        with open(JWT_TOKEN_FILE, "r") as f:
-            return f.read().strip()
-    else:
-        token = secrets.token_urlsafe(32)
-        O_FUTL.write_file(JWT_TOKEN_FILE, token)
-        return token
-
-
-def create_htpasswd() -> None:
-    if not O_FUTL.is_file_exists(HTPASSWD_FILE):
-        password_hash = hashlib.sha1(HTPASSWD_PASS.encode()).hexdigest()
-        htpasswd_line = f"{HTPASSWD_USER}:{{SHA}}{base64.b64encode(bytes.fromhex(password_hash)).decode()}"
-        O_FUTL.write_file(HTPASSWD_FILE, htpasswd_line)
-
-
-def yml_to_obj(arg: Optional[str] = None) -> Dict[str, Any]:
-    if not arg:
         parent = path.dirname(path.abspath(__file__))
         grand_parent_path = path.dirname(parent)
         folder = path.basename(grand_parent_path)
         lst = folder.split("-")
         file = "_".join(reversed(lst))
         file = "./../" + file + ".yml"
-    else:
-        file = S_DATA + arg
 
     flag = O_FUTL.is_file_exists(file)
 
     if not flag and arg:
         O_FUTL.copy_file("./factory/", "./data/", "settings.yml")
     elif not flag and arg is None:
-        __import__("sys").exit()
+        import sys
+        sys.exit()
 
     return O_FUTL.get_lst_fm_yml(file)
 
@@ -87,49 +38,65 @@ def read_yml() -> tuple[Dict[str, Any], Dict[str, Any]]:
         O_CNFG = yml_to_obj()
         O_SETG = yml_to_obj("settings.yml")
     except Exception as e:
+        from traceback import print_exc
         print_exc()
-        __import__("sys").exit(1)
+        import sys
+        sys.exit(1)
     else:
         return O_CNFG, O_SETG
 
 
-O_CNFG: Dict[str, Any]
-O_SETG: Dict[str, Any]
-O_CNFG, O_SETG = read_yml()
+# Lazy loader - only load when first accessed
+_loaded = False
+_O_CNFG: Dict[str, Any] = {}
+_O_SETG: Dict[str, Any] = {}
+
+
+def _ensure_loaded():
+    global _loaded, _O_CNFG, _O_SETG
+    if not _loaded:
+        _O_CNFG, _O_SETG = read_yml()
+        _loaded = True
+
+
+# These work as module vars but load lazily
+def __getattr__(name: str):
+    if name in ("O_CNFG", "O_SETG"):
+        _ensure_loaded()
+        return _O_CNFG if name == "O_CNFG" else _O_SETG
+    raise AttributeError(f"module has no attribute '{name}'")
+
+
+def get_settings() -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """Lazy load settings - only reads config when first accessed."""
+    _ensure_loaded()
+    return _O_CNFG, _O_SETG
+
+
+def access_cnfg() -> Dict[str, Any]:
+    """Access O_CNFG. Use this for tests."""
+    _ensure_loaded()
+    return _O_CNFG
+
+
+def access_setg() -> Dict[str, Any]:
+    """Access O_SETG. Use this for tests."""
+    _ensure_loaded()
+    return _O_SETG
+
 
 def load_env_settings():
-    """Reload settings from settings.yml (clears cache)."""
-    global O_CNFG, O_SETG
-    get_settings.cache_clear()
-    O_CNFG, O_SETG = read_yml()
-
-JWT_TOKEN: str = get_or_create_jwt_token()
-create_htpasswd()
+    """Reload settings from settings.yml."""
+    global _loaded, _O_CNFG, _O_SETG
+    _loaded = False
+    _ensure_loaded()
 
 
-def set_logger() -> Logger:
-    level = O_SETG["log"]["level"]
-    if O_SETG["log"]["show"]:
-        return Logger(level)
-    return Logger(level, S_LOG)
-
-
-logging: Logger = set_logger()
+# Default logging (INFO level until settings load)
+logging: Logger = Logger(30)
 
 
 dct_sym: Dict[str, Dict[str, Any]] = {
-    "NIFTY": {
-        "diff": 50,
-        "index": "Nifty 50",
-        "exchange": "NSE",
-        "token": "26000",
-        "depth": 9,
-    },
-    "BANKNIFTY": {
-        "diff": 100,
-        "index": "Nifty Bank",
-        "exchange": "NSE",
-        "token": "26009",
-        "depth": 25,
-    },
+    "NIFTY": {"diff": 50, "index": "Nifty 50", "exchange": "NSE", "token": "26000", "depth": 9},
+    "BANKNIFTY": {"diff": 100, "index": "Nifty Bank", "exchange": "NSE", "token": "26009", "depth": 25},
 }
