@@ -1,19 +1,27 @@
-# Local-only pre-commit (no network needed)
-# Install: uv run pre-commit install
-default_install_hook_types: [pre-commit]
-default_stages: [commit]
+# Local-only pre-commit hooks (no network)
+fail_fast: false
 
 repos:
   - repo: local
     hooks:
       - id: syntax-check
         name: Syntax Check
-        entry: python -m py_compile
+        language: system
+        entry: bash -c 'uv run python -m py_compile src/*.py'
         types: [python]
         pass_filenames: false
+        always_run: true
+
+      - id: lint-check
+        name: Lint Check
+        language: system
+        entry: bash -c 'cd . && uv run ruff check --fix src/'
+        types: [python]
+        pass_filenames: false
+        always_run: false
 
       - id: test-check
         name: Run Tests
-        entry: pytest
-        args: ["tests/", "-v", "--tb=short"]
-        pass_filenames: false
+        language: system
+        entry: bash -c 'cd . && uv run pytest tests/ -v --tb=short'
+        always_run: false

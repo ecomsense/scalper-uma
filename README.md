@@ -93,3 +93,7 @@ BANKNIFTY:
 ```
 strategies juggles around massive dictionary that contain every possible information. they could hold parameters, function names and class instances.
 
+# test
+test
+test
+test
