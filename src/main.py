@@ -342,11 +342,33 @@ async def serve_root(request: Request):
                     <span style="color:var(--text-primary);">made with </span><span style="color:red;">&#10084;</span><span style="color:var(--text-primary);"> by </span><a href="https://ecomsense.in" target="_blank" style="color:var(--accent-color);text-decoration:none;">ecomsense.in</a>
                 </div>
             </div>
-            <div style="display:none;">
-                <div id="logsModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Server Logs</h2><span class="close" onclick="document.getElementById('logsModal').style.display='none'">&times;</span></div><textarea id="logsEditor" readonly></textarea><div style="margin-top:10px;"><button class="blue-btn" onclick="fetch('/api/admin/logs').then(r=>r.text()).then(t=>document.getElementById('logsEditor').value=t)">Refresh</button></div></div></div>
-                <div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Settings</h2><span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span></div><p style="color:var(--text-secondary);">Settings not available during sleep</p></div></div>
+            <!-- Logs Modal -->
+            <div id="logsModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Server Logs</h2>
+                        <span class="close" onclick="document.getElementById('logsModal').style.display='none'">&times;</span>
+                    </div>
+                    <textarea id="logsEditor" readonly style="width:100%;height:300px;background:#1a1a2e;color:#fff;"></textarea>
+                    <div style="margin-top:10px;">
+                        <button class="blue-btn" onclick="fetch('/api/admin/logs').then(r=>r.text()).then(t=>document.getElementById('logsEditor').value=t)">Refresh</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Settings Modal -->
+            <div id="settingsModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Settings</h2>
+                        <span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span>
+                    </div>
+                    <textarea id="settingsEditor" style="width:100%;height:300px;background:#1a1a2e;color:#fff;"></textarea>
+                    <div id="settingsMsg" style="margin-top:10px;color:#888;">Note: Trading is paused - settings will apply on next wake</div>
+                </div>
             </div>
             <script>
+              fetch('/api/admin/settings').then(r=>r.json()).then(d=>{if(d.status==='success')document.getElementById('settingsEditor').value=d.content;}).catch(e=>{});
+            </script>
               const emojis = ["&#128564;", "&#127861;", "&#920043;", "&#127969;", "&#128166;", "&#128170;", "&#127804;"];
               const msgs = ["Zzz... sleeping", "Coffee break!", "Market siesta", "Hold your horses!", "Patience young padwan!", "Dreaming of profits...", "Counting sheep...", "Market meditation...", "Waiting for green candles..."];
               const el = document.getElementById('sleepEmoji');
