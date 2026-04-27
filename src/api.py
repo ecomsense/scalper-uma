@@ -32,7 +32,7 @@ def login() -> Any:
 class Helper:
     _api: Any | None = None
     _created_at: float | None = None
-    _session_ttl: int = 6 * 3600  # 6 hours - broker token rotation
+    _session_ttl: int = 7 * 3600  # 7 hours - broker token rotation
 
     @classmethod
     def api(cls) -> Any:
