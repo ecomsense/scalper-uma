@@ -70,9 +70,12 @@ class Helper:
         print(f">>> cancel_orders: {symbol}")
         try:
             orders = cls.orders()
+            print(f">>> all orders: {orders}")
             if not orders:
+                print(">> no orders found")
                 return
             for o in orders:
+                print(f">>> order: {o.get('symbol')} status={o.get('status')}")
                 if o.get("symbol") == symbol and o.get("status") in [
                     "OPEN",
                     "trigger_pending",
@@ -143,6 +146,7 @@ class Helper:
         cls.cancel_orders(symbol)
         time.sleep(1)
         positions = cls.positions()
+        print(f">>> positions: {positions}")
         open_positions = [
             p
             for p in positions
