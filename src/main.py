@@ -405,6 +405,18 @@ async def get_admin_status():
     })
 
 
+@app.get('/api/chart/settings')
+async def get_chart_settings():
+    try:
+        ma = O_SETG.get('ma', [])
+        base = O_SETG.get('base', 'NIFTY')
+        base_settings = O_SETG.get(base, {})
+        profit = base_settings.get('profit', 5) if isinstance(base_settings, dict) else 5
+        return JSONResponse(content={'ma': ma, 'profit': profit})
+    except Exception as e:
+        return JSONResponse(content={'error': str(e)}, status_code=500)
+
+
 # ============================================================
 # Routes - Trading (Live Trading)
 # ============================================================
