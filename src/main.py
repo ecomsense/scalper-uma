@@ -88,7 +88,9 @@ async def trading_session_start(app: FastAPI):
 
     # Get fresh settings
     user_settings = get_settings()
-    logging.info(f"📋 Settings loaded: symbol={user_settings.get('symbol')}, lots={user_settings.get('lots')}")
+    logging.info(
+        f"📋 Settings loaded: symbol={user_settings.get('symbol')}, lots={user_settings.get('lots')}"
+    )
 
     try:
         logging.info("📡 Creating broker API session...")
@@ -109,12 +111,16 @@ async def trading_session_start(app: FastAPI):
             await asyncio.sleep(0.5)
             waited += 1
             if waited % 10 == 0:
-                logging.info(f"⏳ Still waiting... waited={waited/2}s, ltp={ws.ltp}, socket_opened={ws.socket_opened}")
+                logging.info(
+                    f"⏳ Still waiting... waited={waited/2}s, ltp={ws.ltp}, socket_opened={ws.socket_opened}"
+                )
 
         if not ws.ltp:
-            logging.error(f"❌ Failed to get LTP from websocket! ws.ltp={ws.ltp}, socket_opened={ws.socket_opened}")
+            logging.error(
+                f"❌ Failed to get LTP from websocket! ws.ltp={ws.ltp}, socket_opened={ws.socket_opened}"
+            )
             return
-        
+
         logging.info(f"✅ Got LTP: {ws.ltp}")
 
         ltp_of_underlying = next(iter(ws.ltp.values()))
@@ -284,7 +290,7 @@ def get_settings() -> dict[str, Any]:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.info("🚀 LIFESPAN START: Checking trading schedule...")
-    
+
     # Check schedule and start/stop accordingly
     now_utc = datetime.now(timezone.utc)
     now_ist = now_utc + timedelta(hours=5, minutes=30)
@@ -295,22 +301,31 @@ async def lifespan(app: FastAPI):
     logging.info(f"⏰ Current time: {now_ist.strftime('%H:%M:%S')} IST, Day: {day}")
 
     # Schedule: 9:15 to 23:59
-    in_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (hour == 23 and minute < 59)
+    in_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (
+        hour == 23 and minute < 59
+    )
     is_trading_day = day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
-    logging.info(f"📊 Schedule check: in_hours={in_hours}, is_trading_day={is_trading_day}")
+    logging.info(
+        f"📊 Schedule check: in_hours={in_hours}, is_trading_day={is_trading_day}"
+    )
 
     if in_hours and is_trading_day:
-        logging.info(f"✅ Within schedule ({now_ist.strftime('%H:%M')}), starting trading session...")
+        logging.info(
+            f"✅ Within schedule ({now_ist.strftime('%H:%M')}), starting trading session..."
+        )
         try:
             await trading_session_start(app)
             logging.info("✅ Trading session start completed")
         except Exception as e:
             logging.error(f"❌ Trading session start failed: {e}")
             import traceback
+
             logging.error(traceback.format_exc())
     else:
-        logging.info(f"⏸️ Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session...")
+        logging.info(
+            f"⏸️ Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session..."
+        )
 
     logging.info("🏁 Lifespan startup complete.")
 
@@ -430,11 +445,14 @@ async def get_summary(request: Request) -> JSONResponse:
     Returns both positions and orders summary.
     """
     try:
+        """
         api = Helper.api()
-        if not api:
-            return JSONResponse(content={"error": "api not initialized"}, status_code=500)
-
+        """
         content = Helper.summary()
+        if not content:
+            return JSONResponse(
+                content={"error": "api not initialized"}, status_code=500
+            )
         return JSONResponse(content)
     except Exception as e:
         logging.error(f"Error getting summary: {e}")
@@ -752,7 +770,10 @@ async def update_settings(
         await trading_session_stop(request.app)
 
         return JSONResponse(
-            content={"message": "Settings saved. Trading session stopped.", "status": "success"}
+            content={
+                "message": "Settings saved. Trading session stopped.",
+                "status": "success",
+            }
         )
     except Exception as e:
         return JSONResponse(
@@ -815,7 +836,9 @@ async def get_admin_status(request: Request) -> JSONResponse:
         hour = now_ist.hour
         minute = now_ist.minute
         # Hardcoded schedule: 9:15 to 23:59
-        within_trading_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (hour == 23 and minute < 59)
+        within_trading_hours = (
+            (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23
+        ) or (hour == 23 and minute < 59)
         is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
         return JSONResponse(
@@ -832,4 +855,7 @@ async def get_admin_status(request: Request) -> JSONResponse:
         )
     except Exception as e:
         import traceback
-        return JSONResponse(content={"error": str(e), "trace": traceback.format_exc()}, status_code=500)
+
+        return JSONResponse(
+            content={"error": str(e), "trace": traceback.format_exc()}, status_code=500
+        )
