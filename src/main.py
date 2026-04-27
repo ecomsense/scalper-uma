@@ -304,14 +304,16 @@ app.mount('/static', StaticFiles(directory=STATIC_DIR, html=True), name='static'
 
 @app.get('/', response_class=HTMLResponse)
 async def root():
-    if schedule_config.is_within_schedule():
+    if schedule_config.is_within_schedule() and _logic_state.is_running():
         return HTMLResponse(load_page_template('logic'))
     return HTMLResponse(load_page_template('sleeping'))
 
 
 @app.get('/logic', response_class=HTMLResponse)
 async def logic_page():
-    if schedule_config.is_within_schedule():
+    if schedule_config.is_within_schedule() and _logic_state.is_running():
+        return HTMLResponse(load_page_template('logic'))
+    return HTMLResponse(load_page_template('sleeping'))
         return HTMLResponse(load_page_template('logic'))
     return HTMLResponse(load_page_template('sleeping'))
 
