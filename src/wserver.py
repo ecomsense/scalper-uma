@@ -44,7 +44,6 @@ class Wserver:
         if val:
             key = message["e"] + "|" + message["tk"]
             self.ltp[key] = float(val)
-            logging.debug(f"📊 LTP update: {key} = {val}, total ltp keys: {len(self.ltp)}")
 
     def subscribe(self, tokens: list[str]) -> None:
         if self.socket_opened:

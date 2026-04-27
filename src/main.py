@@ -121,10 +121,7 @@ async def trading_session_start(app: FastAPI):
             )
             return
 
-        logging.info(f"✅ Got LTP: {ws.ltp}")
-
         ltp_of_underlying = next(iter(ws.ltp.values()))
-        logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
 
         # Now create strategy and subscribe to options
         sgy = Strategy(user_settings, ltp_of_underlying)
@@ -145,8 +142,6 @@ async def trading_session_start(app: FastAPI):
         while len(ws.ltp) < len(all_tokens) and waited < max_wait:
             await asyncio.sleep(0.5)
             waited += 1
-
-        logging.info(f"Got quotes for {len(ws.ltp)} symbols")
 
         symbol_nearest_to_premium: list[str] = []
         for ce_or_pe in ["CE", "PE"]:
