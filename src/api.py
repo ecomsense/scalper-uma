@@ -67,6 +67,7 @@ class Helper:
     def cancel_orders(
         cls, symbol: str, keep_order_id: str | None = None, side: str | None = None
     ) -> None:
+        print(f">>> cancel_orders: {symbol}")
         try:
             orders = cls.orders()
             if not orders:
@@ -136,6 +137,7 @@ class Helper:
     def close_all_for_symbol(
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
+        print(f">>> close_all_for_symbol: {symbol}, ltp={ltp}")
         logging.info(f"close_all_for_symbol START: {symbol}, ltp={ltp}")
         slippage = 0.50
         cls.cancel_orders(symbol)
