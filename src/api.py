@@ -98,10 +98,8 @@ class Helper:
     def historical(
         cls, exchange: str, token: str, interval: int = 1
     ) -> list[dict[str, Any]]:
+        logging.debug(f"historical: ENTER {exchange}|{token}")
         try:
-            logging.info(
-                f"historical: calling broker.get_time_price_series({exchange}, {token})"
-            )
             resp = cls.api().broker.get_time_price_series(
                 exchange=exchange, token=token
             )
@@ -110,7 +108,7 @@ class Helper:
                     f"historical: broker returned None for {exchange}|{token}"
                 )
                 return []
-            logging.info(f"historical: broker returned {len(resp)} rows")
+            logging.debug(f"historical: EXIT got {len(resp)} rows")
             return resp
         except Exception as e:
             logging.error(f"{e} in historical")

@@ -474,24 +474,17 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
     """
     try:
         tokens_nearest = request.app.state.tokens_nearest
-        logging.info(f"historical: symbol={symbol}, tokens_nearest={tokens_nearest}")
+        logging.debug(f"historical: ENTER for {symbol}")
 
         ws_token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
         if not ws_token:
-            logging.warning(f"historical: ws_token not found for {symbol}")
+            logging.debug(f"historical: ws_token not found for {symbol}")
             return JSONResponse(content={"error": "Symbol not found"}, status_code=404)
 
         parts = ws_token.split("|")
         exchange, token = parts[0], parts[1]
-        logging.info(
-            f"historical: before Helper.historical: Helper._api={Helper._api}, Helper._api.broker={Helper._api.broker}"
-        )
-        logging.info(f"historical: calling broker: exchange={exchange}, token={token}")
 
         historical_data = Helper.historical(exchange, token)
-        logging.info(
-            f"historical: got {len(historical_data) if historical_data else 0} rows"
-        )
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
