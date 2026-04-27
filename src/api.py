@@ -67,15 +67,15 @@ class Helper:
     def cancel_orders(
         cls, symbol: str, keep_order_id: str | None = None, side: str | None = None
     ) -> None:
-        print(f">>> cancel_orders: {symbol}")
+        logging.info(f"cancel_orders called: {symbol}")
         try:
             orders = cls.orders()
-            print(f">>> all orders: {orders}")
+            logging.info(f"orders count: {len(orders) if orders else 0}")
             if not orders:
-                print(">> no orders found")
+                logging.info("no orders found")
                 return
+            count = 0
             for o in orders:
-                print(f">>> order: {o.get('symbol')} status={o.get('status')}")
                 if o.get("symbol") == symbol and o.get("status") in [
                     "OPEN",
                     "trigger_pending",
@@ -140,13 +140,12 @@ class Helper:
     def close_all_for_symbol(
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
-        print(f">>> close_all_for_symbol: {symbol}, ltp={ltp}")
-        logging.info(f"close_all_for_symbol START: {symbol}, ltp={ltp}")
+        logging.info(f"close_all_for_symbol: {symbol}, ltp={ltp}")
         slippage = 0.50
         cls.cancel_orders(symbol)
         time.sleep(1)
         positions = cls.positions()
-        print(f">>> positions: {positions}")
+        logging.info(f"positions count: {len(positions) if positions else 0}")
         open_positions = [
             p
             for p in positions
