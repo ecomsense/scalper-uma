@@ -163,6 +163,25 @@ body {
   flex-grow: 1;
 }
 
+/* Shared Footer */
+.app-footer {
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-header);
+  border-top: 2px solid var(--border-color);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.app-footer a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
 .modal {
   display: none;
   position: fixed;
