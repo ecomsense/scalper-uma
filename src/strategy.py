@@ -35,10 +35,10 @@ class Strategy:
         self, ce_or_pe: str, quotes: dict[str, float]
     ) -> str | None:
         symbols_for_info = list(self.tokens_for_all_trading_symbols.values())
-        logging.info(
+        logging.debug(
             f"symbols for which premiums is going to checked: {symbols_for_info}"
         )
-        logging.info(
+        logging.debug(
             f"premium {self.user_settings['premium']} to be check against quotes {quotes} for closeness "
         )
         quotes = {
@@ -49,5 +49,5 @@ class Strategy:
         symbol_with_closest_premium = self.sym.find_closest_premium(
             quotes=quotes, premium=self.user_settings["premium"], contains=ce_or_pe
         )
-        logging.info(f"found {symbol_with_closest_premium=}")
+        logging.debug(f"found {symbol_with_closest_premium=}")
         return symbol_with_closest_premium
