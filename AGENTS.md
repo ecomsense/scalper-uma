@@ -69,7 +69,7 @@ ssh uma@65.20.83.178 "curl -s http://127.0.0.1:8000/api/chart/settings"
 ### Killing Ghost Processes
 If multiple uvicorn processes are running:
 ```bash
-ssh uma@65.20.83.178 "pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service"
+ssh uma@65.20.83.178 "pkill -9 -f 'uvicorn.*8000' && sleep 2 && cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &"
 ```
 
 ## Common Tasks
@@ -83,9 +83,8 @@ ssh uma@65.20.83.178 "pkill -f uvicorn && sleep 2 && systemctl --user start fast
 - The "session" in this codebase refers to the broker API connection (Finvasia)
 - No database - uses JSON files for persistence
 - Trades NIFTY/BANKNIFTY options based on premium proximity
-- Always use `systemctl --user` for server management
+- Start uvicorn manually (see Server Management section below)
 - Delete cached bytecode: `rm -rf src/__pycache__`
-- Use `default.target` for user services (not `multi-user.target`)
 
 ## Bug Fixes & Discoveries
 
@@ -111,7 +110,7 @@ return JSONResponse(content={"ma": ma, "profit": profit})
 
 **Fix**: Always kill all processes before restart:
 ```bash
-pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service
+pkill -9 -f 'uvicorn.*8000' && sleep 2 && cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &
 ```
 
 ## Troubleshooting
@@ -184,8 +183,8 @@ async def get_summary(request: Request) -> JSONResponse:
 **Symptom**: Trading session starts then immediately stops, even within market hours.
 
 **Root Cause**: Multiple uvicorn processes were running simultaneously:
-- One from `systemctl --user start`
-- Another from `nohup python -m uvicorn ...` or old process
+- One from manual start
+- Another from previous process or reload
 
 This caused race conditions where:
 1. Process A starts trading session
@@ -194,8 +193,8 @@ This caused race conditions where:
 4. Then stops itself
 
 **Prevention**: 
-- Use ONE method to start the server (either systemctl OR nohup, never both)
-- Always kill all processes before restart: `fuser -k 8000/tcp` or `pkill -f uvicorn`
+- Use ONE method to start the server (manual start only)
+- Always kill all processes before restart: `pkill -9 -f 'uvicorn.*8000'`
 
 ### Trading Hours Bug (String vs Proper Time Comparison)
 
