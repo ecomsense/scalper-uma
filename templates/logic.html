@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>UMA Scalper - Trading</title>
+    <link rel='stylesheet' href='/static/styles.css'>
+    <script src='/static/chart.js'></script>
+</head>
+<body>
+    <div class='container'>
+        <header class='app-header'>
+            <div class='header-left'>
+                <span style='font-size:1.5rem;'>📈</span>
+                <span style='font-size:1.2rem;font-weight:bold;'>UMA Scalper</span>
+                <span id='statusBadge' style='margin-left:1rem;padding:0.3rem 0.8rem;border-radius:12px;background:#00ff88;color:#000;font-size:0.8rem;'>LIVE</span>
+            </div>
+            <div class='header-right'>
+                <button class='blue-btn' onclick='openLogsModal()'>📋 Logs</button>
+                <button class='yellow-btn' onclick='restartLogic()'>🔄 Restart</button>
+                <button class='blue-btn' onclick='openSettingsModal()'>⚙️ Settings</button>
+            </div>
+        </header>
+
+        <div class='chart-grid'>
+            <div class='chart-container'>
+                <div class='chart-header'>
+                    <span class='chart-title' id='chartTitle0'>NIFTY</span>
+                </div>
+                <div id='chart-0' style='flex-grow:1;'></div>
+            </div>
+            <div class='chart-container'>
+                <div class='chart-header'>
+                    <span class='chart-title' id='chartTitle1'>NIFTY</span>
+                </div>
+                <div id='chart-1' style='flex-grow:1;'></div>
+            </div>
+        </div>
+
+        <div class='bottom-panel'>
+            <div class='panel-item'>
+                <span class='label'>P&L:</span>
+                <span id='pnlValue'>₹0.00</span>
+            </div>
+            <div class='panel-item'>
+                <span class='label'>Orders:</span>
+                <span id='ordersCount'>0/0</span>
+            </div>
+            <div class='panel-item'>
+                <span class='label'>Positions:</span>
+                <span id='positionsCount'>0</span>
+            </div>
+            <div class='panel-item'>
+                <span class='label'>Time:</span>
+                <span id='clock'>--:--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs Modal -->
+    <div id='logsModal' class='modal'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <h2>📋 Server Logs</h2>
+                <span class='close' onclick='closeLogsModal()'>&times;</span>
+            </div>
+            <textarea id='logsEditor' readonly></textarea>
+            <div style='margin-top:10px;'>
+                <button class='blue-btn' onclick='loadLogs()'>Refresh</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id='settingsModal' class='modal'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <h2>⚙️ Settings</h2>
+                <span class='close' onclick='closeSettingsModal()'>&times;</span>
+            </div>
+            <textarea id='settingsEditor'></textarea>
+            <div style='margin-top:10px;'>
+                <button class='blue-btn' onclick='saveAndRestart()'>Save & Restart</button>
+            </div>
+        </div>
+    </div>
+
+    <script src='/static/summary.js'></script>
+    <script>
+        function openLogsModal() { document.getElementById('logsModal').style.display='block'; loadLogs(); }
+        function closeLogsModal() { document.getElementById('logsModal').style.display='none'; }
+        function openSettingsModal() { document.getElementById('settingsModal').style.display='block'; loadSettings(); }
+        function closeSettingsModal() { document.getElementById('settingsModal').style.display='none'; }
+
+        function loadLogs() {
+            fetch('/api/admin/logs').then(r=>r.json()).then(d=>{
+                document.getElementById('logsEditor').value = d.content || '';
+            }).catch(e=>{});
+        }
+
+        function loadSettings() {
+            fetch('/api/admin/settings').then(r=>r.json()).then(d=>{
+                if(d.status==='success') document.getElementById('settingsEditor').value = d.content || '';
+            }).catch(e=>{});
+        }
+
+        async function saveAndRestart() {
+            const content = document.getElementById('settingsEditor').value;
+            closeSettingsModal();
+            await fetch('/api/admin/settings', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({content})
+            });
+            await restartLogic();
+        }
+
+        async function restartLogic() {
+            await fetch('/api/logic/stop', {method:'POST'});
+            await new Promise(r => setTimeout(r, 500));
+            await fetch('/api/logic/start', {method:'POST'});
+            location.reload();
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const ist = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
+            document.getElementById('clock').textContent = ist.toLocaleTimeString('en-US', {timeZone:'Asia/Kolkata', hour12:false});
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

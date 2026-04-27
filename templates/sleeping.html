@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>UMA Scalper</title>
+    <link rel='stylesheet' href='/static/styles.css'>
+    <style>
+        .sleep-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; text-align: center; }
+        .sleep-emoji { font-size: 4rem; margin-bottom: 1rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .sleep-msg { font-size: 1.8rem; color: #ffd700; margin-bottom: 1.5rem; }
+        .clock { font-size: 2.5rem; font-weight: bold; color: #00d9ff; font-family: monospace; }
+        .schedule-info { margin-top: 2rem; color: #888; }
+        .schedule-badge { display: inline-block; padding: 0.5rem 1rem; margin: 0.25rem; border-radius: 8px; background: rgba(255,255,255,0.1); }
+        .schedule-badge.active { background: rgba(0,255,136,0.3); color: #00ff88; }
+        .restart-btn { display: none; }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <header class='app-header'>
+            <div class='header-left'>
+                <span style='font-size:1.5rem;'>📈</span>
+                <span style='font-size:1.2rem;font-weight:bold;'>UMA Scalper</span>
+            </div>
+            <div class='header-right'>
+                <button class='blue-btn' onclick='openLogsModal()'>📋 Logs</button>
+                <button class='blue-btn' onclick='openSettingsModal()'>⚙️ Settings</button>
+            </div>
+        </header>
+
+        <div class='chart-grid'>
+            <div class='sleep-container'>
+                <div class='sleep-emoji' id='sleepEmoji'>💤</div>
+                <div class='sleep-msg' id='sleepMsg'>Zzz... sleeping</div>
+                <div class='clock' id='clock'>--:--:--</div>
+                <div class='schedule-info' style='margin-top:2rem;'>
+                    <p style='font-size:1.1em;'>Trading hours: <strong id='scheduleTime'>09:14 - 23:59</strong> IST</p>
+                    <div id='dayBadges' style='margin-top:1rem;'></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class='footer'>
+            made with <span style='color:red;'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a>
+        </footer>
+    </div>
+
+    <!-- Logs Modal -->
+    <div id='logsModal' class='modal'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <h2>📋 Server Logs</h2>
+                <span class='close' onclick='closeLogsModal()'>&times;</span>
+            </div>
+            <textarea id='logsEditor' readonly></textarea>
+            <div style='margin-top:10px;display:flex;gap:10px;'>
+                <button class='blue-btn' onclick='loadLogs()'>Refresh</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id='settingsModal' class='modal'>
+        <div class='modal-content'>
+            <div class='modal-header'>
+                <h2>⚙️ Settings</h2>
+                <span class='close' onclick='closeSettingsModal()'>&times;</span>
+            </div>
+            <textarea id='settingsEditor'></textarea>
+            <div id='settingsMsg' style='margin-top:10px;color:#888;'>Note: Settings will apply when trading starts</div>
+            <div style='margin-top:10px;'>
+                <button class='blue-btn' onclick='saveSettings()'>Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openLogsModal() { document.getElementById('logsModal').style.display='block'; loadLogs(); }
+        function closeLogsModal() { document.getElementById('logsModal').style.display='none'; }
+        function openSettingsModal() { document.getElementById('settingsModal').style.display='block'; loadSettings(); }
+        function closeSettingsModal() { document.getElementById('settingsModal').style.display='none'; }
+
+        function loadLogs() {
+            fetch('/api/admin/logs').then(r=>r.json()).then(d=>{
+                document.getElementById('logsEditor').value = d.content || '';
+            }).catch(e=>{});
+        }
+
+        function loadSettings() {
+            fetch('/api/admin/settings').then(r=>r.json()).then(d=>{
+                if(d.status==='success') document.getElementById('settingsEditor').value = d.content || '';
+            }).catch(e=>{});
+        }
+
+        async function saveSettings() {
+            const content = document.getElementById('settingsEditor').value;
+            closeSettingsModal();
+            await fetch('/api/admin/settings', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({content})
+            });
+            showToast('Settings saved', 'green');
+        }
+
+        function showToast(msg, color) {
+            const t = document.createElement('div');
+            t.className = `toast ${color}`;
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(()=>t.remove(), 4000);
+        }
+
+        // Random emojis and messages
+        const emojis = ['💤', '☕', '😴', '🌙', '🥱', '😎'];
+        const msgs = ['Zzz... sleeping', 'Coffee break!', 'Market siesta', 'Hold your horses!', 'Waiting for green candles...'];
+        document.getElementById('sleepEmoji').textContent = emojis[Math.floor(Math.random()*emojis.length)];
+        const sleepMsg = document.getElementById('sleepMsg');
+        sleepMsg.textContent = msgs[Math.floor(Math.random()*msgs.length)];
+
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const ist = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
+            document.getElementById('clock').textContent = ist.toLocaleTimeString('en-US', {timeZone:'Asia/Kolkata', hour12:false});
+            
+            // Day badges
+            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+            const today = ist.getDay();
+            let badges = '';
+            for(let i=0;i<5;i++) {
+                const isToday = i === today;
+                badges += `<span class='schedule-badge ${isToday?'active':''}'>${days[i]}</span>`;
+            }
+            document.getElementById('dayBadges').innerHTML = badges;
+        }
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
