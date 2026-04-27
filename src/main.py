@@ -314,8 +314,6 @@ async def logic_page():
     if schedule_config.is_within_schedule() and _logic_state.is_running():
         return HTMLResponse(load_page_template('logic'))
     return HTMLResponse(load_page_template('sleeping'))
-        return HTMLResponse(load_page_template('logic'))
-    return HTMLResponse(load_page_template('sleeping'))
 
 
 # ============================================================
