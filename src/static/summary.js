@@ -84,14 +84,16 @@ function showOrdersModal() {
     }
 
     let html = '<table style="width:100%;border-collapse:collapse;">';
-    html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
+    html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">OrderId</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
     orders.forEach(function(o) {
         const status = o.status || '';
         let bg = '';
         if (status === 'COMPLETE') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED' || status === 'REJECTED') bg = 'background:#ff4444;color:white;border-radius:8px;padding:4px 8px;';
+        const time = (o.broker_timestamp || '').split(' ')[1] || o.broker_timestamp || '';
         html += '<tr>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.broker_timestamp || '') + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + time + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.order_id || '') + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.cname || '') + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.side || '') + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;' + bg + '">' + status + '</td>';
