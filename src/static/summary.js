@@ -12,11 +12,13 @@ function doFetch() {
         .catch(e => console.error("API error:", e));
 }
 
-// Disable auto-fetch to prevent browser hanging
-// window.addEventListener("DOMContentLoaded", function() {
-//     console.log("Page loaded, fetching summary...");
-//     doFetch();
-// });
+// Auto-fetch on page load
+window.addEventListener("DOMContentLoaded", function() {
+    console.log("Page loaded, fetching summary...");
+    doFetch();
+    // Refresh every 5 seconds for live M2M/realized updates
+    setInterval(doFetch, 5000);
+});
 
 function updateFromCache() {
     const cached = localStorage.getItem("summary_cache");
