@@ -30,7 +30,7 @@ body {
   font-family: Arial, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  overflow: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -41,6 +41,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 
 .app-header {
@@ -75,6 +76,7 @@ body {
   gap: 10px;
   padding: 10px;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .chart-container {
@@ -166,11 +168,11 @@ body {
 .app-footer {
   position: sticky;
   bottom: 0;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1.5rem;
   background: var(--bg-header);
   border-top: 2px solid var(--border-color);
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
   flex-shrink: 0;
 }
