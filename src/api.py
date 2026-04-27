@@ -67,10 +67,13 @@ class Helper:
     def cancel_orders(
         cls, symbol: str, keep_order_id: str | None = None, side: str | None = None
     ) -> None:
+        with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
+            f.write(f"[DEBUG] cancel_orders: {symbol}\n")
         logging.info(f"cancel_orders called: {symbol}")
         try:
             orders = cls.orders()
-            logging.info(f"orders count: {len(orders) if orders else 0}")
+            with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
+                f.write(f"[DEBUG] orders count: {len(orders) if orders else 0}\n")
             if not orders:
                 logging.info("no orders found")
                 return
@@ -140,6 +143,8 @@ class Helper:
     def close_all_for_symbol(
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
+        with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
+            f.write(f"[DEBUG] close_all_for_symbol: {symbol}, ltp={ltp}\n")
         logging.info(f"close_all_for_symbol: {symbol}, ltp={ltp}")
         slippage = 0.50
         cls.cancel_orders(symbol)
