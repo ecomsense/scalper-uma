@@ -24,20 +24,32 @@ function doFetch() {
             const ordEl = document.getElementById("order-count");
             const m2mEl = document.getElementById("m2m");
             const realEl = document.getElementById("realized");
+            const m2mElFooter = document.getElementById("m2m-footer");
+            const realElFooter = document.getElementById("realized-footer");
 
             const orderCount = data.order_count || 0;
             const positionCount = data.position_count || 0;
             const activeOrders = data.active_orders || 0;
 
             if (posEl) posEl.textContent = positionCount;
+            if (document.getElementById('pos-count-footer')) document.getElementById('pos-count-footer').textContent = positionCount;
             if (ordEl) ordEl.textContent = activeOrders + ' / ' + orderCount;
+            if (document.getElementById('order-count-footer')) document.getElementById('order-count-footer').textContent = activeOrders + ' / ' + orderCount;
             if (m2mEl) {
                 m2mEl.textContent = (data.m2m || 0).toFixed(2);
                 m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
             }
+            if (m2mElFooter) {
+                m2mElFooter.textContent = (data.m2m || 0).toFixed(2);
+                m2mElFooter.parentElement.classList.toggle("negative", data.m2m < 0);
+            }
             if (realEl) {
                 realEl.textContent = (data.realized_pnl || 0).toFixed(2);
                 realEl.parentElement.classList.toggle("negative", data.realized_pnl < 0);
+            }
+            if (realElFooter) {
+                realElFooter.textContent = (data.realized_pnl || 0).toFixed(2);
+                realElFooter.parentElement.classList.toggle("negative", data.realized_pnl < 0);
             }
         })
         .catch(e => console.error("summary API error:", e));

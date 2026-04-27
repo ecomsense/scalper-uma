@@ -55,15 +55,16 @@
     </div>
 
     <footer class='app-footer'>
-      Made with <span style='color:red;'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a>
+      <div style='display:flex;justify-content:space-around;align-items:center;font-size:0.85rem;'>
+        <span>Positions: <span id='pos-count-footer'>0</span></span>
+        <span>Orders: <span id='order-count-footer'>0</span></span>
+        <span>M2M: <span id='m2m-footer'>0.00</span></span>
+        <span>Realized: <span id='realized-footer'>0.00</span></span>
+      </div>
     </footer>
 
     <div class='bottom-panel'>
-      <div class='panel-item'><span class='label'>Positions:</span> <a href='#' onclick='showPositionsModal(); return false;' id='pos-count'>0</a></div>
-      <div class='panel-item'><span class='label'>Orders:</span> <a href='#' onclick='showOrdersModal(); return false;' id='order-count'>0</a></div>
-      <div class='panel-item'><span class='label'>M2M:</span> <span id='m2m'>0.00</span></div>
-      <div class='panel-item'><span class='label'>Realized:</span> <span id='realized'>0.00</span></div>
-    </div>
+      Made with <span style='color:red;'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a>
 
     <!-- Settings Modal -->
     <div id='settingsModal' class='modal'>
