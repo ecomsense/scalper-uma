@@ -81,7 +81,7 @@ class Helper:
                         continue
                     if side and o.get("side") != side:
                         continue
-                    cls.api().order_cancel(order_id=o.get(order_id))
+                    cls.api().order_cancel(order_id=o.get('order_id'))
                     logging.debug(f"Cancelled order {o.get('order_id')} for {symbol}")
         except Exception as e:
             logging.error(f"Error cancelling orders: {e}")
