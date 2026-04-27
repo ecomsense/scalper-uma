@@ -8,24 +8,32 @@ from src.constants import logging
 
 
 class Wserver:
-    socket_opened: bool = False
+    # socket_opened should be instance variable, not class variable!
     ltp: dict[str, float] = {}
     order_updates: deque = deque(maxlen=100)
 
     def __init__(self, session: Any, tokens: list[str]) -> None:
         self.api = session
         self.tokens = tokens
+        self.socket_opened = False  # Instance variable - FIXED!
+        logging.info(f"🔌 Wserver: Creating websocket for tokens: {tokens}")
+        
         ret = self.api.broker.start_websocket(
             order_update_callback=self.event_handler_order_update,
             subscribe_callback=self.event_handler_quote_update,
             socket_open_callback=self.open_callback,
         )
         if ret:
-            logging.info(f"{ret} ws started")
+            logging.info(f"✅ {ret} ws started")
+        else:
+            logging.warning(f"⚠️ start_websocket returned: {ret}")
 
     def open_callback(self) -> None:
+        logging.info("🔌 Websocket open callback triggered!")
         self.socket_opened = True
+        logging.info(f"🔌 socket_opened set to True")
         self.api.broker.subscribe(self.tokens, feed_type="d")
+        logging.info(f"🔌 Subscribed to initial tokens: {self.tokens}")
 
     def event_handler_order_update(self, message: dict[str, Any]) -> None:
         self.order_updates.append(message)
@@ -34,7 +42,9 @@ class Wserver:
     def event_handler_quote_update(self, message: dict[str, Any]) -> None:
         val = message.get("lp", False)
         if val:
-            self.ltp[message["e"] + "|" + message["tk"]] = float(val)
+            key = message["e"] + "|" + message["tk"]
+            self.ltp[key] = float(val)
+            logging.debug(f"📊 LTP update: {key} = {val}, total ltp keys: {len(self.ltp)}")
 
     def subscribe(self, tokens: list[str]) -> None:
         if self.socket_opened:

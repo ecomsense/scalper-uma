@@ -69,41 +69,53 @@ def get_settings_timestamp() -> float:
 
 async def trading_session_start(app: FastAPI):
     """Start the trading session (called by scheduler or on settings change)."""
-    logging.info("Starting trading session...")
+    logging.info("🔄 Starting trading session...")
+    import traceback
 
     # Clear trade.json on session start - manually managed trades
     O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
 
     # Cancel existing runner if any
     if hasattr(app.state, "runner_task"):
+        logging.info("Cancelling existing runner task...")
         app.state.runner_task.cancel()
         try:
             await app.state.runner_task
         except asyncio.CancelledError:
             pass
-        except Exception:
-            pass
+        except Exception as e:
+            logging.warning(f"Error cancelling runner: {e}")
 
     # Get fresh settings
     user_settings = get_settings()
+    logging.info(f"📋 Settings loaded: symbol={user_settings.get('symbol')}, lots={user_settings.get('lots')}")
 
     try:
+        logging.info("📡 Creating broker API session...")
         api = Helper.api()
+        logging.info("✅ Broker API session created")
 
         # Get ATM from index LTP using websocket
         index_token = f"{user_settings['exchange']}|{user_settings['token']}"
+        logging.info(f"🔌 Creating websocket for token: {index_token}")
         ws = Wserver(api, [index_token])
+        logging.info(f"✅ Websocket created, socket_opened={ws.socket_opened}")
 
         # Wait for websocket to get LTP (max 30 seconds)
         max_wait = 60
         waited = 0
+        logging.info(f"⏳ Waiting for LTP (max {max_wait/2} seconds)...")
         while not ws.ltp and waited < max_wait:
             await asyncio.sleep(0.5)
             waited += 1
+            if waited % 10 == 0:
+                logging.info(f"⏳ Still waiting... waited={waited/2}s, ltp={ws.ltp}, socket_opened={ws.socket_opened}")
 
         if not ws.ltp:
-            logging.error("Failed to get LTP from websocket")
+            logging.error(f"❌ Failed to get LTP from websocket! ws.ltp={ws.ltp}, socket_opened={ws.socket_opened}")
             return
+        
+        logging.info(f"✅ Got LTP: {ws.ltp}")
 
         ltp_of_underlying = next(iter(ws.ltp.values()))
         logging.info(f"Got LTP for {user_settings['symbol']}: {ltp_of_underlying}")
@@ -118,7 +130,9 @@ async def trading_session_start(app: FastAPI):
 
         # Subscribe to options on existing websocket
         all_tokens = [*tokens, index_token]
+        logging.info(f"📡 Subscribing to {len(all_tokens)} tokens: {all_tokens[:3]}...")
         ws.subscribe(all_tokens)
+        logging.info(f"✅ Subscribe called, socket_opened={ws.socket_opened}")
 
         # Wait for options LTP
         waited = 0
@@ -269,6 +283,8 @@ def get_settings() -> dict[str, Any]:
 # Server runs 24/7, no scheduler
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.info("🚀 LIFESPAN START: Checking trading schedule...")
+    
     # Check schedule and start/stop accordingly
     now_utc = datetime.now(timezone.utc)
     now_ist = now_utc + timedelta(hours=5, minutes=30)
@@ -276,17 +292,27 @@ async def lifespan(app: FastAPI):
     minute = now_ist.minute
     day = now_ist.strftime("%a")
 
+    logging.info(f"⏰ Current time: {now_ist.strftime('%H:%M:%S')} IST, Day: {day}")
+
     # Schedule: 9:15 to 23:59
     in_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (hour == 23 and minute < 59)
     is_trading_day = day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
-    if in_hours and is_trading_day:
-        logging.info(f"Within schedule ({now_ist.strftime('%H:%M')}), starting trading session...")
-        await trading_session_start(app)
-    else:
-        logging.info(f"Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session...")
+    logging.info(f"📊 Schedule check: in_hours={in_hours}, is_trading_day={is_trading_day}")
 
-    logging.info("✅ Trading session started.")
+    if in_hours and is_trading_day:
+        logging.info(f"✅ Within schedule ({now_ist.strftime('%H:%M')}), starting trading session...")
+        try:
+            await trading_session_start(app)
+            logging.info("✅ Trading session start completed")
+        except Exception as e:
+            logging.error(f"❌ Trading session start failed: {e}")
+            import traceback
+            logging.error(traceback.format_exc())
+    else:
+        logging.info(f"⏸️ Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session...")
+
+    logging.info("🏁 Lifespan startup complete.")
 
     yield
 
