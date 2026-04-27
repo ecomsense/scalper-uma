@@ -86,7 +86,7 @@ class Helper:
                         "quantity": o.get("quantity"),
                     }
                     cls.api().order_cancel(**cancel_args)
-                    logging.info(f"Cancelled order {o.get('order_id')} for {symbol}")
+                    logging.debug(f"Cancelled order {o.get('order_id')} for {symbol}")
         except Exception as e:
             logging.error(f"Error cancelling orders: {e}")
 
@@ -136,7 +136,7 @@ class Helper:
     def close_all_for_symbol(
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
-        logging.info(f"close_all_for_symbol: {symbol}, ltp={ltp}")
+        logging.debug(f"close_all_for_symbol: {symbol}, ltp={ltp}")
         slippage = 0.50
         cls.cancel_orders(symbol)
         time.sleep(1)
