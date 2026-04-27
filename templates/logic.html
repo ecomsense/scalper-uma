@@ -1,135 +1,183 @@
 <!DOCTYPE html>
 <html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>UMA Scalper - Trading</title>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>UMA Scalper</title>
+    <script src='https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.development.js'></script>
     <link rel='stylesheet' href='/static/styles.css'>
-    <script src='https://unpkg.com/lightweight-charts@4.1.0/dist/lightweight-charts.standalone.production.js'></script>
-    <script src='/static/chart.js'></script>
-</head>
-<body>
+  </head>
+  <body>
     <div class='container'>
-        <header class='app-header'>
-            <div class='header-left'>
-                <span style='font-size:1.5rem;'>📈</span>
-                <span style='font-size:1.2rem;font-weight:bold;'>UMA Scalper</span>
-                <span id='statusBadge' style='margin-left:1rem;padding:0.3rem 0.8rem;border-radius:12px;background:#00ff88;color:#000;font-size:0.8rem;'>LIVE</span>
+      <div class='app-header'>
+        <h1>UMA Scalper</h1>
+        <div class='header-buttons'>
+          <button class='blue-btn' onclick='openLogsModal()'>Logs</button>
+          <button class='blue-btn' onclick='openSettingsModal()'>Settings</button>
+        </div>
+      </div>
+      <div class='chart-grid'>
+        <div class='chart-container' id='ceChartContainer'>
+          <div class='chart-header'>
+            <div class='left-buttons'>
+              <button class='yellow-btn' id='mkt-btn-CE'>MKT</button>
             </div>
-            <div class='header-right'>
-                <button class='blue-btn' onclick='openLogsModal()'>📋 Logs</button>
-                <button class='yellow-btn' onclick='restartLogic()'>🔄 Restart</button>
-                <button class='blue-btn' onclick='openSettingsModal()'>⚙️ Settings</button>
+            <div class='chart-title' id='chart-title-CE'>Call Option</div>
+            <div class='right-buttons'>
+              <button class='blue-btn' id='buy-btn-CE'>High</button>
+              <button class='red-btn' id='sell-btn-CE'>CNCL</button>
             </div>
-        </header>
-
-        <div class='chart-grid'>
-            <div class='chart-container'>
-                <div class='chart-header'>
-                    <span class='chart-title' id='chartTitle0'>NIFTY</span>
-                </div>
-                <div id='chart-0' style='flex-grow:1;'></div>
-            </div>
-            <div class='chart-container'>
-                <div class='chart-header'>
-                    <span class='chart-title' id='chartTitle1'>NIFTY</span>
-                </div>
-                <div id='chart-1' style='flex-grow:1;'></div>
-            </div>
+          </div>
+          <div id='chart-CE'></div>
         </div>
 
-        <div class='bottom-panel'>
-            <div class='panel-item'>
-                <span class='label'>P&L:</span>
-                <span id='pnlValue'>₹0.00</span>
+        <div class='chart-container' id='peChartContainer'>
+          <div class='chart-header'>
+            <div class='left-buttons'>
+              <button class='red-btn' id='sell-btn-PE'>CNCL</button>
+              <button class='blue-btn' id='buy-btn-PE'>High</button>
             </div>
-            <div class='panel-item'>
-                <span class='label'>Orders:</span>
-                <span id='ordersCount'>0/0</span>
+            <div class='chart-title' id='chart-title-PE'>Put Option</div>
+            <div class='right-buttons'>
+              <button class='yellow-btn' id='mkt-btn-PE'>MKT</button>
             </div>
-            <div class='panel-item'>
-                <span class='label'>Positions:</span>
-                <span id='positionsCount'>0</span>
-            </div>
-            <div class='panel-item'>
-                <span class='label'>Time:</span>
-                <span id='clock'>--:--:--</span>
-            </div>
+          </div>
+          <div id='chart-PE'></div>
         </div>
+      </div>
+
+      <div class='footer'>
+        <span style='color:var(--text-primary);'>made with </span><span style='color:red;'>&#10084;</span><span style='color:var(--text-primary);'> by </span><a href='https://ecomsense.in' target='_blank' style='color:var(--accent-color);text-decoration:none;'>ecomsense.in</a>
+      </div>
     </div>
 
-    <!-- Logs Modal -->
-    <div id='logsModal' class='modal'>
-        <div class='modal-content'>
-            <div class='modal-header'>
-                <h2>📋 Server Logs</h2>
-                <span class='close' onclick='closeLogsModal()'>&times;</span>
-            </div>
-            <textarea id='logsEditor' readonly></textarea>
-            <div style='margin-top:10px;'>
-                <button class='blue-btn' onclick='loadLogs()'>Refresh</button>
-            </div>
-        </div>
+    <div class='bottom-panel'>
+      <div class='panel-item'><span class='label'>Positions:</span> <a href='#' onclick='showPositionsModal(); return false;' id='pos-count'>0</a></div>
+      <div class='panel-item'><span class='label'>Orders:</span> <a href='#' onclick='showOrdersModal(); return false;' id='order-count'>0</a></div>
+      <div class='panel-item'><span class='label'>M2M:</span> <span id='m2m'>0.00</span></div>
+      <div class='panel-item'><span class='label'>Realized:</span> <span id='realized'>0.00</span></div>
     </div>
 
     <!-- Settings Modal -->
     <div id='settingsModal' class='modal'>
-        <div class='modal-content'>
-            <div class='modal-header'>
-                <h2>⚙️ Settings</h2>
-                <span class='close' onclick='closeSettingsModal()'>&times;</span>
-            </div>
-            <textarea id='settingsEditor'></textarea>
-            <div style='margin-top:10px;'>
-                <button class='blue-btn' onclick='saveAndRestart()'>Save & Restart</button>
-            </div>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h2>Edit settings.yml</h2>
+          <span class='close' onclick='closeSettingsModal()'>&times;</span>
         </div>
+        <textarea id='settingsEditor'></textarea>
+        <div style='margin-top: 10px; display: flex; gap: 10px;'>
+          <button class='green-btn' onclick='saveSettings()'>Save</button>
+          <button class='blue-btn' onclick='loadSettings()'>Load Current</button>
+        </div>
+        <div id='settingsMessage' style='margin-top: 10px;'></div>
+      </div>
     </div>
 
-    <script src='/static/summary.js'></script>
+    <!-- Logs Modal -->
+    <div id='logsModal' class='modal'>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h2>Server Logs</h2>
+          <span class='close' onclick='closeLogsModal()'>&times;</span>
+        </div>
+        <textarea id='logsEditor' readonly></textarea>
+        <div style='margin-top: 10px;'>
+          <button class='blue-btn' onclick='loadLogs()'>Refresh</button>
+        </div>
+        <div id='logsMessage' style='margin-top: 10px;'></div>
+      </div>
+    </div>
+
+    <!-- Positions Modal -->
+    <div id='positionsModal' class='modal'>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h2>Positions</h2>
+          <span class='close' onclick='closePositionsModal()'>&times;</span>
+        </div>
+        <div id='positionsTable'></div>
+      </div>
+    </div>
+
+    <!-- Orders Modal -->
+    <div id='ordersModal' class='modal'>
+      <div class='modal-content'>
+        <div class='modal-header'>
+          <h2>Orders</h2>
+          <span class='close' onclick='closeOrdersModal()'>&times;</span>
+        </div>
+        <div id='ordersTable'></div>
+      </div>
+    </div>
+
+    <script src='/static/summary.js?v=11'></script>
     <script>
-        function openLogsModal() { document.getElementById('logsModal').style.display='block'; loadLogs(); }
-        function closeLogsModal() { document.getElementById('logsModal').style.display='none'; }
-        function openSettingsModal() { document.getElementById('settingsModal').style.display='block'; loadSettings(); }
-        function closeSettingsModal() { document.getElementById('settingsModal').style.display='none'; }
+      function closePositionsModal() {
+        document.getElementById('positionsModal').style.display = 'none';
+      }
 
-        function loadLogs() {
-            fetch('/api/admin/logs').then(r=>r.json()).then(d=>{
-                document.getElementById('logsEditor').value = d.content || '';
-            }).catch(e=>{});
-        }
+      function closeOrdersModal() {
+        document.getElementById('ordersModal').style.display = 'none';
+      }
 
-        function loadSettings() {
-            fetch('/api/admin/settings').then(r=>r.json()).then(d=>{
-                if(d.status==='success') document.getElementById('settingsEditor').value = d.content || '';
-            }).catch(e=>{});
-        }
+      function openLogsModal() {
+        document.getElementById('logsModal').style.display = 'block';
+        loadLogs();
+      }
 
-        async function saveAndRestart() {
-            const content = document.getElementById('settingsEditor').value;
-            closeSettingsModal();
-            await fetch('/api/admin/settings', {
-                method:'POST',
-                headers:{'Content-Type':'application/json'},
-                body: JSON.stringify({content})
-            });
-            await restartLogic();
-        }
+      function openSettingsModal() {
+        document.getElementById('settingsModal').style.display = 'block';
+        loadSettings();
+      }
 
-        async function restartLogic() {
-            await fetch('/api/logic/stop', {method:'POST'});
-            await new Promise(r => setTimeout(r, 500));
-            await fetch('/api/logic/start', {method:'POST'});
-            location.reload();
-        }
+      function loadSettings() {
+        fetch('/api/admin/settings')
+          .then(r => r.json())
+          .then(data => {
+            if (data.status === 'success') {
+              document.getElementById('settingsEditor').value = data.content;
+              document.getElementById('settingsMessage').textContent = 'Loaded';
+            } else {
+              document.getElementById('settingsMessage').textContent = 'Error: ' + data.message;
+            }
+          })
+          .catch(e => {
+            document.getElementById('settingsMessage').textContent = 'Error: ' + e;
+          });
+      }
 
-        function updateClock() {
-            const now = new Date();
-            const ist = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
-            document.getElementById('clock').textContent = ist.toLocaleTimeString('en-US', {timeZone:'Asia/Kolkata', hour12:false});
-        }
-        updateClock();
-        setInterval(updateClock, 1000);
+      function saveSettings() {
+        const content = document.getElementById('settingsEditor').value;
+        fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({content})
+        })
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById('settingsMessage').textContent = data.status === 'success' ? 'Saved!' : 'Error: ' + data.message;
+          })
+          .catch(e => {
+            document.getElementById('settingsMessage').textContent = 'Error: ' + e;
+          });
+      }
+
+      function closeSettingsModal() {
+        document.getElementById('settingsModal').style.display = 'none';
+      }
+
+      function loadLogs() {
+        fetch('/api/admin/logs')
+          .then(r => r.json())
+          .then(d => document.getElementById('logsEditor').value = d.content)
+          .catch(e => console.error('Logs error:', e));
+      }
+
+      function closeLogsModal() {
+        document.getElementById('logsModal').style.display = 'none';
+      }
     </script>
-</body>
+    <script src='/static/chart.js?v=59'></script>
+  </body>
 </html>
