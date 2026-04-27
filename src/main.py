@@ -430,13 +430,13 @@ async def get_summary(request: Request) -> JSONResponse:
     Returns both positions and orders summary.
     """
     try:
+        # Force fresh session by resetting Helper._api
+        Helper._api = None
         api = Helper.api()
-        print(f"DEBUG: api={api}, Helper._api={Helper._api}")
-        if not api:
-            return JSONResponse(content={"error": "api not initialized"}, status_code=500)
-
+        logging.info(f"summary: api={api}, Helper._api={Helper._api}")
+        
         content = Helper.summary()
-        print(f"DEBUG summary: {content}")
+        logging.info(f"summary result: orders={len(content.get('orders', []))}, positions={len(content.get('positions', []))}")
         return JSONResponse(content)
     except Exception as e:
         logging.error(f"Error getting summary: {e}")
