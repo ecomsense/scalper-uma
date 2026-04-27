@@ -177,6 +177,7 @@ body {
   color: var(--text-muted);
   flex-shrink: 0;
   margin-top: auto;
+  margin-bottom: 55px; /* clear fixed bottom-panel */
 }
 
 .app-footer a {
