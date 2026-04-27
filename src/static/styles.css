@@ -176,6 +176,7 @@ textarea {
 .panel-item a:hover { text-decoration: underline; }
 
 .panel-item span:last-child { color: var(--green); }
+.panel-item a span:last-child { color: var(--blue); }
 .panel-item.negative span:last-child { color: var(--red); }
 
 /* Footer */
