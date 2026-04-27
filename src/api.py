@@ -38,7 +38,7 @@ class Helper:
             cls._api = login()
             logging.info("Singleton session created")
         else:
-            logging.info("Using existing session")
+            logging.debug("Using existing session")
         return cls._api
 
     @classmethod
