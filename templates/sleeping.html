@@ -36,8 +36,9 @@
                 <div class='sleep-msg' id='sleepMsg'>Zzz... sleeping</div>
                 <div class='clock' id='clock'>--:--:--</div>
                 <div class='schedule-info' style='margin-top:2rem;'>
-                    <p style='font-size:1.1em;'>Trading hours: <strong id='scheduleTime'>09:14 - 23:59</strong> IST</p>
+                    <p style='font-size:1.1em;'>Trading hours: <strong id='scheduleTime'>loading...</strong> IST</p>
                     <div id='dayBadges' style='margin-top:1rem;'></div>
+                    <p id='timeStatus' style='margin-top:1rem;font-size:1em;'></p>
                 </div>
             </div>
         </div>
@@ -77,6 +78,8 @@
     </div>
 
     <script>
+        let scheduleData = null;
+
         function openLogsModal() { document.getElementById('logsModal').style.display='block'; loadLogs(); }
         function closeLogsModal() { document.getElementById('logsModal').style.display='none'; }
         function openSettingsModal() { document.getElementById('settingsModal').style.display='block'; loadSettings(); }
@@ -113,6 +116,46 @@
             setTimeout(()=>t.remove(), 4000);
         }
 
+        // Fetch schedule from API and update UI
+        async function loadScheduleInfo() {
+            try {
+                const resp = await fetch('/api/schedule');
+                scheduleData = await resp.json();
+                
+                // Update schedule time display
+                document.getElementById('scheduleTime').textContent = scheduleData.schedule_times;
+                
+                // Update day badges from API
+                const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+                const today = new Date().getDay();
+                let badges = '';
+                for (const dayName of scheduleData.trading_days) {
+                    const dayIndex = days.indexOf(dayName);
+                    const isToday = dayIndex === today;
+                    badges += `<span class='schedule-badge ${isToday?'active':''}'>${dayName}</span>`;
+                }
+                document.getElementById('dayBadges').innerHTML = badges;
+                
+                // Update time status
+                updateTimeStatus();
+            } catch (e) {
+                console.error('Failed to load schedule:', e);
+            }
+        }
+
+        function updateTimeStatus() {
+            if (!scheduleData) return;
+            
+            const statusEl = document.getElementById('timeStatus');
+            if (scheduleData.within_schedule) {
+                statusEl.textContent = `Market is OPEN - closes in ${scheduleData.time_until_end}`;
+                statusEl.style.color = '#00ff88';
+            } else {
+                statusEl.textContent = `Market is CLOSED - opens in ${scheduleData.time_until_start}`;
+                statusEl.style.color = '#ff4757';
+            }
+        }
+
         // Random emojis and messages
         const emojis = ['💤', '☕', '😴', '🌙', '🥱', '😎'];
         const msgs = ['Zzz... sleeping', 'Coffee break!', 'Market siesta', 'Hold your horses!', 'Waiting for green candles...'];
@@ -120,24 +163,25 @@
         const sleepMsg = document.getElementById('sleepMsg');
         sleepMsg.textContent = msgs[Math.floor(Math.random()*msgs.length)];
 
-        // Clock
+        // Clock + schedule update
         function updateClock() {
             const now = new Date();
             const ist = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
             document.getElementById('clock').textContent = ist.toLocaleTimeString('en-US', {timeZone:'Asia/Kolkata', hour12:false});
             
-            // Day badges (Mon-Fri = indexes 1-5)
-            const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-            const today = ist.getDay();
-            let badges = '';
-            for(let i=1;i<=5;i++) {
-                const isToday = i === today;
-                badges += `<span class='schedule-badge ${isToday?'active':''}'>${days[i]}</span>`;
-            }
-            document.getElementById('dayBadges').innerHTML = badges;
+            // Update time status periodically
+            updateTimeStatus();
         }
+        
+        // Initial load
+        loadScheduleInfo();
         updateClock();
+        
+        // Update every second
         setInterval(updateClock, 1000);
+        
+        // Refresh schedule every minute
+        setInterval(loadScheduleInfo, 60000);
     </script>
 </body>
 </html>
