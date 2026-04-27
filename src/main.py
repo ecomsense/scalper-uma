@@ -375,7 +375,7 @@ async def serve_root(request: Request):
                     </div>
                     <textarea id="logsEditor" readonly style="width:100%;height:300px;background:#1a1a2e;color:#fff;"></textarea>
                     <div style="margin-top:10px;">
-                        <button class="blue-btn" onclick="fetch('/api/admin/logs').then(r=>r.text()).then(t=>document.getElementById('logsEditor').value=t)">Refresh</button>
+                        <button class="blue-btn" onclick="fetch('/api/admin/logs').then(r=>r.json()).then(d=>document.getElementById('logsEditor').value=d.content)">Refresh</button>
                     </div>
                 </div>
             </div>
@@ -392,7 +392,7 @@ async def serve_root(request: Request):
             </div>
             <script>
               fetch('/api/admin/settings').then(r=>r.json()).then(d=>{if(d.status==='success')document.getElementById('settingsEditor').value=d.content;}).catch(e=>{});
-              fetch('/api/admin/logs').then(r=>r.text()).then(t=>document.getElementById('logsEditor').value=t).catch(e=>{});
+              fetch('/api/admin/logs').then(r=>r.json()).then(d=>document.getElementById('logsEditor').value=d.content).catch(e=>{});
             </script>
               const emojis = ["&#128564;", "&#127861;", "&#920043;", "&#127969;", "&#128166;", "&#128170;", "&#127804;"];
               const msgs = ["Zzz... sleeping", "Coffee break!", "Market siesta", "Hold your horses!", "Patience young padwan!", "Dreaming of profits...", "Counting sheep...", "Market meditation...", "Waiting for green candles..."];
@@ -565,14 +565,23 @@ async def place_buy_order(
 
 
 @app.get("/api/trade/sell")
-async def reset(symbol: str = "") -> JSONResponse:
-    Helper.close_all_for_symbol(symbol, ltp)
-    return JSONResponse(
-        content={
-            "message": "reset completed",
-            "status": "success",
-        }
-    )
+async def reset(request: Request, symbol: str = "") -> JSONResponse:
+    try:
+        ws = request.app.state.ws
+        token_symbols = request.app.state.tokens_nearest
+        token = next(v for k, v in token_symbols.items() if k == symbol)
+        ltp = ws.ltp.get(token, 0)
+        Helper.close_all_for_symbol(symbol, ltp)
+        return JSONResponse(
+            content={
+                "message": "reset completed",
+                "status": "success",
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"message": str(e), "status": "error"}, status_code=500
+        )
 
 
 # --- SSE Endpoint for Streaming Candlesticks ---
