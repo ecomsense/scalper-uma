@@ -37,8 +37,11 @@ class Helper:
     @classmethod
     def api(cls) -> Any:
         now = time.time()
-        if cls._api is None or (cls._created_at and now - cls._created_at > cls._session_ttl):
-            logging.info(f"Session expired or None (age: {((now - cls._created_at) / 3600):.1f}h), reconnecting...")
+        expired = cls._created_at and (now - cls._created_at > cls._session_ttl)
+        if cls._api is None or expired:
+            if expired:
+                age = (now - cls._created_at) / 3600
+                logging.info(f"Session expired (age: {age:.1f}h), reconnecting...")
             cls.reset()
             cls._api = login()
             cls._created_at = time.time()
