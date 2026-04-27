@@ -447,3 +447,151 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 ```
 
 **Always check**: `ps aux | grep uvicorn` - should show only ONE process.
+
+## Bugs Fixed (2026-04-27) - Continued
+
+### Cancel Button API Error: order_cancel() got unexpected keyword argument 'quantity'
+
+**Symptom**: Cancel request hits server but order doesn't cancel, error in logs: `Flattrade.order_cancel() got an unexpected keyword argument 'quantity'`
+
+**Root Cause**: Broker API's `order_cancel()` only accepts `order_id`, not `quantity`.
+
+**Fix** (`src/api.py`):
+```python
+# WRONG:
+cancel_args = {
+    'order_id': o.get('order_id'),
+    'quantity': o.get('quantity'),
+}
+cls.api().order_cancel(**cancel_args)
+
+# CORRECT:
+cls.api().order_cancel(order_id=o.get('order_id'))
+```
+
+### JavaScript Code Outside Script Tag (Sleeping Page)
+
+**Symptom**: Clock not updating, emojis not showing, logs not loading on sleeping page.
+
+**Root Cause**: In `src/main.py` HTML string, `</script>` was placed too early, causing all JavaScript after line 406 to be outside the script tag as plain text.
+
+**Fix**: Move `</script>` to the proper location after all JavaScript code:
+```python
+# Before (broken):
+<script>
+  fetch('/api/admin/settings').then(...)
+</script>
+  const emojis = [...];  // This is PLAIN TEXT, not JavaScript!
+  function updateClock() {...}
+</script>
+
+# After (fixed):
+<script>
+  fetch('/api/admin/settings').then(...)
+  const emojis = [...];
+  function updateClock() {...}
+</script>
+```
+
+### loadLogs() Function Not Defined (Trading Page)
+
+**Symptom**: Logs modal opens but clicking Refresh does nothing. Console shows `loadLogs is not defined`.
+
+**Root Cause**: `loadLogs()` function was missing from `src/static/index.html`. It was referenced but never defined.
+
+**Fix** (`src/static/index.html`):
+```javascript
+function loadLogs() {
+    fetch('/api/admin/logs')
+        .then(r => r.json())
+        .then(d => document.getElementById('logsEditor').value = d.content)
+        .catch(e => console.error('Logs error:', e));
+}
+```
+
+Also auto-load logs when opening modal:
+```javascript
+function openLogsModal() {
+    document.getElementById('logsModal').style.display = 'block';
+    loadLogs();  // Auto-fetch logs on open
+}
+```
+
+### Log File Not Writing (Logger misconfigured)
+
+**Symptom**: Logs appear in stdout but not in `data/log.txt`.
+
+**Root Cause**: In `data/settings.yml`, `log.show: false` means Logger writes nowhere (console only when show=false, file only when show=true).
+
+**Fix** (`data/settings.yml`):
+```yaml
+log:
+  show: true   # Must be true to write to file
+  level: 10    # DEBUG level
+```
+
+Also ensure `S_LOG` path in constants.py is correct (absolute path to data/log.txt).
+
+### Recommended Log Level for Production
+
+Based on previous session's problems with session handling and order placements:
+
+**Set `level: 20` (INFO)** in settings.yml
+
+This filters out spam (`Using existing session` every 500ms, per-order lookup logs) while keeping important events:
+- `INFO: ✅ Trading session started`
+- `INFO: Entry CANCELED: ...`
+- `INFO: TRADE CHECK: target=..., exit=..., ltp=...`
+- `ERROR: Error cancelling orders`
+
+### Systemd User Service Auto-Restarting Uvicorn
+
+**Symptom**: Multiple uvicorn processes keep spawning even after killing them.
+
+**Root Cause**: A systemd user service was configured and kept auto-restarting uvicorn every ~15 minutes.
+
+**Fix**:
+```bash
+# Stop and disable the service
+systemctl --user stop fastapi_app.service
+systemctl --user disable fastapi_app.service
+
+# Remove the service file
+rm ~/.config/systemd/user/fastapi_app.service
+
+# Reload systemd
+systemctl --user daemon-reload
+
+# Then start manually (never use systemctl for this project)
+cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &
+```
+
+### Bottom Panel Format: Open Orders / Total Orders
+
+**Change**: Bottom panel now shows `open_orders / total_orders` instead of just `total_orders`.
+
+**Implementation** (`src/static/summary.js`):
+```javascript
+if (ordEl) ordEl.textContent = activeOrders + ' / ' + orderCount;
+```
+
+Where `activeOrders` = orders with status `OPEN`, `TRIGGER_PENDING`, or `PENDING`.
+
+## Key Debugging Commands
+
+```bash
+# Check uvicorn processes
+ps aux | grep uvicorn | grep -v grep
+
+# Check recent logs
+tail -20 /home/uma/no_env/uma_scalper/data/log.txt
+
+# Search for specific log messages
+grep -i cancel /home/uma/no_env/uma_scalper/data/log.txt | tail -5
+
+# Test API directly
+curl -s http://127.0.0.1:8000/api/trade/sell?symbol=NIFTY28APR26P24000&ltp=5
+
+# Test logs endpoint
+curl -s http://127.0.0.1:8000/api/admin/logs | head -c 500
+```
