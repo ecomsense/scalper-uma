@@ -30,7 +30,7 @@ function doFetch() {
             const activeOrders = data.active_orders || 0;
 
             if (posEl) posEl.textContent = positionCount;
-            if (ordEl) ordEl.textContent = orderCount;
+            if (ordEl) ordEl.textContent = activeOrders + ' / ' + orderCount;
             if (m2mEl) {
                 m2mEl.textContent = (data.m2m || 0).toFixed(2);
                 m2mEl.parentElement.classList.toggle("negative", data.m2m < 0);
