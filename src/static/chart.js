@@ -195,7 +195,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		document.getElementById(buttonIds.high).onclick = () => {
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
-				showToast("Need at least 2 candles to place order", true);
+				console.log("Need at least 2 candles to place order");
 				return;
 			}
 			const curr = candles[candles.length - 1];
@@ -217,7 +217,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		document.getElementById(buttonIds.mktbuy).onclick = () => {
 			const candles = candleSeries.data();
 			if (candles.length < 2) {
-				showToast("Need at least 2 candles to place order", true);
+				console.log("Need at least 2 candles to place order");
 				return;
 			}
 			const curr = candles[candles.length - 1];
@@ -234,7 +234,7 @@ window.addEventListener("DOMContentLoaded", () => {
 				})
 			}).then(r => r.json()).then(data => {
 				if (data.order && data.order.entry_id) {
-					showToast("Cleaned up other orders", false);
+					console.log("Cleaned up other orders");
 				}
 			});
 		};
@@ -267,7 +267,7 @@ window.addEventListener("DOMContentLoaded", () => {
 					const orderSymbol = msg.tsym;
 					const price = msg.price || msg.ltp;
 
-					showToast((isBuy ? "BUY" : "SELL") + " " + orderSymbol + " @ " + price, false);
+					console.log((isBuy ? "BUY" : "SELL") + " " + orderSymbol + " @ " + price);
 
 					// Draw entry line on matching chart
 					if (window.chartFunctions && window.chartFunctions[orderSymbol]) {
