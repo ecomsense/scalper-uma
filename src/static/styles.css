@@ -27,7 +27,6 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  padding-bottom: 50px; /* Account for fixed bottom-panel */
   font-family: Arial, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -113,17 +112,12 @@ body {
 }
 
 .bottom-panel {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 50px;
   background-color: var(--bg-secondary);
   display: flex;
   justify-content: space-around;
   align-items: center;
   border-top: 2px solid var(--border-color);
-  z-index: 100;
 }
 
 .panel-item {
@@ -169,6 +163,8 @@ body {
 
 /* Shared Footer */
 .app-footer {
+  position: sticky;
+  bottom: 0;
   padding: 0.75rem 1.5rem;
   background: var(--bg-header);
   border-top: 2px solid var(--border-color);
@@ -176,8 +172,6 @@ body {
   font-size: 0.85rem;
   color: var(--text-muted);
   flex-shrink: 0;
-  margin-top: auto;
-  margin-bottom: 55px; /* clear fixed bottom-panel */
 }
 
 .app-footer a {
