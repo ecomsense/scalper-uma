@@ -431,13 +431,16 @@ async def get_summary(request: Request) -> JSONResponse:
     """
     try:
         api = Helper.api()
+        logging.debug(f"summary: api={api}, Helper._api={Helper._api}")
         if not api:
             return JSONResponse(content={"error": "api not initialized"}, status_code=500)
 
         content = Helper.summary()
+        logging.debug(f"summary result: {content}")
         return JSONResponse(content)
     except Exception as e:
         logging.error(f"Error getting summary: {e}")
+        print_exc()
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
