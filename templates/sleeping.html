@@ -184,14 +184,9 @@
         loadScheduleInfo();
         updateClock();
         
-        // Refresh status every 3 seconds to transition to logic page
+        // Refresh schedule every 3 seconds (includes auto-transition to logic page)
         setInterval(loadScheduleInfo, 3000);
-        
-        // Update every second
         setInterval(updateClock, 1000);
-        
-        // Refresh schedule every minute
-        setInterval(loadScheduleInfo, 60000);
     </script>
 </body>
 </html>
