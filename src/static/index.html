@@ -125,10 +125,6 @@
         document.getElementById('logsModal').style.display = 'block';
       }
 
-      function closeLogsModal() {
-        document.getElementById('logsModal').style.display = 'none';
-      }
-
       function openSettingsModal() {
         document.getElementById('settingsModal').style.display = 'block';
         loadSettings();
@@ -168,6 +164,17 @@
 
       function closeSettingsModal() {
         document.getElementById('settingsModal').style.display = 'none';
+      }
+
+      function loadLogs() {
+        fetch('/api/admin/logs')
+          .then(r => r.json())
+          .then(d => document.getElementById('logsEditor').value = d.content)
+          .catch(e => console.error('Logs error:', e));
+      }
+
+      function closeLogsModal() {
+        document.getElementById('logsModal').style.display = 'none';
       }
     </script>
     <script src="/static/chart.js?v=59"></script>
