@@ -32,11 +32,18 @@
 ### Server Details
 - **IP**: 65.20.83.178
 - **User**: uma
-- **Service**: fastapi_app.service
 
-### Starting/Stopping Server
+### Important: Do NOT use systemctl!
+
+Systemd spawns multiple uvicorn processes causing race conditions and stale data.
+
+### Starting/Stopping Server (Manual)
 ```bash
-ssh uma@65.20.83.178 "systemctl --user stop fastapi_app.service && sleep 2 && systemctl --user start fastapi_app.service"
+# Kill any existing process first
+ssh uma@65.20.83.178 "fuser -k 8000/tcp"
+
+# Start manually
+ssh uma@65.20.83.178 "cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &"
 ```
 
 ### Restarting After Code Changes
@@ -44,9 +51,15 @@ ssh uma@65.20.83.178 "systemctl --user stop fastapi_app.service && sleep 2 && sy
 # Local: commit and push
 cd /home/pannet1/py/fastapi/scalper-uma && git add -A && git commit -m "message" && git push
 
-# Server: pull and restart
-ssh uma@65.20.83.178 "cd /home/uma/no_env/uma_scalper && git pull && systemctl --user stop fastapi_app.service && sleep 2 && systemctl --user start fastapi_app.service"
+# Server: pull, kill port, start fresh
+ssh uma@65.20.83.178 "cd /home/uma/no_env/uma_scalper && git pull && fuser -k 8000/tcp && sleep 2 && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &"
 ```
+
+### Always Check for Ghost Processes
+```bash
+ssh uma@65.20.83.178 "ps aux | grep uvicorn"
+```
+Should show only ONE process.
 
 ### Testing Endpoints
 ```bash
@@ -323,3 +336,85 @@ deploy.sh "message"
 
 ### Server Auto-Deploy (Not Set Up)
 Server can auto-pull from GitHub using cron/webhook. Left for later investigation.
+
+## Bugs Fixed (2026-04-27)
+
+### Cancel Button Not Working
+
+**Symptom**: Cancel button click does nothing.
+
+**Root Cause**: Order status check used lowercase `"trigger_pending"` but broker API returns uppercase `"TRIGGER_PENDING"`.
+
+**Fix** (`src/api.py`):
+```python
+# WRONG:
+if o.get("status") in ["OPEN", "trigger_pending", "PENDING"]:
+
+# CORRECT:
+if o.get("status") in ["OPEN", "TRIGGER_PENDING", "PENDING"]:
+```
+
+### Cancel ltp Undefined
+
+**Symptom**: Cancel endpoint returns 500 error.
+
+**Root Cause**: `ltp` variable was undefined in `/api/trade/sell` endpoint.
+
+**Fix**: Accept `ltp` as query parameter from frontend:
+```python
+@app.get("/api/trade/sell")
+async def reset(symbol: str = "", ltp: float = 0) -> JSONResponse:
+    Helper.close_all_for_symbol(symbol, ltp)
+```
+
+Frontend sends ltp:
+```javascript
+const ltp = candleData[candleData.length - 1].close;
+fetch(`/api/trade/sell?symbol=${symbol}&ltp=${ltp}`)
+```
+
+### Logs Button Not Working
+
+**Symptom**: Clicking Logs button shows empty modal.
+
+**Root Cause**: Fetch used `.text()` but API returns JSON.
+
+**Fix**:
+```javascript
+// WRONG:
+fetch('/api/admin/logs').then(r=>r.text()).then(t=>...)
+
+// CORRECT:
+fetch('/api/admin/logs').then(r=>r.json()).then(d=>...)
+```
+
+### Position/Order Modals Show Stale Data
+
+**Symptom**: Modals show old data even after refresh.
+
+**Root Cause**: Modals used cached data instead of fetching fresh.
+
+**Fix**: Always fetch fresh data when opening modals:
+```javascript
+async function showPositionsModal() {
+    const data = await fetch("/api/summary").then(r => r.json());
+    // Display data...
+}
+```
+
+### Multiple Uvicorn Processes (Again)
+
+**Symptom**: Bottom panel not updating, code changes not taking effect.
+
+**Root Cause**: Systemctl keeps spawning multiple uvicorn processes.
+
+**Fix**: DO NOT use systemctl. Start manually:
+```bash
+# Kill existing
+fuser -k 8000/tcp
+
+# Start manually
+cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 &
+```
+
+**Always check**: `ps aux | grep uvicorn` - should show only ONE process.
