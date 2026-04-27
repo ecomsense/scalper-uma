@@ -79,11 +79,15 @@ class Helper:
                 return
             count = 0
             for o in orders:
+                with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
+                    f.write(f"[DEBUG] checking order: {o.get('symbol')} status={o.get('status')}\n")
                 if o.get("symbol") == symbol and o.get("status") in [
                     "OPEN",
                     "trigger_pending",
                     "PENDING",
                 ]:
+                    with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
+                        f.write(f"[DEBUG] MATCH! will cancel order {o.get('order_id')}\n")
                     if keep_order_id and o.get("order_id") == keep_order_id:
                         continue
                     if side and o.get("side") != side:
