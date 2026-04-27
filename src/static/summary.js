@@ -88,9 +88,12 @@ function showOrdersModal() {
     orders.forEach(function(o) {
         const status = o.status || '';
         let bg = '';
-        if (status === 'COMPLETE') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
+        // Only show green badge for OPEN or TRIGGER_PENDING
+        if (status === 'OPEN' || status === 'TRIGGER_PENDING') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED' || status === 'REJECTED') bg = 'background:#ff4444;color:white;border-radius:8px;padding:4px 8px;';
-        const time = (o.broker_timestamp || '').split(' ')[1] || o.broker_timestamp || '';
+        // Extract time - if timestamp has space, take second part, otherwise show as-is
+        const ts = o.broker_timestamp || '';
+        const time = ts.includes(' ') ? ts.split(' ')[1] : (ts.includes('T') ? ts.split('T')[1] : ts);
         html += '<tr>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + time + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.order_id || '') + '</td>';
@@ -99,6 +102,7 @@ function showOrdersModal() {
         html += '<td style="border:1px solid #ddd;padding:8px;' + bg + '">' + status + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.price || '') + '</td>';
         html += '</tr>';
+    });
     });
     html += '</table>';
     document.getElementById("ordersTable").innerHTML = html;
