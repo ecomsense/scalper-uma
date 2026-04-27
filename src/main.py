@@ -1,21 +1,30 @@
-# main.py
+# Main Controller App - APScheduler, PID lock, HTTP auth, page routing
 from __future__ import annotations
 
 import asyncio
+import gc
 import json
+import logging
+import os
+import signal
+import sys
+from base64 import b64decode
+from contextlib import asynccontextmanager, suppress
+from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 from traceback import print_exc
+from typing import Any
 
-import pandas as pd
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
+from apscheduler.triggers.interval import IntervalTrigger
 from fastapi import Body, FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pytz import timezone as tz
 from sse_starlette.sse import EventSourceResponse
 
-from src.api import Helper
 from src.constants import (
     O_CNFG,
     O_FUTL,
@@ -25,581 +34,516 @@ from src.constants import (
     dct_sym,
     logging,
 )
-from src.strategy import Strategy
-from src.tickrunner import TickRunner
-from src.wserver import Wserver
+from src.state import _logic_state, get_logic_state
 
-MARKER_FILE = Path(S_DATA) / "settings.marker"
+from src.logic_app import (
+    create_logic_router,
+    get_settings,
+    get_status,
+    load_template,
+    pause_logic,
+    start_logic,
+    stop_logic,
+    trading_session_start,
+    trading_session_stop,
+)
+
+
+# ============================================================
+# Constants
+# ============================================================
+
+IST = tz('Asia/Kolkata')
 SCHEDULER = AsyncIOScheduler()
-from contextlib import asynccontextmanager, suppress
-from datetime import datetime, timedelta, timezone
-from typing import Any
-
-from pytz import timezone as tz
+STATIC_DIR = Path(__file__).parent / 'static'
+CANDLESTICK_TIMEFRAME_SECONDS = 60
 
 
-def verify_api_key(x_api_key: str = Header(...)) -> str:
-    if x_api_key != JWT_TOKEN:
-        raise HTTPException(status_code=401, detail="Invalid API Key")
-    return x_api_key
+# ============================================================
+# PID Lock File
+# ============================================================
+
+LOCK_FILE = Path(__file__).parent.parent / 'data' / 'app.pid'
 
 
-IST = tz("Asia/Kolkata")
-
-
-def touch_marker():
-    """Touch the marker file to signal settings changed."""
-    MARKER_FILE.touch()
-
-
-def get_marker_mtime() -> float:
-    """Get marker file modification time."""
-    if MARKER_FILE.exists():
-        return MARKER_FILE.stat().st_mtime
-    return 0
-
-
-def get_settings_timestamp() -> float:
-    """Get settings file modification time."""
-    settings_path = Path(S_DATA) / "settings.yml"
-    if settings_path.exists():
-        return settings_path.stat().st_mtime
-    return 0
-
-
-async def trading_session_start(app: FastAPI):
-    """Start the trading session (called by scheduler or on settings change)."""
-    logging.info("🔄 Starting trading session...")
-    import traceback
-
-    # Clear trade.json on session start - manually managed trades
-    O_FUTL.write_file(TRADE_JSON, {"entry_id": ""})
-
-    # Cancel existing runner if any
-    if hasattr(app.state, "runner_task"):
-        logging.info("Cancelling existing runner task...")
-        app.state.runner_task.cancel()
-        try:
-            await app.state.runner_task
-        except asyncio.CancelledError:
-            pass
-        except Exception as e:
-            logging.warning(f"Error cancelling runner: {e}")
-
-    # Get fresh settings
-    user_settings = get_settings()
-    logging.info(
-        f"📋 Settings loaded: symbol={user_settings.get('symbol')}, lots={user_settings.get('lots')}"
-    )
-
+def check_pid_lock() -> bool:
+    if not LOCK_FILE.exists():
+        return True
     try:
-        logging.info("📡 Creating broker API session...")
-        api = Helper.api()
-        logging.info("✅ Broker API session created")
-
-        # Get ATM from index LTP using websocket
-        index_token = f"{user_settings['exchange']}|{user_settings['token']}"
-        logging.info(f"🔌 Creating websocket for token: {index_token}")
-        ws = Wserver(api, [index_token])
-        logging.info(f"✅ Websocket created, socket_opened={ws.socket_opened}")
-
-        # Wait for websocket to get LTP (max 30 seconds)
-        max_wait = 60
-        waited = 0
-        logging.info(f"⏳ Waiting for LTP (max {max_wait/2} seconds)...")
-        while not ws.ltp and waited < max_wait:
-            await asyncio.sleep(0.5)
-            waited += 1
-            if waited % 10 == 0:
-                logging.info(
-                    f"⏳ Still waiting... waited={waited/2}s, ltp={ws.ltp}, socket_opened={ws.socket_opened}"
-                )
-
-        if not ws.ltp:
-            logging.error(
-                f"❌ Failed to get LTP from websocket! ws.ltp={ws.ltp}, socket_opened={ws.socket_opened}"
-            )
-            return
-
-        ltp_of_underlying = next(iter(ws.ltp.values()))
-
-        # Now create strategy and subscribe to options
-        sgy = Strategy(user_settings, ltp_of_underlying)
-        tokens = list(sgy.tokens_for_all_trading_symbols.keys())
-
-        if not tokens:
-            logging.warning("No tokens found for options")
-            return
-
-        # Subscribe to options on existing websocket
-        all_tokens = [*tokens, index_token]
-        logging.info(f"📡 Subscribing to {len(all_tokens)} tokens: {all_tokens[:3]}...")
-        ws.subscribe(all_tokens)
-        logging.info(f"✅ Subscribe called, socket_opened={ws.socket_opened}")
-
-        # Wait for options LTP
-        waited = 0
-        while len(ws.ltp) < len(all_tokens) and waited < max_wait:
-            await asyncio.sleep(0.5)
-            waited += 1
-
-        symbol_nearest_to_premium: list[str] = []
-        for ce_or_pe in ["CE", "PE"]:
-            res = sgy.find_trading_symbol_by_atm(ce_or_pe, ws.ltp)
-            if res:
-                symbol_nearest_to_premium.append(res)
-
-        tokens_nearest: dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
-            symbol_nearest_to_premium
-        )
-
-        app.state.tokens_nearest = tokens_nearest
-        app.state.ws = ws
-        app.state.quantity = user_settings["lots"] * sgy.sym.get_lot_size()
-        logging.debug(
-            f"quantity set: {user_settings['lots']} lots * {sgy.sym.get_lot_size()} lot_size = {app.state.quantity}"
-        )
-
-        all_tokens_map = sgy.tokens_for_all_trading_symbols
-        logging.info(f"Passing {len(all_tokens_map)} tokens to TickRunner")
-        runner = TickRunner(ws, all_tokens_map)
-        task = asyncio.create_task(runner.run())
-        app.state.runner_task = task
-        app.state.is_trading = True
-
-        logging.info(f"Nearest symbols: {tokens_nearest}")
-        logging.info("✅ Trading session started.")
-
-    except Exception as e:
-        logging.error(f"Failed to start trading session: {e}")
-        print_exc()
+        old_pid = int(LOCK_FILE.read_text().strip())
+        os.kill(old_pid, 0)
+        logging.error(f'Another instance is running (PID: {old_pid}). Exiting.')
+        return False
+    except OSError:
+        logging.info(f'Stale lock file found (PID: {old_pid}). Proceeding.')
+        return True
 
 
-async def trading_session_stop(app: FastAPI):
-    """Stop the trading session (called by scheduler or on settings change)."""
-    logging.info("Stopping trading session...")
+def acquire_pid_lock() -> None:
+    LOCK_FILE.write_text(str(os.getpid()))
+    logging.info(f'PID lock acquired: {os.getpid()}')
 
-    if hasattr(app.state, "runner_task") and app.state.runner_task:
-        app.state.runner_task.cancel()
+
+def release_pid_lock() -> None:
+    if LOCK_FILE.exists():
         try:
-            await app.state.runner_task
-        except asyncio.CancelledError:
-            logging.info("TickRunner task cancelled.")
-        except Exception:
+            current_pid = int(LOCK_FILE.read_text().strip())
+            if current_pid == os.getpid():
+                LOCK_FILE.unlink()
+                logging.info('PID lock released')
+        except (ValueError, IOError):
             pass
-        app.state.runner_task = None
-
-    logging.info("✅ Trading session stopped.")
 
 
-def schedule_trading_session(app: FastAPI):
-    """Schedule trading session start/stop based on settings file."""
-    # Read times from settings
-    settings = get_settings()
-    program = settings.get("program", {})
-    start_time = program.get("start", "09:14")
-    stop_time = program.get("stop", "23:59")
-
-    # Parse times
-    start_parts = start_time.split(":")
-    stop_parts = stop_time.split(":")
-
-    start_hour = int(start_parts[0])
-    start_minute = int(start_parts[1]) if len(start_parts) > 1 else 0
-    stop_hour = int(stop_parts[0])
-    stop_minute = int(stop_parts[1]) if len(stop_parts) > 1 else 0
-
-    # Clear existing jobs if any
-    for job_id in ["start_session", "stop_session"]:
-        with suppress(Exception):
-            SCHEDULER.remove_job(job_id)
-
-    SCHEDULER.add_job(
-        trading_session_start,
-        trigger=CronTrigger(
-            day_of_week="mon-fri", hour=start_hour, minute=start_minute
-        ),
-        id="start_session",
-        args=[app],
-    )
-
-    SCHEDULER.add_job(
-        trading_session_stop,
-        trigger=CronTrigger(day_of_week="mon-fri", hour=stop_hour, minute=stop_minute),
-        id="stop_session",
-        args=[app],
-    )
-
-    logging.info(
-        f"Trading session scheduled: {start_time}-{stop_time} Mon-Fri IST (from settings)"
-    )
+_is_lock_enabled = os.environ.get('SKIP_PID_LOCK', '') != '1'
 
 
-CANDLESTICK_TIMEFRAME_SECONDS: int = 60
-CANDLESTICK_TIMEFRAME_STR: str = "1min"
+# ============================================================
+# HTTP Basic Auth
+# ============================================================
 
-IST_OFFSET: timedelta = timedelta(hours=5, minutes=30)
-IST = timezone(IST_OFFSET)
-
-
-# --- Helper Functions for Candlestick Aggregation ---
-def aggregate_ticks_to_candlesticks(
-    df: pd.DataFrame, timeframe_str: str = CANDLESTICK_TIMEFRAME_STR
-) -> list[dict[str, Any]]:
+def get_auth_credentials() -> tuple[str, str] | None:
+    auth = os.environ.get('HTTP_AUTH', '')
+    if not auth:
+        return None
     try:
-        if df.empty:
-            return []
-
-        if not isinstance(df.index, pd.DatetimeIndex):
-            df.index = pd.to_datetime(df.index)
-
-        ohlc = df["price"].resample(timeframe_str).ohlc()
-        volume = df["volume"].resample(timeframe_str).sum()
-
-        candlesticks = pd.DataFrame(
-            {
-                "open": ohlc["open"],
-                "high": ohlc["high"],
-                "low": ohlc["low"],
-                "close": ohlc["close"],
-                "volume": volume,
-            }
-        )
-        candlesticks = candlesticks.dropna()
-        candlesticks["time"] = candlesticks.index.astype("int64") // 10**9
-
-        return candlesticks.reset_index(drop=True).to_dict(orient="records")
-    except Exception as e:
-        logging.error(f"{e} in aggregating")
-        return []
+        username, password = auth.split(':', 1)
+        return (username, password)
+    except ValueError:
+        return None
 
 
-@lru_cache(maxsize=1)
-def get_settings() -> dict[str, Any]:
-    base = O_SETG["base"]
-    return O_SETG[base] | dct_sym[base]
+def verify_basic_auth(request: Request) -> bool:
+    credentials = get_auth_credentials()
+    if credentials is None:
+        return True
+    auth_header = request.headers.get('Authorization', '')
+    if not auth_header.startswith('Basic '):
+        return False
+    try:
+        encoded = auth_header[6:]
+        decoded = b64decode(encoded).decode('utf-8')
+        provided_user, provided_pass = decoded.split(':', 1)
+        return provided_user == credentials[0] and provided_pass == credentials[1]
+    except Exception:
+        return False
 
 
-# --- Application Lifespan Event ---
-# Server runs 24/7, no scheduler
+# ============================================================
+# Schedule Configuration
+# ============================================================
+
+class ScheduleConfig:
+    def __init__(self):
+        self.enabled = True
+        self.start_hour = 9
+        self.start_minute = 14
+        self.end_hour = 23
+        self.end_minute = 59
+        self.trading_days = [0, 1, 2, 3, 4]
+        self.trading_day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+
+    def is_within_schedule(self) -> bool:
+        if not self.enabled:
+            return True
+        if _logic_state.is_paused():
+            return False
+        now = datetime.now()
+        if now.weekday() not in self.trading_days:
+            return False
+        current_minutes = now.hour * 60 + now.minute
+        start_minutes = self.start_hour * 60 + self.start_minute
+        end_minutes = self.end_hour * 60 + self.end_minute
+        return start_minutes <= current_minutes < end_minutes
+
+    def is_paused(self) -> bool:
+        return _logic_state.is_paused()
+
+    def pause_reason(self) -> str:
+        if _logic_state.paused and _logic_state.pause_until:
+            remaining = (_logic_state.pause_until - datetime.now()).total_seconds()
+            if remaining > 0:
+                return f'{_logic_state.pause_reason} ({int(remaining)}s)'
+        return ''
+
+    def can_start(self) -> bool:
+        return self.is_within_schedule() and not _logic_state.is_running()
+
+    def time_until_start(self) -> str:
+        if not self.enabled or self.is_within_schedule():
+            return 'now'
+        now = datetime.now()
+        start_minutes = self.start_hour * 60 + self.start_minute
+        current_minutes = now.hour * 60 + now.minute
+        mins_until = start_minutes - current_minutes
+        if mins_until < 0:
+            mins_until += 1440
+        hours = mins_until // 60
+        mins = mins_until % 60
+        if hours > 0:
+            return f'{hours}h {mins}m'
+        return f'{mins}m'
+
+    def time_until_end(self) -> str:
+        if not self.enabled or not self.is_within_schedule():
+            return 'outside'
+        now = datetime.now()
+        end_minutes = self.end_hour * 60 + self.end_minute
+        current_minutes = now.hour * 60 + now.minute
+        mins_until = end_minutes - current_minutes
+        if mins_until <= 0:
+            return 'now'
+        hours = mins_until // 60
+        mins = mins_until % 60
+        if hours > 0:
+            return f'{hours}h {mins}m'
+        return f'{mins}m'
+
+
+schedule_config = ScheduleConfig()
+
+
+# ============================================================
+# Scheduler Jobs
+# ============================================================
+
+async def scheduled_start():
+    if schedule_config.can_start():
+        await start_logic()
+
+
+async def scheduled_stop():
+    if _logic_state.is_running() and not schedule_config.is_within_schedule():
+        await stop_logic()
+
+
+async def watchdog_check():
+    if schedule_config.is_within_schedule() and not _logic_state.is_running():
+        await start_logic()
+    elif not schedule_config.is_within_schedule() and _logic_state.is_running():
+        await stop_logic()
+
+
+# ============================================================
+# Memory Tracking
+# ============================================================
+
+def get_memory_usage() -> dict:
+    gc.collect()
+    return {
+        'logic_state_bytes': sys.getsizeof(_logic_state),
+        'startup_data_bytes': sys.getsizeof(_logic_state.startup_data) if _logic_state.startup_data else 0,
+        'app_data_bytes': sys.getsizeof(_logic_state.app_data) if _logic_state.app_data else 0,
+        'ws_bytes': sys.getsizeof(_logic_state.ws) if _logic_state.ws else 0,
+    }
+
+
+# ============================================================
+# Page Template Loader
+# ============================================================
+
+def load_page_template(name: str) -> str:
+    template_path = Path(__file__).parent.parent / 'templates' / f'{name}.html'
+    return template_path.read_text()
+
+
+# ============================================================
+# FastAPI App Lifespan
+# ============================================================
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logging.info("🚀 LIFESPAN START: Checking trading schedule...")
+    app.state.logic = _logic_state
+    
+    if _is_lock_enabled:
+        if not check_pid_lock():
+            logging.error('Another instance is running. Exiting.')
+            sys.exit(1)
+        acquire_pid_lock()
+    
+    if schedule_config.enabled:
+        scheduler.add_job(watchdog_check, trigger=IntervalTrigger(seconds=60), id='watchdog_check')
+        scheduler.start()
+    
+    yield
+    
+    if scheduler.running:
+        scheduler.shutdown()
+    release_pid_lock()
 
-    # Check schedule and start/stop accordingly
+
+app = FastAPI(
+    title='UMA Scalper Controller',
+    description='Control trading with schedule',
+    version='1.0.0',
+    lifespan=lifespan,
+)
+
+
+# ============================================================
+# HTTP Auth Middleware
+# ============================================================
+
+@app.middleware('http')
+async def auth_middleware(request: Request, call_next):
+    if not verify_basic_auth(request):
+        return JSONResponse(
+            content={'detail': 'Unauthorized'},
+            status_code=401,
+            headers={'WWW-Authenticate': 'Basic realm=Restricted'}
+        )
+    return await call_next(request)
+
+
+app.mount('/static', StaticFiles(directory=STATIC_DIR, html=True), name='static')
+
+
+# ============================================================
+# Routes - Page Routing
+# ============================================================
+
+@app.get('/', response_class=HTMLResponse)
+async def root():
+    if _logic_state.is_running() and schedule_config.is_within_schedule():
+        return HTMLResponse(load_page_template('logic'))
+    return HTMLResponse(load_page_template('sleeping'))
+
+
+@app.get('/logic', response_class=HTMLResponse)
+async def logic_page():
+    if _logic_state.is_running() and schedule_config.is_within_schedule():
+        return HTMLResponse(load_page_template('logic'))
+    return HTMLResponse(load_page_template('sleeping'))
+
+
+# ============================================================
+# Routes - Schedule & Status
+# ============================================================
+
+@app.get('/api/schedule')
+async def schedule_info():
+    return {
+        'enabled': schedule_config.enabled,
+        'start_time': f'{schedule_config.start_hour:02d}:{schedule_config.start_minute:02d}',
+        'end_time': f'{schedule_config.end_hour:02d}:{schedule_config.end_minute:02d}',
+        'within_schedule': schedule_config.is_within_schedule(),
+        'time_until_start': schedule_config.time_until_start(),
+        'time_until_end': schedule_config.time_until_end(),
+        'running': _logic_state.is_running(),
+        'paused': schedule_config.is_paused(),
+        'pause_reason': schedule_config.pause_reason(),
+        'schedule_times': f'{schedule_config.start_hour:02d}:{schedule_config.start_minute:02d} - {schedule_config.end_hour:02d}:{schedule_config.end_minute:02d}',
+        'trading_days': schedule_config.trading_day_names,
+    }
+
+
+@app.get('/api/memory')
+async def memory_info():
+    return {
+        'running': _logic_state.is_running(),
+        'has_startup_data': _logic_state.startup_data is not None,
+        'has_app_data': _logic_state.app_data is not None,
+        'has_ws': _logic_state.ws is not None,
+        'schedule_enabled': schedule_config.enabled,
+        'within_schedule': schedule_config.is_within_schedule(),
+        'time_until_end': schedule_config.time_until_end(),
+        **get_memory_usage(),
+    }
+
+
+# ============================================================
+# Routes - Admin
+# ============================================================
+
+@app.get('/api/admin/logs')
+async def get_logs():
+    try:
+        log_path = Path(S_DATA) / 'log.txt'
+        if log_path.exists():
+            content = log_path.read_text()[-5000:]
+        else:
+            content = 'No logs found'
+        return JSONResponse(content={'content': content, 'status': 'ok'})
+    except Exception as e:
+        return JSONResponse(content={'content': f'Error: {e}', 'status': 'error'}, status_code=500)
+
+
+@app.get('/api/admin/settings')
+async def get_settings_file():
+    try:
+        settings_path = Path(S_DATA) / 'settings.yml'
+        with open(settings_path) as f:
+            content = f.read()
+        return JSONResponse(content={'content': content, 'status': 'success'})
+    except Exception as e:
+        return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
+
+
+@app.post('/api/admin/settings')
+async def update_settings(request: Request, settings_data: dict[str, Any] = Body(...)):
+    try:
+        settings_path = Path(S_DATA) / 'settings.yml'
+        content = settings_data.get('content', '')
+        with open(settings_path, 'w') as f:
+            f.write(content)
+        await stop_logic()
+        return JSONResponse(content={'message': 'Settings saved. Trading stopped.', 'status': 'success'})
+    except Exception as e:
+        return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
+
+
+@app.get('/api/admin/status')
+async def get_admin_status():
     now_utc = datetime.now(timezone.utc)
     now_ist = now_utc + timedelta(hours=5, minutes=30)
-    hour = now_ist.hour
-    minute = now_ist.minute
-    day = now_ist.strftime("%a")
-
-    logging.info(f"⏰ Current time: {now_ist.strftime('%H:%M:%S')} IST, Day: {day}")
-
-    # Schedule: 9:15 to 23:59
-    in_hours = ((hour > 9 or (hour == 9 and minute >= 15)) and hour < 23) or (
-        hour == 23 and minute < 59
-    )
-    is_trading_day = day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
-
-    logging.info(
-        f"📊 Schedule check: in_hours={in_hours}, is_trading_day={is_trading_day}"
-    )
-
-    if in_hours and is_trading_day:
-        logging.info(
-            f"✅ Within schedule ({now_ist.strftime('%H:%M')}), starting trading session..."
-        )
-        try:
-            await trading_session_start(app)
-            logging.info("✅ Trading session start completed")
-        except Exception as e:
-            logging.error(f"❌ Trading session start failed: {e}")
-            import traceback
-
-            logging.error(traceback.format_exc())
-    else:
-        logging.info(
-            f"⏸️ Outside schedule ({now_ist.strftime('%H:%M')}), skipping trading session..."
-        )
-
-    logging.info("🏁 Lifespan startup complete.")
-
-    yield
-
-    # Shutdown: stop trading session
-    await trading_session_stop(app)
-    logging.info("✅ Trading session stopped.")
+    return JSONResponse(content={
+        'status': 'running',
+        'current_time_ist': now_ist.strftime('%H:%M'),
+        'day_of_week': now_ist.strftime('%a'),
+        'is_trading': _logic_state.is_running(),
+        'within_schedule': schedule_config.is_within_schedule(),
+    })
 
 
-# --- FastAPI App Initialization ---
-# Pass the lifespan function to the FastAPI constructor
-app = FastAPI(lifespan=lifespan)
+# ============================================================
+# Routes - Trading (Live Trading)
+# ============================================================
 
-STATIC_DIR = Path(__file__).parent / "static"
-app.mount("/static", StaticFiles(directory=STATIC_DIR, html=True), name="static")
-
-
-@app.get("/", include_in_schema=False)
-async def serve_root(request: Request):
-    is_trading = getattr(request.app.state, "is_trading", False)
-    if not is_trading:
-        return HTMLResponse("""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>UMA Scalper</title>
-            <link rel="stylesheet" href="/static/styles.css">
-        </head>
-        <body>
-            <div class="container">
-                <div class="app-header">
-                    <h1>UMA Scalper</h1>
-                    <div class="header-buttons">
-                        <button class="blue-btn" onclick="document.getElementById('logsModal').style.display='block'">Logs</button>
-                        <button class="blue-btn" onclick="document.getElementById('settingsModal').style.display='block'">Settings</button>
-                    </div>
-                </div>
-                <div class="chart-grid">
-                    <div class="chart-container" style="display:flex;align-items:center;justify-content:center;min-height:60vh;">
-                        <div style="text-align:center;font-size:1.5em;">
-                            <div style="font-size:3em;margin-bottom:10px;" id="sleepEmoji">&#128564;</div>
-                            <h2 id="sleepMsg" style="color:#ffd700;">Zzz... sleeping</h2>
-                            <p style="font-size:1.2em;margin:20px 0;" id="clock"></p>
-                            <p style="font-size:1.1em;margin:15px 0;color:#888;">Trading hours: 09:14 - 23:59 IST</p>
-                            <p style="font-size:1.1em;margin:15px 0;color:#888;">Trading days: Mon, Tue, Wed, Thu, Fri</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="footer">
-                    <span style="color:var(--text-primary);">made with </span><span style="color:red;">&#10084;</span><span style="color:var(--text-primary);"> by </span><a href="https://ecomsense.in" target="_blank" style="color:var(--accent-color);text-decoration:none;">ecomsense.in</a>
-                </div>
-            </div>
-            <!-- Logs Modal -->
-            <div id="logsModal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Server Logs</h2>
-                        <span class="close" onclick="document.getElementById('logsModal').style.display='none'">&times;</span>
-                    </div>
-                    <textarea id="logsEditor" readonly style="width:100%;height:300px;background:#1a1a2e;color:#fff;"></textarea>
-                    <div style="margin-top:10px;">
-                        <button class="blue-btn" onclick="fetch('/api/admin/logs').then(r=>r.json()).then(d=>document.getElementById('logsEditor').value=d.content)">Refresh</button>
-                    </div>
-                </div>
-            </div>
-            <!-- Settings Modal -->
-            <div id="settingsModal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>Settings</h2>
-                        <span class="close" onclick="document.getElementById('settingsModal').style.display='none'">&times;</span>
-                    </div>
-                    <textarea id="settingsEditor" style="width:100%;height:300px;background:#1a1a2e;color:#fff;"></textarea>
-                    <div id="settingsMsg" style="margin-top:10px;color:#888;">Note: Trading is paused - settings will apply on next wake</div>
-                </div>
-            </div>
-            <script>
-              fetch('/api/admin/settings').then(r=>r.json()).then(d=>{if(d.status==='success')document.getElementById('settingsEditor').value=d.content;}).catch(e=>{});
-              fetch('/api/admin/logs').then(r=>r.json()).then(d=>document.getElementById('logsEditor').value=d.content).catch(e=>{});
-              const emojis = ["&#128564;", "&#127861;", "&#920043;", "&#127969;", "&#128166;", "&#128170;", "&#127804;"];
-              const msgs = ["Zzz... sleeping", "Coffee break!", "Market siesta", "Hold your horses!", "Patience young padwan!", "Dreaming of profits...", "Counting sheep...", "Market meditation...", "Waiting for green candles..."];
-              const el = document.getElementById('sleepEmoji');
-              if(el) el.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
-              const ml = document.getElementById('sleepMsg');
-              if(ml) { ml.innerText = msgs[Math.floor(Math.random() * msgs.length)]; ml.style.color = ['#ffd700','#ff6b6b','#4ecdc4','#a855f7','#f97316'][Math.floor(Math.random()*5)]; }
-              function updateClock() {
-                const now = new Date();
-                const ist = new Date(now.toLocaleString('en-US', {timeZone: 'Asia/Kolkata'}));
-                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                document.getElementById('clock').innerText = days[ist.getDay()] + ', ' + ist.toLocaleTimeString('en-US', {timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false}) + ' IST';
-              }
-              updateClock();
-              setInterval(updateClock, 1000);
-            </script>
-        </body>
-        </html>
-        """)
-    return FileResponse(STATIC_DIR / "index.html")
-
-
-@app.get("/api/symbols")
+@app.get('/api/symbols')
 async def get_available_symbols(request: Request) -> JSONResponse:
-    """
-    Returns a list of available symbols.
-    """
-    symbols = list(request.app.state.tokens_nearest.values())
+    symbols = list(_logic_state.tokens_nearest.values())
     return JSONResponse(content=symbols)
 
 
-@app.get("/api/summary")
+@app.get('/api/summary')
 async def get_summary(request: Request) -> JSONResponse:
-    """
-    Returns both positions and orders summary.
-    """
     try:
-        """
-        api = Helper.api()
-        """
+        from src.api import Helper
         content = Helper.summary()
         if not content:
-            return JSONResponse(
-                content={"error": "api not initialized"}, status_code=500
-            )
+            return JSONResponse(content={'error': 'api not initialized'}, status_code=500)
         return JSONResponse(content)
     except Exception as e:
-        logging.error(f"Error getting summary: {e}")
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        logging.error(f'Error getting summary: {e}')
+        return JSONResponse(content={'error': str(e)}, status_code=500)
 
 
-@app.get("/api/orders")
+@app.get('/api/orders')
 async def get_orders(request: Request) -> JSONResponse:
-    """
-    Returns all orders.
-    """
     try:
+        from src.api import Helper
         orders = Helper.orders()
-        logging.info(f"Orders count: {len(orders) if orders else 0}")
-        return JSONResponse(content={"orders": orders})
+        logging.info(f'Orders count: {len(orders) if orders else 0}')
+        return JSONResponse(content={'orders': orders})
     except Exception as e:
-        logging.error(f"Error getting orders: {e}")
-        return JSONResponse(content={"orders": []})
+        logging.error(f'Error getting orders: {e}')
+        return JSONResponse(content={'orders': []})
 
 
-@app.get("/api/historical/{symbol}")
+@app.get('/api/historical/{symbol}')
 async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
-    """
-    Returns historical candlestick data for a symbol.
-    """
     try:
-        tokens_nearest = request.app.state.tokens_nearest
-        logging.debug(f"historical: ENTER for {symbol}")
-
+        tokens_nearest = _logic_state.tokens_nearest
         ws_token = next((k for k, v in tokens_nearest.items() if v == symbol), None)
         if not ws_token:
-            logging.debug(f"historical: ws_token not found for {symbol}")
-            return JSONResponse(content={"error": "Symbol not found"}, status_code=404)
+            return JSONResponse(content={'error': 'Symbol not found'}, status_code=404)
 
-        parts = ws_token.split("|")
+        parts = ws_token.split('|')
         exchange, token = parts[0], parts[1]
 
+        from src.api import Helper
         historical_data = Helper.historical(exchange, token)
 
         if not historical_data or len(historical_data) == 0:
-            return JSONResponse(content={"data": []})
+            return JSONResponse(content={'data': []})
 
         candlesticks = []
         for row in historical_data:
-            candlesticks.append(
-                {
-                    "time": int(row["ssboe"]) if "ssboe" in row else int(row["ut"]),
-                    "open": float(row["into"]) if "into" in row else float(row["open"]),
-                    "high": float(row["inth"]) if "inth" in row else float(row["high"]),
-                    "low": float(row["intl"]) if "intl" in row else float(row["low"]),
-                    "close": (
-                        float(row["intc"]) if "intc" in row else float(row["close"])
-                    ),
-                }
-            )
+            candlesticks.append({
+                'time': int(row.get('ssboe', row.get('ut', 0))),
+                'open': float(row.get('into', row.get('open', 0))),
+                'high': float(row.get('inth', row.get('high', 0))),
+                'low': float(row.get('intl', row.get('low', 0))),
+                'close': float(row.get('intc', row.get('close', 0))),
+            })
 
-        return JSONResponse(content={"data": candlesticks})
+        return JSONResponse(content={'data': candlesticks})
     except Exception as e:
-        logging.error(f"Error in historical: {e}")
-        print_exc()
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        logging.error(f'Error in historical: {e}')
+        return JSONResponse(content={'error': str(e)}, status_code=500)
 
 
-@app.post("/api/trade/buy")
-async def place_buy_order(
-    request: Request, payload: dict[str, Any] = Body(...)
-) -> JSONResponse:
-    logging.debug(f"Order request received: {payload}")
-    logging.debug(f"app.state.quantity: {request.app.state.quantity}")
+@app.post('/api/trade/buy')
+async def place_buy_order(request: Request, payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    logging.debug(f'Order request received: {payload}')
 
-    symbol = payload.get("symbol", "DUMMY").upper()
-    if symbol != "DUMMY":
+    symbol = payload.get('symbol', 'DUMMY').upper()
+    if symbol != 'DUMMY':
         settings = get_settings()
 
         order_details = {
-            "symbol": symbol,
-            "quantity": request.app.state.quantity,
-            "disclosed_quantity": 0,
-            "exchange": settings["option_exchange"],
-            "tag": payload.pop("tag", "no_tag"),
-            "side": "BUY",
+            'symbol': symbol,
+            'quantity': _logic_state.quantity,
+            'disclosed_quantity': 0,
+            'exchange': settings.get('option_exchange', 'NFO'),
+            'tag': payload.pop('tag', 'no_tag'),
+            'side': 'BUY',
         }
 
-        exit_price = payload.pop("exit_price")
-        cost_price = payload.pop("cost_price")
+        exit_price = payload.pop('exit_price')
+        cost_price = payload.pop('cost_price')
         order_details.update(payload)
 
+        from src.api import Helper
         order_id = Helper.one_side(order_details)
         if order_id:
-            order_details["entry_id"] = order_id
-            order_details["exit_price"] = exit_price
-            order_details["target_price"] = cost_price + settings["profit"]
-            if order_details["tag"] != "no_tag":
-                order_details["target_price"] = cost_price + (cost_price - exit_price)
+            order_details['entry_id'] = order_id
+            order_details['exit_price'] = exit_price
+            order_details['target_price'] = cost_price + settings.get('profit', 5)
+            if order_details['tag'] != 'no_tag':
+                order_details['target_price'] = cost_price + (cost_price - exit_price)
 
-            order_type = order_details.get("order_type", "LIMIT")
-            if order_type == "SL":
+            order_type = order_details.get('order_type', 'LIMIT')
+            if order_type == 'SL':
                 Helper.cancel_orders(symbol, keep_order_id=order_id)
             else:
-                Helper.cancel_orders(symbol, keep_order_id=order_id, side="BUY")
+                Helper.cancel_orders(symbol, keep_order_id=order_id, side='BUY')
 
-            blacklist = ["side", "price", "trigger_price", "order_type"]
+            blacklist = ['side', 'price', 'trigger_price', 'order_type']
             for key in blacklist:
                 order_details.pop(key, None)
             O_FUTL.write_file(filepath=TRADE_JSON, content=order_details)
-            return JSONResponse(
-                content={
-                    "message": f"Buy order initiated for {symbol}",
-                    "status": "success",
-                    "order": order_details,
-                }
-            )
+            return JSONResponse(content={'message': f'Buy order initiated for {symbol}', 'status': 'success', 'order': order_details})
 
-        return JSONResponse(
-            content={
-                "message": "error while buy order",
-                "status": "failed",
-                "order": order_details,
-            }
-        )
+        return JSONResponse(content={'message': 'error while buy order', 'status': 'failed', 'order': order_details})
 
 
-@app.get("/api/trade/sell")
-async def reset(symbol: str = "", ltp: float = 0) -> JSONResponse:
+@app.get('/api/trade/sell')
+async def reset(symbol: str = '', ltp: float = 0) -> JSONResponse:
     try:
-        logging.debug(f"Cancel requested: symbol={symbol}, ltp={ltp}")
+        from src.api import Helper
+        logging.debug(f'Cancel requested: symbol={symbol}, ltp={ltp}')
         Helper.close_all_for_symbol(symbol, ltp)
-        return JSONResponse(
-            content={
-                "message": "reset completed",
-                "status": "success",
-            }
-        )
+        return JSONResponse(content={'message': 'reset completed', 'status': 'success'})
     except Exception as e:
-        logging.error(f"Cancel error: {e}")
-        return JSONResponse(
-            content={"message": str(e), "status": "error"}, status_code=500
-        )
+        logging.error(f'Cancel error: {e}')
+        return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
 
 
-# --- SSE Endpoint for Streaming Candlesticks ---
-@app.get("/sse/candlesticks/{symbol}")
-async def sse_candlestick_endpoint(
-    symbol: str, request: Request
-) -> EventSourceResponse:
-    logging.debug(f"SSE connection requested for symbol: {symbol}")
+# ============================================================
+# Routes - SSE Streaming
+# ============================================================
+
+@app.get('/sse/candlesticks/{symbol}')
+async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
+    logging.debug(f'SSE connection requested for symbol: {symbol}')
 
     last_sent_candle: dict[str, Any] | None = None
 
     async def event_generator():
         nonlocal last_sent_candle
-        ws = request.app.state.ws
-        token_symbols = request.app.state.tokens_nearest
+        ws = _logic_state.ws
+        token_symbols = _logic_state.tokens_nearest
 
         try:
             token_symbol = next(k for k, v in token_symbols.items() if v == symbol)
@@ -624,31 +568,22 @@ async def sse_candlestick_endpoint(
 
                 ist_now = datetime.now(IST)
                 current_timestamp_ist = int(ist_now.timestamp())
-                candle_time = current_timestamp_ist - (
-                    current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
-                )
+                candle_time = current_timestamp_ist - (current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS)
 
-                if last_sent_candle is None or candle_time > last_sent_candle["time"]:
+                if last_sent_candle is None or candle_time > last_sent_candle['time']:
                     if last_sent_candle is not None:
-                        yield {
-                            "event": "live_update",
-                            "data": json.dumps(last_sent_candle),
-                        }
+                        yield {'event': 'live_update', 'data': json.dumps(last_sent_candle)}
 
                     last_sent_candle = {
-                        "open": price,
-                        "high": price,
-                        "low": price,
-                        "close": price,
-                        "volume": 0,
-                        "time": candle_time,
+                        'open': price, 'high': price, 'low': price,
+                        'close': price, 'volume': 0, 'time': candle_time,
                     }
                 else:
-                    last_sent_candle["high"] = max(last_sent_candle["high"], price)
-                    last_sent_candle["low"] = min(last_sent_candle["low"], price)
-                    last_sent_candle["close"] = price
+                    last_sent_candle['high'] = max(last_sent_candle['high'], price)
+                    last_sent_candle['low'] = min(last_sent_candle['low'], price)
+                    last_sent_candle['close'] = price
 
-                yield {"event": "live_update", "data": json.dumps(last_sent_candle)}
+                yield {'event': 'live_update', 'data': json.dumps(last_sent_candle)}
 
             except Exception:
                 continue
@@ -656,193 +591,62 @@ async def sse_candlestick_endpoint(
     return EventSourceResponse(event_generator())
 
 
-@app.get("/sse/orders")
+@app.get('/sse/orders')
 async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
         while True:
-            ws = request.app.state.ws
-            if ws.order_updates:
+            ws = _logic_state.ws
+            if ws and ws.order_updates:
                 order_msg = ws.order_updates.popleft()
                 msg_str = json.dumps(order_msg)
-                logging.debug(f"SSE sending order_msg: {order_msg}")
-                yield {"event": "order_msg", "data": msg_str}
+                logging.debug(f'SSE sending order_msg: {order_msg}')
+                yield {'event': 'order_msg', 'data': msg_str}
             else:
                 await asyncio.sleep(0.1)
 
     return EventSourceResponse(event_generator())
 
 
-@app.post("/api/admin/restart")
+# ============================================================
+# Routes - Logic App (Mounted)
+# ============================================================
+
+logic_router = create_logic_router()
+app.include_router(logic_router, prefix='/api/logic')
+
+
+# ============================================================
+# Debug Routes (for development)
+# ============================================================
+
+@app.post('/api/admin/restart')
 async def restart_trading_session(request: Request) -> JSONResponse:
-    """
-    Restart the trading session (soft restart).
-    """
     try:
-        await trading_session_stop(request.app)
-        await trading_session_start(request.app)
-        return JSONResponse(
-            content={"message": "Trading session restarted", "status": "success"}
-        )
+        await stop_logic()
+        await start_logic()
+        return JSONResponse(content={'message': 'Trading session restarted', 'status': 'success'})
     except Exception as e:
-        return JSONResponse(
-            content={"message": f"Failed to restart: {e}", "status": "error"},
-            status_code=500,
-        )
+        return JSONResponse(content={'message': f'Failed to restart: {e}', 'status': 'error'}, status_code=500)
 
 
-@app.post("/api/admin/stop")
-async def stop_trading_session(request: Request) -> JSONResponse:
-    """
-    Stop the trading session.
-    """
+@app.post('/api/admin/start')
+async def admin_start_session(request: Request) -> JSONResponse:
     try:
-        await trading_session_stop(request.app)
-        return JSONResponse(
-            content={"message": "Trading session stopped", "status": "success"}
-        )
+        await start_logic()
+        return JSONResponse(content={'message': 'Trading session started', 'status': 'success'})
     except Exception as e:
-        return JSONResponse(
-            content={"message": f"Failed to stop: {e}", "status": "error"},
-            status_code=500,
-        )
+        return JSONResponse(content={'message': f'Failed to start: {e}', 'status': 'error'}, status_code=500)
 
 
-@app.post("/api/admin/start")
-async def start_trading_session(request: Request) -> JSONResponse:
-    """
-    Start the trading session.
-    """
+@app.post('/api/admin/stop')
+async def admin_stop_session(request: Request) -> JSONResponse:
     try:
-        await trading_session_start(request.app)
-        return JSONResponse(
-            content={"message": "Trading session started", "status": "success"}
-        )
+        await stop_logic()
+        return JSONResponse(content={'message': 'Trading session stopped', 'status': 'success'})
     except Exception as e:
-        return JSONResponse(
-            content={"message": f"Failed to start: {e}", "status": "error"},
-            status_code=500,
-        )
+        return JSONResponse(content={'message': f'Failed to stop: {e}', 'status': 'error'}, status_code=500)
 
 
-@app.get("/api/admin/settings")
-async def get_settings_file() -> JSONResponse:
-    """
-    Get current settings.yml content.
-    """
-    try:
-        settings_path = Path(S_DATA) / "settings.yml"
-        with open(settings_path) as f:
-            content = f.read()
-        return JSONResponse(content={"content": content, "status": "success"})
-    except Exception as e:
-        return JSONResponse(
-            content={"message": str(e), "status": "error"}, status_code=500
-        )
-
-
-@app.post("/api/admin/settings")
-async def update_settings(
-    request: Request, settings_data: dict[str, Any] = Body(...)
-) -> JSONResponse:
-    """
-    Update settings.yml content and stop trading session.
-    Scheduler will restart based on schedule.
-    """
-    try:
-        settings_path = Path(S_DATA) / "settings.yml"
-        content = settings_data.get("content", "")
-        with open(settings_path, "w") as f:
-            f.write(content)
-
-        await trading_session_stop(request.app)
-
-        return JSONResponse(
-            content={
-                "message": "Settings saved. Trading session stopped.",
-                "status": "success",
-            }
-        )
-    except Exception as e:
-        return JSONResponse(
-            content={"message": str(e), "status": "error"}, status_code=500
-        )
-
-
-@app.get("/api/admin/logs")
-async def get_logs() -> JSONResponse:
-    """
-    Get server log file content.
-    """
-    try:
-        log_path = Path(S_DATA) / "log.txt"
-        with open(log_path) as f:
-            lines = f.readlines()
-            content = "".join(lines[-500:])
-        return JSONResponse(content={"content": content, "status": "success"})
-    except Exception as e:
-        return JSONResponse(
-            content={"message": str(e), "status": "error"}, status_code=500
-        )
-
-
-@app.get("/api/chart/settings")
-async def get_chart_settings() -> JSONResponse:
-    """
-    Get chart settings (MA configs) from settings.yml.
-    """
-    try:
-        ma = O_SETG.get("ma", [])
-        base = O_SETG.get("base", "NIFTY")
-        base_settings = O_SETG.get(base, {})
-        profit = (
-            base_settings.get("profit", 5) if isinstance(base_settings, dict) else 5
-        )
-        return JSONResponse(
-            content={
-                "ma": ma,
-                "profit": profit,
-            }
-        )
-    except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
-
-
-@app.get("/api/admin/status")
-async def get_admin_status(request: Request) -> JSONResponse:
-    """
-    Get server status and API key.
-    """
-    try:
-        now_utc = datetime.now(timezone.utc)
-        now_ist = now_utc + timedelta(hours=5, minutes=30)
-        hhmm = now_ist.strftime("%H:%M")
-        day = now_ist.strftime("%a")
-
-        is_trading = getattr(request.app.state, "is_trading", False)
-
-        hour = now_ist.hour
-        minute = now_ist.minute
-        # Hardcoded schedule: 9:15 to 23:59
-        within_trading_hours = (
-            (hour > 9 or (hour == 9 and minute >= 15)) and hour < 23
-        ) or (hour == 23 and minute < 59)
-        is_trading = within_trading_hours and day in ["Mon", "Tue", "Wed", "Thu", "Fri"]
-
-        return JSONResponse(
-            content={
-                "status": "running",
-                "api_key": O_CNFG.get("api_secret", ""),
-                "message": "Server is running. Use admin endpoints to manage settings.",
-                "current_time_utc": now_utc.strftime("%H:%M %Z"),
-                "current_time_ist": hhmm,
-                "day_of_week": day,
-                "is_trading": is_trading,
-                "within_trading_hours": within_trading_hours,
-            }
-        )
-    except Exception as e:
-        import traceback
-
-        return JSONResponse(
-            content={"error": str(e), "trace": traceback.format_exc()}, status_code=500
-        )
+if __name__ == '__main__':
+    import uvicorn
+    uvicorn.run(app, host='127.0.0.1', port=8000)
