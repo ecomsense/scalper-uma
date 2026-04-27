@@ -31,15 +31,27 @@ def login() -> Any:
 
 class Helper:
     _api: Any | None = None
+    _created_at: float | None = None
+    _session_ttl: int = 6 * 3600  # 6 hours - broker token rotation
 
     @classmethod
     def api(cls) -> Any:
-        if cls._api is None:
+        now = time.time()
+        if cls._api is None or (cls._created_at and now - cls._created_at > cls._session_ttl):
+            logging.info(f"Session expired or None (age: {((now - cls._created_at) / 3600):.1f}h), reconnecting...")
+            cls.reset()
             cls._api = login()
+            cls._created_at = time.time()
             logging.info("Singleton session created")
         else:
             logging.debug("Using existing session")
         return cls._api
+
+    @classmethod
+    def reset(cls) -> None:
+        cls._api = None
+        cls._created_at = None
+        logging.info("Session reset")
 
     @classmethod
     def one_side(cls, bargs: dict[str, Any]) -> str | None:
