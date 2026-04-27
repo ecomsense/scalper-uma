@@ -126,11 +126,11 @@
             const ist = new Date(now.toLocaleString('en-US', {timeZone:'Asia/Kolkata'}));
             document.getElementById('clock').textContent = ist.toLocaleTimeString('en-US', {timeZone:'Asia/Kolkata', hour12:false});
             
-            // Day badges
+            // Day badges (Mon-Fri = indexes 1-5)
             const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
             const today = ist.getDay();
             let badges = '';
-            for(let i=0;i<5;i++) {
+            for(let i=1;i<=5;i++) {
                 const isToday = i === today;
                 badges += `<span class='schedule-badge ${isToday?'active':''}'>${days[i]}</span>`;
             }
