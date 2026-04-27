@@ -167,7 +167,14 @@ window.addEventListener("DOMContentLoaded", () => {
 			const es = new EventSource(`/sse/candlesticks/${symbol}`);
 			es.addEventListener("live_update", (e) => {
 				const candle = JSON.parse(e.data);
-				if (candleData.length === 0) return;
+				
+				// Initialize chart with first live candle if no historical data
+				if (candleData.length === 0) {
+					candleData = [candle];
+					candleSeries.setData(candleData);
+					return;
+				}
+				
 				const lastCandle = candleData[candleData.length - 1];
 				
 				if (candle.time === lastCandle.time) {
