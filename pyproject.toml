@@ -60,3 +60,8 @@ unsafe-fixes = true
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "B", "A", "C4", "DTZ", "T20", "FIX", "ARG", "PTH", "PYI", "RSE", "RET", "SLF", "SIM", "TID", "PL", "TRY", "PERF", "PGH", "PIE", "RUF", "NPY", "AIR", "ASYNC", "S"]
 ignore = ["E501", "RET503", "PLC0415", "PLW0603", "PLR2004", "S101", "S110"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
