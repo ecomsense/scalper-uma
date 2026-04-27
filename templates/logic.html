@@ -15,11 +15,11 @@
   <body>
     <div class='container'>
       <div class='app-header'>
-        <div style='display:flex;align-items:center;gap:8px;'>
-          <span style='font-size:1.2rem;'>📈</span>
-          <h1 style='margin:0;font-size:1.4em;font-weight:bold;'>UMA Scalper</h1>
+        <div class='header-title'>
+          <span>📈</span>
+          <h1>UMA Scalper</h1>
         </div>
-        <div style='display:flex;gap:10px;padding-right:10px;'>
+        <div class='header-actions'>
           <button class='icon-btn' onclick='restartLogic()' title='Restart'>🔄</button>
           <button class='icon-btn' onclick='openLogsModal()' title='Logs'>📋</button>
           <button class='icon-btn' onclick='openSettingsModal()' title='Settings'>⚙️</button>
@@ -64,7 +64,7 @@
       <div class='panel-item' id='realized-panel'>Realized: <span id='realized-footer'>0.00</span></div>
     </div>
 
-    <footer class='app-footer'>Made with <span style='color:red;'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a></footer>
+    <footer class='app-footer'>Made with <span class='heart'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a></footer>
 
     <!-- Settings Modal -->
     <div id='settingsModal' class='modal'>
@@ -74,10 +74,10 @@
           <span class='close' onclick='closeSettingsModal()'>&times;</span>
         </div>
         <textarea id='settingsEditor'></textarea>
-        <div style='margin-top: 10px;'>
+        <div class='modal-actions'>
           <button class='green-btn' onclick='saveAndRestart()'>Save & Restart</button>
         </div>
-        <div id='settingsMessage' style='margin-top: 10px;'></div>
+        <div id='settingsMessage' class='modal-message'></div>
       </div>
     </div>
 
@@ -89,10 +89,10 @@
           <span class='close' onclick='closeLogsModal()'>&times;</span>
         </div>
         <textarea id='logsEditor' readonly></textarea>
-        <div style='margin-top: 10px;'>
+        <div class='modal-actions'>
           <button class='blue-btn' onclick='loadLogs()'>Refresh</button>
         </div>
-        <div id='logsMessage' style='margin-top: 10px;'></div>
+        <div id='logsMessage' class='modal-message'></div>
       </div>
     </div>
 
