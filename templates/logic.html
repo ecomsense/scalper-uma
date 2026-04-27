@@ -69,7 +69,7 @@
         </div>
         <textarea id='settingsEditor'></textarea>
         <div style='margin-top: 10px; display: flex; gap: 10px;'>
-          <button class='green-btn' onclick='saveAndRestart()'>Save & Restart</button>
+          <button class='green-btn' onclick='saveSettings()'>Save</button>
           <button class='blue-btn' onclick='loadSettings()'>Load Current</button>
         </div>
         <div id='settingsMessage' style='margin-top: 10px;'></div>
@@ -149,17 +149,20 @@
           });
       }
 
-      async function saveAndRestart() {
-        closeSettingsModal();
+      function saveSettings() {
         const content = document.getElementById('settingsEditor').value;
-        await fetch('/api/admin/settings', {
+        fetch('/api/admin/settings', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({content})
-        });
-        await new Promise(r => setTimeout(r, 500));
-        await fetch('/api/logic/start', { method: 'POST' });
-        location.reload();
+        })
+          .then(r => r.json())
+          .then(data => {
+            document.getElementById('settingsMessage').textContent = data.status === 'success' ? 'Saved!' : 'Error: ' + data.message;
+          })
+          .catch(e => {
+            document.getElementById('settingsMessage').textContent = 'Error: ' + e;
+          });
       }
 
       function closeSettingsModal() {
