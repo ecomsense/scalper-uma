@@ -136,8 +136,8 @@ def verify_basic_auth(request: Request) -> bool:
 class ScheduleConfig:
     def __init__(self):
         self.enabled = True
-        self.start_hour = 0
-        self.start_minute = 5
+        self.start_hour = 2
+        self.start_minute = 0
         self.end_hour = 15
         self.end_minute = 31
         self.trading_days = [0, 1, 2, 3, 4]
