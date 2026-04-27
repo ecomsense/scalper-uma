@@ -210,7 +210,6 @@ body {
 .header-actions {
   display: flex;
   gap: 10px;
-  padding-right: 10px;
 }
 
 /* Schedule Page */
