@@ -288,7 +288,7 @@ textarea {
 
 /* Responsive */
 @media (max-width: 900px) {
-  .chart-grid { flex-direction: column; align-items: stretch; }
+  .chart-grid { flex-direction: column; align-items: stretch; gap: 0; }
   .chart-container { max-width: 100%; flex: 1 1 auto; }
 }
 
