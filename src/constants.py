@@ -101,8 +101,16 @@ _O_CNFG, _O_SETG = read_yml()
 O_CNFG = _O_CNFG
 O_SETG = _O_SETG
 
-# Default logging (INFO level until settings load)
-logging: Logger = Logger(30)
+# Configure logging from settings
+_log_level = 20  # default INFO
+if O_SETG.get("log"):
+    _log_level = O_SETG["log"].get("level", 20)
+    if O_SETG["log"].get("show"):
+        logging: Logger = Logger(_log_level, S_LOG)
+    else:
+        logging: Logger = Logger(_log_level)
+else:
+    logging: Logger = Logger(20)
 
 
 dct_sym: dict[str, dict[str, Any]] = {
