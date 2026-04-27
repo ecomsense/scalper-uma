@@ -171,11 +171,11 @@ class Symbol:
             symbol_differences: dict[str, float] = {}
 
             for symbol, ltp in call_or_put_begins_with.items():
-                logging.info(f"Symbol:{symbol} difference {ltp} - {premium}")
+                logging.debug(f"Symbol:{symbol} difference {ltp} - {premium}")
                 difference = abs(float(ltp) - premium)
                 symbol_differences[symbol] = difference
 
-            logging.info(symbol_differences)
+            logging.debug(symbol_differences)
             # Find the symbol with the lowest difference
             return min(
                 symbol_differences, key=symbol_differences.get, default=None
@@ -193,9 +193,9 @@ class Symbol:
                 if c_or_p == "CE"
                 else atm - (distance * dct_sym[self._base]["diff"])
             )
-            logging.info(f"Symbol: found strike price {find_strike}")
+            logging.debug(f"Symbol: found strike price {find_strike}")
             df = pd.read_csv(self.csvfile)
-            logging.info(f"Symbol:{self._symbol} {c_or_p=} {find_strike=}")
+            logging.debug(f"Symbol:{self._symbol} {c_or_p=} {find_strike=}")
             row = df[
                 (df["Symbol"] == self._symbol)
                 & (df["OptionType"] == c_or_p)
