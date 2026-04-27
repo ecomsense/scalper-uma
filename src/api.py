@@ -67,27 +67,16 @@ class Helper:
     def cancel_orders(
         cls, symbol: str, keep_order_id: str | None = None, side: str | None = None
     ) -> None:
-        with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
-            f.write(f"[DEBUG] cancel_orders: {symbol}\n")
-        logging.info(f"cancel_orders called: {symbol}")
         try:
             orders = cls.orders()
-            with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
-                f.write(f"[DEBUG] orders count: {len(orders) if orders else 0}\n")
             if not orders:
-                logging.info("no orders found")
                 return
-            count = 0
             for o in orders:
-                with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
-                    f.write(f"[DEBUG] checking order: {o.get('symbol')} status={o.get('status')}\n")
                 if o.get("symbol") == symbol and o.get("status") in [
                     "OPEN",
                     "TRIGGER_PENDING",
                     "PENDING",
                 ]:
-                    with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
-                        f.write(f"[DEBUG] MATCH! will cancel order {o.get('order_id')}\n")
                     if keep_order_id and o.get("order_id") == keep_order_id:
                         continue
                     if side and o.get("side") != side:
@@ -147,20 +136,16 @@ class Helper:
     def close_all_for_symbol(
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
-        with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
-            f.write(f"[DEBUG] close_all_for_symbol: {symbol}, ltp={ltp}\n")
         logging.info(f"close_all_for_symbol: {symbol}, ltp={ltp}")
         slippage = 0.50
         cls.cancel_orders(symbol)
         time.sleep(1)
         positions = cls.positions()
-        logging.info(f"positions count: {len(positions) if positions else 0}")
         open_positions = [
             p
             for p in positions
             if p and p.get("symbol") == symbol and p.get("quantity", 0) != 0
         ]
-        logging.info(f"open_positions for {symbol}: {open_positions}")
         if not open_positions:
             logging.info(f"No open positions for {symbol}")
             return

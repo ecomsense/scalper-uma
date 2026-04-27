@@ -569,7 +569,6 @@ async def reset(symbol: str = "", ltp: float = 0) -> JSONResponse:
     try:
         logging.info(f"Cancel requested: symbol={symbol}, ltp={ltp}")
         Helper.close_all_for_symbol(symbol, ltp)
-        logging.info(f"Cancel completed for {symbol}")
         return JSONResponse(
             content={
                 "message": "reset completed",
