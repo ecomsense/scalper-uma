@@ -83,7 +83,7 @@ class Helper:
                     f.write(f"[DEBUG] checking order: {o.get('symbol')} status={o.get('status')}\n")
                 if o.get("symbol") == symbol and o.get("status") in [
                     "OPEN",
-                    "trigger_pending",
+                    "TRIGGER_PENDING",
                     "PENDING",
                 ]:
                     with open("/home/uma/no_env/uma_scalper/data/log.txt", "a") as f:
