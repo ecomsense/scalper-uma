@@ -23,11 +23,11 @@
 <body>
     <div class='container'>
         <header class='app-header'>
-            <div>
-                <span style='font-size:1.2rem;'>📈</span>
-                <span style='font-size:1.2rem;font-weight:bold;'>UMA Scalper</span>
+            <div class='header-title'>
+                <span>📈</span>
+                <span>UMA Scalper</span>
             </div>
-            <div style='display:flex;gap:10px;padding-right:10px;'>
+            <div class='header-actions'>
                 <button class='icon-btn' onclick='openLogsModal()' title='Logs'>📋</button>
                 <button class='icon-btn' onclick='openSettingsModal()' title='Settings'>⚙️</button>
             </div>
@@ -38,10 +38,10 @@
                 <div class='sleep-emoji' id='sleepEmoji'>💤</div>
                 <div class='sleep-msg' id='sleepMsg'>Zzz... sleeping</div>
                 <div class='clock' id='clock'>--:--:--</div>
-                <div class='schedule-info' style='margin-top:1.5rem;'>
-                    <p style='font-size:1.1em;'>Trading: <strong id='scheduleTime'>loading...</strong> IST</p>
-                    <div id='dayBadges' style='margin-top:0.75rem;display:flex;justify-content:center;gap:5px;'></div>
-                    <p id='timeStatus' style='margin-top:0.75rem;font-size:1em;'></p>
+                <div class='schedule-info'>
+                    <p>Trading: <strong id='scheduleTime'>loading...</strong> IST</p>
+                    <div id='dayBadges'></div>
+                    <p id='timeStatus'></p>
                 </div>
             </div>
         </div>
@@ -55,7 +55,7 @@
                 <span class='close' onclick='closeLogsModal()'>&times;</span>
             </div>
             <textarea id='logsEditor' readonly></textarea>
-            <div style='margin-top:10px;display:flex;gap:10px;'>
+            <div class='modal-actions'>
                 <button class='blue-btn' onclick='loadLogs()'>Refresh</button>
             </div>
         </div>
@@ -69,14 +69,14 @@
                 <span class='close' onclick='closeSettingsModal()'>&times;</span>
             </div>
             <textarea id='settingsEditor'></textarea>
-            <div id='settingsMsg' style='margin-top:10px;color:#888;'>Note: Settings will apply when trading starts</div>
-            <div style='margin-top:10px;'>
+            <div id='settingsMsg' class='modal-message'>Note: Settings will apply when trading starts</div>
+            <div class='modal-actions'>
                 <button class='blue-btn' onclick='saveSettings()'>Save Settings</button>
             </div>
         </div>
     </div>
 
-    <footer class='app-footer'>Made with <span style='color:red;'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a></footer>
+    <footer class='app-footer'>Made with <span class='heart'>❤</span> by <a href='https://ecomsense.in' target='_blank'>ecomsense.in</a></footer>
 
     <script>
         let scheduleData = null;

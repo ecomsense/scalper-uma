@@ -186,6 +186,73 @@ body {
   text-decoration: underline;
 }
 
+.app-footer .heart {
+  color: var(--red);
+}
+
+/* Shared Header */
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-title span:first-child {
+  font-size: 1.2rem;
+}
+
+.header-title h1 {
+  margin: 0;
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  padding-right: 10px;
+}
+
+/* Schedule Page */
+.schedule-info {
+  margin-top: 1.5rem;
+  color: #888;
+}
+
+.schedule-info p {
+  font-size: 1.1em;
+}
+
+.schedule-info p strong {
+  color: var(--text-primary);
+}
+
+.schedule-info p + div {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.schedule-info p + div + p {
+  margin-top: 0.75rem;
+  font-size: 1em;
+}
+
+/* Modal spacing */
+.modal-actions {
+  margin-top: 10px;
+}
+
+.modal-message {
+  margin-top: 10px;
+  color: #888;
+}
+
+.modal-message.error {
+  color: var(--red);
+}
+
 /* Icon Buttons (fastapi-apps pattern) */
 .icon-btn {
   background: rgba(255,255,255,0.1);
