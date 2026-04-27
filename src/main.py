@@ -565,12 +565,8 @@ async def place_buy_order(
 
 
 @app.get("/api/trade/sell")
-async def reset(request: Request, symbol: str = "") -> JSONResponse:
+async def reset(symbol: str = "", ltp: float = 0) -> JSONResponse:
     try:
-        ws = request.app.state.ws
-        token_symbols = request.app.state.tokens_nearest
-        token = next(v for k, v in token_symbols.items() if k == symbol)
-        ltp = ws.ltp.get(token, 0)
         Helper.close_all_for_symbol(symbol, ltp)
         return JSONResponse(
             content={

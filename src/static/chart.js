@@ -240,7 +240,8 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 
 		document.getElementById(buttonIds.reset).onclick = () => {
-			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}`, { method: "GET" });
+			const ltp = candleData.length > 0 ? candleData[candleData.length - 1].close : 0;
+			fetch(`/api/trade/sell?symbol=${encodeURIComponent(symbol)}&ltp=${ltp}`, { method: "GET" });
 		};
 	}
 
