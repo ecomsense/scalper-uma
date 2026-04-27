@@ -1,91 +1,112 @@
 # Scalper-UMA Agent Context
 
-## Project
-Real-time options trading bot (FastAPI + Finvasia broker API).
+## Architecture
 
-## Key Components
-| Component | File | Purpose |
-|-----------|------|---------|
-| `Helper` | `src/api.py` | Broker API wrapper (singleton) |
-| `Wserver` | `src/wserver.py` | WebSocket manager |
-| `TickRunner` | `src/tickrunner.py` | Trade execution state machine |
-| `Strategy` | `src/strategy.py` | ATM selection and premium matching |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 CONTROLLER (main.py)                        │
+│  - APScheduler for auto start/stop within schedule             │
+│  - PID lock to prevent multiple instances                 │
+│  - HTTP Basic Auth                                    │
+│  - Serves sleeping.html or logic.html based on schedule       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 LOGIC APP                                │
+│  - Trading session (TickRunner, Strategy, Wserver)       │
+│  - State stored in src/state.py (LogicState)           │
+│  - Start/Stop/Pause via /api/logic/* endpoints     │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Shared UI Components
+
+### Header Pattern (icon-btn)
+Both sleeping.html and logic.html share the same header buttons pattern:
+
+```html
+<header class='app-header'>
+  <div class='header-left'>
+    <span>📈</span>
+    <span>UMA Scalper</span>
+  </div>
+  <div class='header-right'>
+    <button class='icon-btn' onclick='restartLogic()' title='Restart'>🔄</button>
+    <button class='icon-btn' onclick='openLogsModal()' title='Logs'>📋</button>
+    <button class='icon-btn' onclick='openSettingsModal()' title='Settings'>⚙️</button>
+  </div>
+</header>
+```
+
+### Footer Pattern
+Both pages share the app-footer:
+
+```html
+<footer class='app-footer'>
+  Made with <span>❤</span> by <a href='https://ecomsense.in'>ecomsense.in</a>
+</footer>
+```
+
+### CSS Shared Classes
+- `.app-header` - Header styling
+- `.app-footer` - Footer styling
+- `.icon-btn` - Icon button styling (⚙️ 📋 🔄)
+- `.modal` - Modal overlay styling
+- `.bottom-panel` - Fixed trading summary panel
+
+## Route Structure
+
+| Path | Description |
+|------|------------|
+| `/` | Root - shows sleeping or logic page based on schedule |
+| `/api/schedule` | Schedule info (start, end, trading days) |
+| `/api/logic/start` | Start trading session |
+| `/api/logic/stop` | Stop trading session |
+| `/api/logic/status` | Trading status |
+| `/api/admin/logs` | Server logs |
+| `/api/admin/settings` | Edit settings.yml |
+| `/api/chart/settings` | MA configs for charts |
 
 ## Server
-- **IP**: 65.20.83.178 | **User**: uma
-- **Port**: 8000
 
-## Server Management
-**DO NOT use systemctl!** - spawns multiple uvicorn processes causing race conditions.
+**IP**: 65.20.83.178 | **User**: uma
 
+### Systemd Service
 ```bash
-# Kill and start fresh
-ssh uma@65.20.83.178 'pkill -9 -f uvicorn; cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &'
-```
-Always check: `ps aux | grep uvicorn` - must show ONE process.
-
-## Configuration
-- Credentials: `{project-name}_.yml` (e.g., `scalper-uma.yml`)
-- Settings: `data/settings.yml`
-- Trade state: `data/trade.json`
-
-## Order Flow
-1. **Frontend**: `High` → `order_type: SL`, `MKT` → `order_type: LMT`
-2. **Backend**: `@app.post(/api/trade/buy)` → `Helper.one_side()`
-3. **Broker**: `cls.api().order_place(**bargs)`
-
-## Key Rules
-1. Always call `Helper.api()` before broker API calls - session may be invalid
-2. Never run multiple uvicorn processes - singleton breaks
-3. Modal fetch must be async - wait for data before showing
-4. Auto-fetch on page load - else stale/empty data
-5. Never string comparison for time - use integers
-6. Broker API returns UPPERCASE status: `TRIGGER_PENDING`, not `trigger_pending`
-7. `order_cancel()` only accepts `order_id`, not `quantity`
-
-## Common Bugs
-
-### Cancel button not working
-- Status check used lowercase: `if status in ['OPEN', 'trigger_pending', 'PENDING']`
-- Fix: `if status in ['OPEN', 'TRIGGER_PENDING', 'PENDING']`
-- `order_cancel()` doesn't accept `quantity` kwarg: `cls.api().order_cancel(order_id=o.get('order_id'))`
-
-### Logs modal empty
-- `loadLogs()` function not defined - add it:
-```javascript
-function loadLogs() {
-    fetch('/api/admin/logs').then(r=>r.json()).then(d=>document.getElementById('logsEditor').value=d.content).catch(e=>{});
-}
-```
-- Auto-load on open:
-```javascript
-function openLogsModal() {
-    document.getElementById('logsModal').style.display='block';
-    loadLogs();
-}
+systemctl --user status fastapi_app.service
+systemctl --user restart fastapi_app.service
 ```
 
-### JavaScript outside script tag
-- `</script>` placed too early in main.py HTML string
-- All code after it becomes plain text
-
-### Logs not writing to file
-- `settings.yml`: `log.show: true` required (false = console only)
-
-### Bottom panel shows 0 orders
-- Multiple uvicorn processes - kill all and restart single
-
-## Debug Commands
+### Debug Commands
 ```bash
-ps aux | grep uvicorn | grep -v grep
+curl -s http://127.0.0.1:8000/api/schedule
+curl -s http://127.0.0.1:8000/api/logic/status
 tail -20 /home/uma/no_env/uma_scalper/data/log.txt
-grep -i cancel /home/uma/no_env/uma_scalper/data/log.txt | tail -5
-curl -s http://127.0.0.1:8000/api/trade/sell?symbol=NIFTY28APR26P24000&ltp=5
-curl -s http://127.0.0.1:8000/api/admin/logs | head -c 500
 ```
 
-## Bottom Panel Format
-Shows `open_orders / total_orders` (active orders = OPEN/TRIGGER_PENDING/PENDING).
+## Schedule
 
-## Recommended Log Level
-**`level: 20` (INFO)** - filters spam (`Using existing session` every 500ms) while keeping important events (session start/stop, entry CANCELED, trade checks, errors).
+- **Start**: 00:05 (test), 09:14 (production)
+- **End**: 15:31 (test), 23:59 (production)
+- **Days**: Mon-Fri
+
+## Trading Flow
+
+1. **Outside Schedule**: Shows sleeping.html (countdown, schedule info)
+2. **Within Schedule**: Shows logic.html + auto-starts trading
+3. **Trading**: TickRunner executes trades based on Strategy
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `src/main.py` | Controller (APScheduler, routes) |
+| `src/logic_app.py` | Trading start/stop functions |
+| `src/state.py` | LogicState singleton |
+| `src/api.py` | Broker API wrapper |
+| `src/tickrunner.py` | Trade execution state machine |
+| `src/strategy.py` | ATM selection, premium matching |
+| `src/wserver.py` | WebSocket manager |
+| `templates/sleeping.html` | Sleep page UI |
+| `templates/logic.html` | Trading page UI |
