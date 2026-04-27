@@ -262,13 +262,13 @@ async def lifespan(app: FastAPI):
         acquire_pid_lock()
     
     if schedule_config.enabled:
-        scheduler.add_job(watchdog_check, trigger=IntervalTrigger(seconds=60), id='watchdog_check')
-        scheduler.start()
+        SCHEDULER.add_job(watchdog_check, trigger=IntervalTrigger(seconds=60), id='watchdog_check')
+        SCHEDULER.start()
     
     yield
     
-    if scheduler.running:
-        scheduler.shutdown()
+    if SCHEDULER.running:
+        SCHEDULER.shutdown()
     release_pid_lock()
 
 
