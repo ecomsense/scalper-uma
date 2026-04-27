@@ -51,24 +51,17 @@ window.fetchSummaryCache = function() { doFetch(); };
 
 async function showPositionsModal() {
     let data = null;
-    let cached = localStorage.getItem("summary_cache");
-    if (cached) {
-        try { data = JSON.parse(cached); } catch (e) {}
-    }
-    if (!data) {
-        console.log("No cached data, fetching...");
-        await new Promise(function(resolve) {
-            fetch("/api/summary")
-                .then(r => r.json())
-                .then(function(d) {
-                    localStorage.setItem("summary_cache", JSON.stringify(d));
-                    data = d;
-                    resolve();
-                })
-                .catch(function(e) { console.error(e); resolve(); });
-        });
-        if (!data) return;
-    }
+    await new Promise(function(resolve) {
+        fetch("/api/summary")
+            .then(r => r.json())
+            .then(function(d) {
+                localStorage.setItem("summary_cache", JSON.stringify(d));
+                data = d;
+                resolve();
+            })
+            .catch(function(e) { console.error(e); resolve(); });
+    });
+    if (!data) return;
     const positions = data.positions || [];
     let html = '<table style="width:100%;border-collapse:collapse;">';
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th></tr>';
@@ -87,21 +80,18 @@ async function showPositionsModal() {
 
 async function showOrdersModal() {
     let data = null;
-    let cached = localStorage.getItem("summary_cache");
-    if (cached) {
-        try { data = JSON.parse(cached); } catch (e) {}
-    }
-    if (!data) {
-        console.log("No cached data, fetching...");
-        await new Promise(function(resolve) {
-            fetch("/api/summary")
-                .then(r => r.json())
-                .then(function(d) {
-                    localStorage.setItem("summary_cache", JSON.stringify(d));
-                    data = d;
-                    resolve();
-                })
-                .catch(function(e) { console.error(e); resolve(); });
+    await new Promise(function(resolve) {
+        fetch("/api/summary")
+            .then(r => r.json())
+            .then(function(d) {
+                localStorage.setItem("summary_cache", JSON.stringify(d));
+                data = d;
+                resolve();
+            })
+            .catch(function(e) { console.error(e); resolve(); });
+    });
+    if (!data) return;
+    const orders = data.orders || [];
         });
         if (!data) return;
     }
