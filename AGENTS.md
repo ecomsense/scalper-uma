@@ -114,6 +114,36 @@ return JSONResponse(content={"ma": ma, "profit": profit})
 pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service
 ```
 
+## Troubleshooting
+
+### Summary Shows 0 Orders
+
+**Symptom**: `/api/summary` returns 0 orders.
+
+**Root Cause**: Multiple uvicorn processes running (each with its own singleton).
+
+**Fix**: Single process, singleton reused. Read code to trace order flow, don't check broker API.
+
+### How to Trace Order Flow (Without Broker API)
+
+1. **Frontend buttons** in `src/static/chart.js`:
+   - `High` button → sends `order_type: "SL"` (Stop-Limit)
+   - `MKT` button → sends `order_type: "LMT"` (Limit)
+   
+   | Button | order_type | price |
+   |--------|------------|-------|
+   | **High** | `"SL"` | prev.high + 0.05 |
+   | **MKT** | `"LMT"` | curr.close + 2 |
+
+2. **Backend endpoint** in `src/main.py:521`:
+   - `@app.post("/api/trade/buy")` receives payload
+   - Calls `Helper.one_side(order_details)` to place order
+
+3. **Helper class** in `src/api.py`:
+   - `one_side()` → calls `cls.api().order_place(**bargs)` → broker API
+
+**Never check broker API to understand order flow** - trace through the code instead.
+
 ## Lessons Learned (2026-04-24)
 
 ### Root Cause: Broker Session Not Initialized on API Calls
