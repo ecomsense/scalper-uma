@@ -115,8 +115,19 @@
         // Fetch schedule from API and update UI
         async function loadScheduleInfo() {
             try {
-                const resp = await fetch('/api/schedule');
-                scheduleData = await resp.json();
+                // Check both schedule AND trading status
+                const [logicResp, schedResp] = await Promise.all([
+                    fetch('/api/logic/status'),
+                    fetch('/api/schedule')
+                ]);
+                const logicData = await logicResp.json();
+                scheduleData = await schedResp.json();
+                
+                // Transition to logic page if trading is running and within schedule
+                if (logicData.running && scheduleData.within_schedule) {
+                    window.location.href = '/logic';
+                    return;
+                }
                 
                 // Update schedule time display
                 document.getElementById('scheduleTime').textContent = scheduleData.schedule_times;
@@ -172,6 +183,9 @@
         // Initial load
         loadScheduleInfo();
         updateClock();
+        
+        // Refresh status every 3 seconds to transition to logic page
+        setInterval(loadScheduleInfo, 3000);
         
         // Update every second
         setInterval(updateClock, 1000);
