@@ -12,6 +12,7 @@
       <div class='app-header'>
         <h1>UMA Scalper</h1>
         <div class='header-buttons'>
+          <button class='yellow-btn' onclick='restartLogic()' title='Restart'>🔄</button>
           <button class='blue-btn' onclick='openLogsModal()'>Logs</button>
           <button class='blue-btn' onclick='openSettingsModal()'>Settings</button>
         </div>
@@ -177,6 +178,13 @@
 
       function closeLogsModal() {
         document.getElementById('logsModal').style.display = 'none';
+      }
+
+      async function restartLogic() {
+        await fetch('/api/logic/stop', { method: 'POST' });
+        await new Promise(r => setTimeout(r, 500));
+        await fetch('/api/logic/start', { method: 'POST' });
+        location.reload();
       }
     </script>
     <script src='/static/chart.js?v=59'></script>
