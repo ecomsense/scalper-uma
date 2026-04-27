@@ -567,7 +567,9 @@ async def place_buy_order(
 @app.get("/api/trade/sell")
 async def reset(symbol: str = "", ltp: float = 0) -> JSONResponse:
     try:
+        logging.info(f"Cancel requested: symbol={symbol}, ltp={ltp}")
         Helper.close_all_for_symbol(symbol, ltp)
+        logging.info(f"Cancel completed for {symbol}")
         return JSONResponse(
             content={
                 "message": "reset completed",
@@ -575,6 +577,7 @@ async def reset(symbol: str = "", ltp: float = 0) -> JSONResponse:
             }
         )
     except Exception as e:
+        logging.error(f"Cancel error: {e}")
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
         )
