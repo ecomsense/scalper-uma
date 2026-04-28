@@ -113,16 +113,22 @@ window.addEventListener("DOMContentLoaded", () => {
 
 		// Price line for buy/sell entry - single line replaces previous
 		let entryLine = null;
+		function clearAllLines() {
+			if (entryLine) {
+				candleSeries.removePriceLine(entryLine);
+				entryLine = null;
+			}
+		}
 		function drawEntryLine(price, isBuy) {
-			clearAllLines();
-			entryLine = candleSeries.createPriceLine({
-				price: price,
-				color: isBuy ? '#4CAF50' : '#f44336',
-				lineWidth: 2,
-				lineStyle: 2,
-				axisLabelVisible: true,
-				title: isBuy ? 'BUY' : 'SELL',
-			});
+			// clearAllLines();  // disabled - not drawing lines yet
+			// entryLine = candleSeries.createPriceLine({
+			// 	price: price,
+			// 	color: isBuy ? '#4CAF50' : '#f44336',
+			// 	lineWidth: 2,
+			// 	lineStyle: 2,
+			// 	axisLabelVisible: true,
+			// 	title: isBuy ? 'BUY' : 'SELL',
+			// });
 		}
 
 		// Expose drawEntryLine globally for SSE handler

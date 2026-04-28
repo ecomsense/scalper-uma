@@ -8,14 +8,12 @@ from src.constants import logging
 
 
 class Wserver:
-    # socket_opened should be instance variable, not class variable!
-    ltp: dict[str, float] = {}
-    order_updates: deque = deque(maxlen=100)
-
     def __init__(self, session: Any, tokens: list[str]) -> None:
         self.api = session
         self.tokens = tokens
         self.socket_opened = False  # Instance variable - FIXED!
+        self.ltp: dict[str, float] = {}  # Instance variable - FIXED! (was class variable)
+        self.order_updates: deque = deque(maxlen=100)  # Instance variable
         logging.info(f"🔌 Wserver: Creating websocket for tokens: {tokens}")
         
         ret = self.api.broker.start_websocket(

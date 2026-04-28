@@ -108,7 +108,7 @@
 # Check status
 systemctl --user status fastapi_app.service
 
-# Restart
+# Restart (ONLY use systemctl - NEVER start uvicorn directly)
 systemctl --user restart fastapi_app.service
 
 # Logs
@@ -140,8 +140,13 @@ curl -s http://127.0.0.1:8000/api/logic/status
 | `templates/sleeping.html` | Countdown page |
 | `templates/logic.html` | Trading charts + bottom panel |
 
+## Recent Bug Fix
+
+- `src/main.py:560` - SSE candlesticks: the lookup was checking if symbol in dict keys instead of values. `tokens_nearest` is a dict `{ws_token: trading_symbol}`, and chart passes trading_symbol (value), not key. Now checks `symbol in token_symbols.values()`.
+
 ## Milestones
 
+- `milestone/sse-fix` - SSE candlesticks: check symbol in dict values not keys
 - `milestone/migration-complete` - Latest: session TTL, schedule 09:15, UI fixed
 - `milestone/ui-fully-complete` - Responsive layouts, bottom panel
 - `milestone/app-footer-fixed` - Consolidated CSS, shared components
