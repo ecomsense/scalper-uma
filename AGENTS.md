@@ -150,3 +150,23 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - `milestone/migration-complete` - Latest: session TTL, schedule 09:15, UI fixed
 - `milestone/ui-fully-complete` - Responsive layouts, bottom panel
 - `milestone/app-footer-fixed` - Consolidated CSS, shared components
+## Known Issues & Fixes (Do Not Repeat)
+
+### SSE Candlesticks Stopped After Restart
+**Root Cause (2026-04-28):**
+1. `Wserver.ltp` and `Wserver.order_updates` were **class variables** (shared across instances)
+   - When a new Wserver was created, the old ltp data remained in the class variable
+   - SSE endpoints read stale data from the class, not the current instance
+2. `trading_session_stop()` did not clear state properly - left `tokens_nearest` and other fields populated
+
+**Fix Applied:**
+- Moved `ltp` and `order_updates` to instance variables in `__init__`
+- `trading_session_stop()` now calls `_logic_state.reset()` for complete cleanup
+
+**Lesson:** Always use instance variables for per-instance state. Class variables are shared!
+
+### Multiple Processes Spawning
+**Root Cause:** The watchdog scheduler was running every 60 seconds and restarting sessions, while the PID lock was working correctly but creating new processes that immediately exited.
+
+**Lesson:** Ensure `is_running()` check is solid before starting new sessions.
+
