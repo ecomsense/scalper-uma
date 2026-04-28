@@ -5,108 +5,143 @@
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                 CONTROLLER (main.py)                        │
-│  - APScheduler for auto start/stop within schedule             │
-│  - PID lock to prevent multiple instances                 │
-│  - HTTP Basic Auth                                    │
-│  - Serves sleeping.html or logic.html based on schedule       │
+│  - APScheduler for auto start/stop within schedule          │
+│  - PID lock to prevent multiple instances                   │
+│  - HTTP Basic Auth                                          │
+│  - Serves sleeping.html or logic.html based on schedule     │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                 LOGIC APP                                │
-│  - Trading session (TickRunner, Strategy, Wserver)       │
-│  - State stored in src/state.py (LogicState)           │
-│  - Start/Stop/Pause via /api/logic/* endpoints     │
+│                 LOGIC APP                                   │
+│  - Trading session (TickRunner, Strategy, Wserver)          │
+│  - State stored in src/state.py (LogicState)                │
+│  - Start/Stop/Pause via /api/logic/* endpoints              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Shared UI Components
+## Schedule (hardcoded in ScheduleConfig class)
 
-### Header Pattern (icon-btn)
-Both sleeping.html and logic.html share the same header buttons pattern:
+| Setting | Value |
+|---------|-------|
+| Start | 09:15 IST |
+| End | 15:31 IST |
+| Days | Mon-Fri |
 
+## Session Management (Helper.api)
+
+- Session TTL: 7 hours (auto-expire before broker token rotation)
+- Logs: `Session expired (age: X.Xh), reconnecting...` when reconnecting
+- Manual reset: `Helper.reset()` for explicit session reset
+
+## UI Structure
+
+### Header (shared)
 ```html
-<header class='app-header'>
-  <div class='header-left'>
+<div class='app-header'>
+  <div class='header-title'>
     <span>📈</span>
     <span>UMA Scalper</span>
   </div>
-  <div class='header-right'>
-    <button class='icon-btn' onclick='restartLogic()' title='Restart'>🔄</button>
-    <button class='icon-btn' onclick='openLogsModal()' title='Logs'>📋</button>
-    <button class='icon-btn' onclick='openSettingsModal()' title='Settings'>⚙️</button>
+  <div class='header-actions'>
+    <button class='icon-btn'>🔄</button>
+    <button class='icon-btn'>📋</button>
+    <button class='icon-btn'>⚙️</button>
   </div>
-</header>
+</div>
 ```
 
-### Footer Pattern
-Both pages share the app-footer:
+### Bottom Panel (logic page only)
+```html
+<div class='bottom-panel'>
+  <div class='panel-item'>Positions: <a href='#'><span>0</span></a></div>
+  <div class='panel-item'>Orders: <a href='#'><span>0</span></a></div>
+  <div class='panel-item'>M2M: <span>0.00</span></div>
+  <div class='panel-item'>Realized: <span>0.00</span></div>
+</div>
+```
 
+### Footer (shared)
 ```html
 <footer class='app-footer'>
-  Made with <span>❤</span> by <a href='https://ecomsense.in'>ecomsense.in</a>
+  Made with <span class='heart'>❤</span> by <a href='https://ecomsense.in'>ecomsense.in</a>
 </footer>
 ```
 
-### CSS Shared Classes
-- `.app-header` - Header styling
-- `.app-footer` - Footer styling
-- `.icon-btn` - Icon button styling (⚙️ 📋 🔄)
-- `.modal` - Modal overlay styling
-- `.bottom-panel` - Fixed trading summary panel
+## CSS Classes
+
+| Class | Purpose |
+|-------|---------|
+| `.app-header` | Header bar with flex space-between |
+| `.header-title` | Left side: icon + title |
+| `.header-actions` | Right side: icon buttons |
+| `.icon-btn` | Action buttons (🔄📋⚙️) |
+| `.chart-grid` | Flex container for charts |
+| `.chart-container` | Individual chart box |
+| `.bottom-panel` | Summary bar: Positions/Orders/M2M/Realized |
+| `.panel-item` | Individual metric with color-coded values |
+| `.app-footer` | Sticky footer with branding |
+| `.schedule-info` | Schedule display on sleeping page |
+| `.sleep-container` | Center content on sleeping page |
+| `.modal` / `.modal-content` | Modal overlays |
 
 ## Route Structure
 
 | Path | Description |
-|------|------------|
-| `/` | Root - shows sleeping or logic page based on schedule |
-| `/api/schedule` | Schedule info (start, end, trading days) |
+|------|-------------|
+| `/` | Root - sleeping or logic page based on schedule |
+| `/api/schedule` | Schedule info, within_schedule, times |
 | `/api/logic/start` | Start trading session |
 | `/api/logic/stop` | Stop trading session |
-| `/api/logic/status` | Trading status |
-| `/api/admin/logs` | Server logs |
-| `/api/admin/settings` | Edit settings.yml |
-| `/api/chart/settings` | MA configs for charts |
+| `/api/logic/status` | Running, paused, pause_reason |
+| `/api/summary` | Positions, orders, m2m, realized_pnl |
+| `/api/admin/logs` | Server log content |
+| `/api/admin/settings` | Read/write settings.yml |
+| `/api/chart/settings` | MA configuration for charts |
 
 ## Server
 
 **IP**: 65.20.83.178 | **User**: uma
 
-### Systemd Service
+### Commands
 ```bash
+# Check status
 systemctl --user status fastapi_app.service
-systemctl --user restart fastapi_app.service
-```
 
-### Debug Commands
-```bash
+# Restart
+systemctl --user restart fastapi_app.service
+
+# Logs
+tail -50 /home/uma/no_env/uma_scalper/data/log.txt
+
+# Check API
 curl -s http://127.0.0.1:8000/api/schedule
 curl -s http://127.0.0.1:8000/api/logic/status
-tail -20 /home/uma/no_env/uma_scalper/data/log.txt
 ```
 
-## Schedule
+## Responsive Design
 
-- **Start**: 00:05 (test), 09:14 (production)
-- **End**: 15:31 (test), 23:59 (production)
-- **Days**: Mon-Fri
-
-## Trading Flow
-
-1. **Outside Schedule**: Shows sleeping.html (countdown, schedule info)
-2. **Within Schedule**: Shows logic.html + auto-starts trading
-3. **Trading**: TickRunner executes trades based on Strategy
+- **< 900px**: Charts stack vertically, no gap between them
+- **> 900px**: Charts side by side with gap
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `src/main.py` | Controller (APScheduler, routes) |
-| `src/logic_app.py` | Trading start/stop functions |
+| `src/main.py` | Controller, ScheduleConfig, routes |
+| `src/logic_app.py` | Trading session start/stop |
 | `src/state.py` | LogicState singleton |
-| `src/api.py` | Broker API wrapper |
+| `src/api.py` | Helper.api() with session TTL |
 | `src/tickrunner.py` | Trade execution state machine |
 | `src/strategy.py` | ATM selection, premium matching |
 | `src/wserver.py` | WebSocket manager |
-| `templates/sleeping.html` | Sleep page UI |
-| `templates/logic.html` | Trading page UI |
+| `src/static/styles.css` | Shared CSS for both pages |
+| `src/static/summary.js` | Bottom panel updates |
+| `templates/sleeping.html` | Countdown page |
+| `templates/logic.html` | Trading charts + bottom panel |
+
+## Milestones
+
+- `milestone/migration-complete` - Latest: session TTL, schedule 09:15, UI fixed
+- `milestone/ui-fully-complete` - Responsive layouts, bottom panel
+- `milestone/app-footer-fixed` - Consolidated CSS, shared components
