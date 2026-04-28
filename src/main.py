@@ -557,9 +557,9 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
         ws = _logic_state.ws
         token_symbols = _logic_state.tokens_nearest
 
-        try:
+        if symbol in token_symbols.values():
             token_symbol = next(k for k, v in token_symbols.items() if v == symbol)
-        except (KeyError, IndexError):
+        else:
             return
 
         waited = 0
