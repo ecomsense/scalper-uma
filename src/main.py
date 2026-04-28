@@ -548,7 +548,7 @@ async def reset(symbol: str = '', ltp: float = 0) -> JSONResponse:
 
 @app.get('/sse/candlesticks/{symbol}')
 async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSourceResponse:
-    logging.debug(f'SSE connection requested for symbol: {symbol}')
+    logging.info(f'SSE connection requested for symbol: {symbol}')
 
     last_sent_candle: dict[str, Any] | None = None
 
@@ -557,10 +557,16 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
         ws = _logic_state.ws
         token_symbols = _logic_state.tokens_nearest
 
-        if symbol in token_symbols.values():
-            token_symbol = next(k for k, v in token_symbols.items() if v == symbol)
-        else:
+        if not ws or not token_symbols:
+            logging.error(f'SSE error: ws={ws}, tokens_nearest={token_symbols}')
             return
+
+        if symbol not in token_symbols.values():
+            logging.error(f'SSE symbol {symbol} not in tokens_nearest values. Available: {list(token_symbols.values())}')
+            return
+
+        token_symbol = next(k for k, v in token_symbols.items() if v == symbol)
+        logging.info(f'SSE mapping: {symbol} -> {token_symbol}')
 
         waited = 0
         while token_symbol not in ws.ltp and waited < 60:
@@ -568,7 +574,10 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
             waited += 1
 
         if token_symbol not in ws.ltp:
+            logging.error(f'SSE timeout: {token_symbol} not in ws.ltp after {waited/2}s. LTP keys: {list(ws.ltp.keys())[:10]}')
             return
+
+        logging.info(f'SSE connected for {symbol}, initial LTP: {ws.ltp.get(token_symbol)}')
 
         while True:
             await asyncio.sleep(0.5)
