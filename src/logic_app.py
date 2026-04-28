@@ -151,14 +151,8 @@ async def trading_session_stop(app: Any) -> None:
             logging.info('TickRunner task cancelled.')
         except Exception:
             pass
-        _logic_state.runner_task = None
 
-    if _logic_state.ws:
-        _logic_state.ws = None
-    
-    _logic_state.runner = None
-    _logic_state.running = False
-    
+    _logic_state.reset()
     logging.info('✅ Trading session stopped.')
 
 
