@@ -1,71 +1,80 @@
-# SPEC.md Q&A for Scalper-UMA Project
+# Scalper-UMA Specification
+
+## Project Overview
+
+**Project Name**: Scalper-UMA
+**Type**: Options scalping trading bot
+**Goal**: Automate intraday option scalping with predefined strategy
 
 ## Architecture
 
-**Q: What is the high-level architecture?**
-A: Controller (main.py) handles scheduling, auth, routing. Logic app handles trading. State managed via LogicState singleton.
+```
+Controller (main.py) → Logic App → TickRunner → Strategy → Broker API
+```
 
-**Q: What are the main components?**
-A: TickRunner (trade execution), Strategy (ATM selection), Wserver (websocket), Helper.api() (broker API)
+- **Controller**: FastAPI app, scheduling, HTTP auth, routes
+- **Logic App**: Trading session management
+- **TickRunner**: State machine for trade execution (create → entry → exit → complete)
+- **Strategy**: ATM strike selection, premium matching
+- **Broker API**: Finvasia/Shroonya (Flattrade) wrapper
 
-**Q: What is the state management approach?**
-A: LogicState singleton in src/state.py holds: running, paused, ws, runner, tokens_nearest, quantity, started_at
+## Key Components
+
+| Component | Responsibility |
+|-----------|----------------|
+| `main.py` | FastAPI app, PID lock, schedule config |
+| `logic_app.py` | Start/stop trading session |
+| `state.py` | LogicState singleton (running, ws, tokens, etc.) |
+| `api.py` | Helper.api() - broker session, 7h TTL |
+| `wserver.py` | Websocket manager for live prices |
+| `tickrunner.py` | Trade execution state machine |
+| `strategy.py` | Option strike selection by ATM/premium |
 
 ## API Routes
 
-**Q: What are the key API routes?**
-A:
-- `/api/logic/start` - Start trading session
-- `/api/logic/stop` - Stop trading session
-- `/api/logic/status` - Get running state
-- `/api/summary` - Positions, orders, M2M, realized PnL
-- `/api/schedule` - Schedule info
-- `/sse/candlesticks/{symbol}` - Live OHLC candles
-- `/sse/orders` - Order updates stream
-
-**Q: What authentication is used?**
-A: HTTP Basic Auth (configured in main.py)
-
-## External Integrations
-
-**Q: What broker API is used?**
-A: Finvasia/Shoonya (Flattrade) - via `src/api.py` Helper class
-
-**Q: How does websocket work?**
-A: Wserver connects to broker, subscribes to tokens, pushes LTP updates to `ws.ltp` dict
-
-**Q: What is the session management?**
-A: 7-hour TTL on API session to handle broker token rotation
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/` | GET | Root (sleeping or logic page) |
+| `/api/schedule` | GET | Schedule info |
+| `/api/logic/start` | POST | Start trading |
+| `/api/logic/stop` | POST | Stop trading |
+| `/api/logic/status` | GET | Running state |
+| `/api/summary` | GET | Positions, orders, PnL |
+| `/api/admin/settings` | GET/PUT | config |
+| `/sse/candlesticks/{symbol}` | GET | Live OHLC stream |
+| `/sse/orders` | GET | Order updates stream |
 
 ## Configuration
 
-**Q: Where is config stored?**
-A: `data/settings.yml` - program times, trade params (quantity, profit, premium), log settings
+- **Schedule**: 09:15-15:31 IST, Mon-Fri
+- **Session TTL**: 7 hours (broker token rotation)
+- **Config file**: `data/settings.yml`
 
-**Q: What are the schedule times?**
-A: Start: 09:15 IST, End: 15:31 IST, Days: Mon-Fri
+## Dependencies
 
-## Key Files
-
-**Q: What files are critical?**
-A:
-- `src/main.py` - Controller, routes, SSE endpoints
-- `src/logic_app.py` - Start/stop trading session
-- `src/state.py` - LogicState singleton
-- `src/api.py` - Broker API wrapper
-- `src/wserver.py` - Websocket manager
-- `src/tickrunner.py` - Trade execution state machine
-- `src/strategy.py` - ATM selection, premium matching
-
-## Known Issues
-
-**Q: What are the documented issues?**
-A: See AGENTS.md "Known Issues & Fixes" section - includes SSE dict keys, cancel button status, order_cancel kwargs, etc.
+- fastapi, uvicorn
+- flattrade (broker SDK)
+- sse-starlette (server-sent events)
+- apscheduler (scheduling)
+- lightweight-charts (frontend)
 
 ## Deployment
 
-**Q: How is it deployed?**
-A: Manual uvicorn start (not systemd), PID lock to prevent multiple instances
+- Manual uvicorn start (PID lock prevents duplicates)
+- Log file: `data/log.txt`
+- No systemd (per project requirements)
 
-**Q: Where are logs written?**
-A: `data/log.txt` with log.show: true in settings.yml
+## Known Issues to Watch
+
+1. Order cancel status check must handle uppercase statuses
+2. order_cancel() API doesn't accept quantity kwarg
+3. Use instance variables not class variables for FastAPI state
+4. SSE token lookup must check dict values not keys
+
+## Milestones
+
+- [x] Session TTL handling
+- [x] Schedule-based auto start/stop
+- [x] Responsive UI with charts
+- [x] SSE candlesticks streaming
+- [x] Order updates via SSE
