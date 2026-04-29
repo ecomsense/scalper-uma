@@ -201,6 +201,11 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 ```
 
 ### SSE Candlesticks Stopped After Restart
+- **Symptom**: SSE endpoint returns no data for options charts
+- **Root Cause**: `tokens_nearest` is a dict `{ws_token: trading_symbol}`. SSE lookup was checking if symbol in dict keys (`if symbol in token_symbols`), but chart passes trading_symbol (dict value), not the ws_token key.
+- **Fix**: Check `if symbol in token_symbols.values()` instead of `if symbol in token_symbols`
+- **Location**: `src/main.py:560`
+
 **Root Cause (2026-04-28):**
 1. `Wserver.ltp` and `Wserver.order_updates` were **class variables** (shared across instances)
    - When a new Wserver was created, the old ltp data remained
@@ -228,6 +233,7 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 ### Charts Not Displaying
 1. Check SSE: `curl -s http://127.0.0.1:8000/sse/candlesticks/SYMBOL`
 2. If historical empty, chart.js now uses live SSE data
+3. If SSE returns nothing, check that logic is running (`/api/logic/status` shows `running: true`)
 
 ### Bottom Panel Not Updating
 1. Check: summary.js has auto-fetch enabled
