@@ -304,23 +304,6 @@ curl -s http://127.0.0.1:8000/api/logic/status
 4. **Shell commands**: Create in `scripts/` directory first (not in git), reference in AGENTS.md
 5. **Code changes**: Commit with `fix/feat #<issue>` message
 
-### Troubleshooting Format (in AGENTS.md)
-For each documented issue:
-```
-- issue: <description>
-  pre: check_issue.sh
-  commit: <git hash>
-  post: verify_fix.sh
-```
-
-Example:
-```
-- SSE candlesticks not streaming
-  pre: scripts/test_sse_endpoint.sh
-  commit: dd3e57d
-  post: scripts/verify_sse_stream.sh
-```
-
 ## Scripts Directory
 
 Store server/system commands in `scripts/` for reproducibility:
