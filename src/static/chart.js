@@ -37,6 +37,37 @@ window.addEventListener("DOMContentLoaded", () => {
 	};
 
 	const maColors = ["#FFA500", "#00FF00", "#FF00FF", "#00FFFF", "#FF00AA", "#FFFF00"];
+	
+	// Color name to hex mapping for MA colors
+	const colorMap = {
+		red: '#FF0000',
+		green: '#00FF00',
+		blue: '#0000FF',
+		yellow: '#FFFF00',
+		cyan: '#00FFFF',
+		magenta: '#FF00FF',
+		purple: '#800080',
+		orange: '#FFA500',
+		pink: '#FFC0CB',
+		brown: '#A52A2A',
+		gray: '#808080',
+		grey: '#808080',
+		white: '#FFFFFF',
+		black: '#000000',
+		lime: '#00FF00',
+		navy: '#000080',
+		teal: '#008080',
+		olive: '#808000',
+		maroon: '#800000',
+		aqua: '#00FFFF',
+		silver: '#C0C0C0'
+	};
+	
+	function getColorHex(colorName) {
+		if (!colorName) return null;
+		const colorLower = colorName.toLowerCase().trim();
+		return colorMap[colorLower] || null;
+	}
 
 	function calculateSMA(data, period, priceField) {
 		const result = [];
@@ -101,7 +132,11 @@ window.addEventListener("DOMContentLoaded", () => {
 		const maSeries = [];
 		
 		maConfigs.forEach((config, index) => {
-			const color = maColors[index % maColors.length];
+			// Use user-defined color if available, otherwise use default
+			let color = config.color ? getColorHex(config.color) : null;
+			if (!color) {
+				color = maColors[index % maColors.length];
+			}
 			const series = chart.addLineSeries({ 
 				color: color, 
 				lineWidth: 1,
