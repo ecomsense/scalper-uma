@@ -106,10 +106,11 @@
 ### Commands
 ```bash
 # Check status
-systemctl --user status fastapi_app.service
+ps aux | grep uvicorn | grep -v grep
 
-# Restart (ONLY use systemctl - NEVER start uvicorn directly)
-systemctl --user restart fastapi_app.service
+# Restart - NEVER use systemctl
+pkill -9 -f uvicorn; sleep 2
+cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &
 
 # Logs
 tail -50 /home/uma/no_env/uma_scalper/data/log.txt
@@ -152,21 +153,105 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - `milestone/app-footer-fixed` - Consolidated CSS, shared components
 ## Known Issues & Fixes (Do Not Repeat)
 
+### Cancel Button Not Working
+- **Symptom**: Click does nothing
+- **Root Cause**: Status check used lowercase `"trigger_pending"` but broker API returns uppercase `"TRIGGER_PENDING"`
+- **Fix**: Use `if status in ['OPEN', 'TRIGGER_PENDING', 'PENDING']`
+
+### order_cancel() Gets Unexpected Keyword Argument
+- **Symptom**: `Flattrade.order_cancel() got an unexpected keyword argument 'quantity'`
+- **Root Cause**: Broker API `order_cancel()` only accepts `order_id`, not `quantity`
+- **Fix**: `cls.api().order_cancel(order_id=o.get('order_id'))` (no quantity kwarg)
+
+### Sell Endpoint 500 Error
+- **Symptom**: `/api/trade/sell` returns 500
+- **Root Cause**: `ltp` variable was undefined - need to pass as query parameter from frontend
+
+### Logs Button Empty Modal
+- **Symptom**: Logs modal shows nothing
+- **Root Cause**: Two issues:
+  1. fetch used `.text()` but API returns JSON → use `.json()`
+  2. `loadLogs()` function was missing from index.html → add it
+
+### Position/Order Modals Show Stale Data
+- **Symptom**: Data doesn't update on refresh
+- **Root Cause**: Modal used cached data instead of fetching fresh
+- **Fix**: Always fetch fresh when opening modal
+
+### JavaScript Not Executing (Sleeping Page)
+- **Symptom**: Clock not updating, emojis not showing
+- **Root Cause**: `</script>` placed too early in main.py HTML string - code after it becomes plain text
+
+### Log File Not Writing
+- **Symptom**: Logs in stdout but not in `data/log.txt`
+- **Root Cause**: `settings.yml` `log.show: false` → console only
+- **Fix**: Set `log.show: true`
+
+### Historical/Premium Logging Spam
+- **Symptom**: Too many INFO logs (every tick)
+- **Fix**: Use `logging.debug()` for entries that fire frequently
+
+### Multiple Uvicorn Processes
+- **Symptom**: Code changes not taking effect, race conditions
+- **Root Cause**: Systemd user service spawning multiple processes
+- **Fix**: DO NOT use systemctl - start manually:
+```bash
+pkill -9 -f uvicorn; sleep 2
+cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &
+```
+
 ### SSE Candlesticks Stopped After Restart
 **Root Cause (2026-04-28):**
 1. `Wserver.ltp` and `Wserver.order_updates` were **class variables** (shared across instances)
-   - When a new Wserver was created, the old ltp data remained in the class variable
-   - SSE endpoints read stale data from the class, not the current instance
-2. `trading_session_stop()` did not clear state properly - left `tokens_nearest` and other fields populated
+   - When a new Wserver was created, the old ltp data remained
+   - SSE endpoints read stale data from the class
+2. `trading_session_stop()` did not clear state properly
 
-**Fix Applied:**
+**Fix:**
 - Moved `ltp` and `order_updates` to instance variables in `__init__`
 - `trading_session_stop()` now calls `_logic_state.reset()` for complete cleanup
 
-**Lesson:** Always use instance variables for per-instance state. Class variables are shared!
+**Lesson:** Always use instance variables for per-instance state!
 
-### Multiple Processes Spawning
-**Root Cause:** The watchdog scheduler was running every 60 seconds and restarting sessions, while the PID lock was working correctly but creating new processes that immediately exited.
+## Troubleshooting Guide
 
-**Lesson:** Ensure `is_running()` check is solid before starting new sessions.
+### Service Not Starting
+1. Check: `ps aux | grep uvicorn`
+2. If port in use: `pkill -9 -f uvicorn; sleep 2 && cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &`
+3. Verify: Memory ~80MB, Tasks 10+
+
+### API Returning Empty Data
+1. Check: `tail -50 /home/uma/no_env/uma_scalper/data/log.txt`
+2. Verify new code: restart with above command
+3. Force fresh session: Helper._api = None before calling Helper.api()
+
+### Charts Not Displaying
+1. Check SSE: `curl -s http://127.0.0.1:8000/sse/candlesticks/SYMBOL`
+2. If historical empty, chart.js now uses live SSE data
+
+### Bottom Panel Not Updating
+1. Check: summary.js has auto-fetch enabled
+2. Refresh interval: 5 seconds
+
+### General Debug
+1. Always check: `ps aux | grep uvicorn` - should show ONE process
+2. Always check: `tail -50 data/log.txt`
+3. Kill ghost: `pkill -9 -f uvicorn`
+
+## Best Practices
+
+### Recommended Log Level
+**`level: 20` (INFO)** in settings.yml - filters spam (`Using existing session` every 500ms) while keeping important events (session start/stop, entry CANCELED, trade checks, errors).
+
+### Always Use Instance Variables
+For FastAPI state (Wserver, Helper, etc.): use instance variables `self.xxx`, not class variables `Wserver.xxx`. Class variables are shared across all instances!
+
+### Key Debug Commands
+```bash
+ps aux | grep uvicorn | grep -v grep     # Check ONE process
+tail -20 /home/uma/no_env/uma_scalper/data/log.txt
+grep -i cancel /home/uma/no_env/uma_scalper/data/log.txt | tail -5
+curl -s http://127.0.0.1:8000/api/trade/sell?symbol=NIFTY28APR26P24000&ltp=5
+curl -s http://127.0.0.1:8000/api/admin/logs | head -c 500
+```
 
