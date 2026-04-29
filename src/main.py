@@ -138,8 +138,8 @@ class ScheduleConfig:
         self.enabled = True
         self.start_hour = 9
         self.start_minute = 15
-        self.end_hour = 15
-        self.end_minute = 31
+        self.end_hour = 23
+        self.end_minute = 59
         self.trading_days = [0, 1, 2, 3, 4]
         self.trading_day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
