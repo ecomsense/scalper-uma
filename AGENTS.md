@@ -224,13 +224,14 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 ## Troubleshooting Guide
 
 ### Service Not Starting
-1. Check: `ps aux | grep uvicorn`
-2. If port in use: `pkill -9 -f uvicorn; sleep 2 && cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &`
-3. Verify: Memory ~80MB, Tasks 10+
+1. Check systemd: `systemctl --user status fastapi_app`
+2. If failed: `journalctl --user -u fastapi_app -n 20` for error details
+3. Restart: `systemctl --user restart fastapi_app`
+4. If port in use: `pkill -f 'python.*uvicorn'` then restart
 
 ### API Returning Empty Data
-1. Check: `tail -50 /home/uma/no_env/uma_scalper/data/log.txt`
-2. Verify new code: restart with above command
+1. Check systemd logs: `journalctl --user -u fastapi_app -n 50`
+2. Check app logs: `tail -50 /home/uma/no_env/uma_scalper/data/log.txt`
 3. Force fresh session: Helper._api = None before calling Helper.api()
 
 ### Charts Not Displaying
@@ -243,11 +244,16 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 2. Refresh interval: 5 seconds
 
 ### General Debug
-1. Always check: `ps aux | grep uvicorn` - should show ONE process
-2. Always check: `tail -50 data/log.txt`
-3. Kill ghost: `pkill -9 -f uvicorn`
+1. Always check systemd: `systemctl --user status fastapi_app`
+2. Check systemd logs: `journalctl --user -u fastapi_app -f`
+3. Check app logs: `tail -50 /home/uma/no_env/uma_scalper/data/log.txt`
 
 ## Best Practices
+
+### Use Systemd for FastAPI Apps
+- Always use `systemctl --user start/restart/stop fastapi_app`
+- Check logs with `journalctl --user -u fastapi_app`
+- Never start uvicorn directly
 
 ### Recommended Log Level
 **`level: 20` (INFO)** in settings.yml - filters spam (`Using existing session` every 500ms) while keeping important events (session start/stop, entry CANCELED, trade checks, errors).
@@ -257,11 +263,10 @@ For FastAPI state (Wserver, Helper, etc.): use instance variables `self.xxx`, no
 
 ### Key Debug Commands
 ```bash
-ps aux | grep uvicorn | grep -v grep     # Check ONE process
+systemctl --user status fastapi_app     # Check ONE process via systemd
+journalctl --user -u fastapi_app -n 20  # Check systemd logs
 tail -20 /home/uma/no_env/uma_scalper/data/log.txt
-grep -i cancel /home/uma/no_env/uma_scalper/data/log.txt | tail -5
-curl -s http://127.0.0.1:8000/api/trade/sell?symbol=NIFTY28APR26P24000&ltp=5
-curl -s http://127.0.0.1:8000/api/admin/logs | head -c 500
+curl -s http://127.0.0.1:8000/api/logic/status
 ```
 
 ## Issue Workflow
