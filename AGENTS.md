@@ -228,6 +228,7 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 2. If failed: `journalctl --user -u fastapi_app -n 20` for error details
 3. Restart: `systemctl --user restart fastapi_app`
 4. If port in use: `pkill -f 'python.*uvicorn'` then restart
+5. If PID lock issue: `rm -f data/app.pid && systemctl --user restart fastapi_app`
 
 ### API Returning Empty Data
 1. Check systemd logs: `journalctl --user -u fastapi_app -n 50`
