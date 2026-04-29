@@ -8,7 +8,10 @@ User=uma
 Group=uma
 WorkingDirectory=/home/uma/no_env/uma_scalper
 Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
+Environment=SKIP_PID_LOCK=1
 ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+StandardOutput=append:/home/uma/no_env/uma_scalper/data/log.txt
+StandardError=append:/home/uma/no_env/uma_scalper/data/log.txt
 Restart=always
 RestartSec=5
 
