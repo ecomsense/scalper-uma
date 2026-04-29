@@ -261,3 +261,20 @@ curl -s http://127.0.0.1:8000/api/trade/sell?symbol=NIFTY28APR26P24000&ltp=5
 curl -s http://127.0.0.1:8000/api/admin/logs | head -c 500
 ```
 
+## Issue Workflow
+
+1. **Check**: Search AGENTS.md and git history for existing issue
+2. **If exists**:
+   - Could be regression from another fix - trace what changed
+   - Fix not fully documented - add to AGENTS.md
+3. **If new**: User opens GitHub issue, I reference issue # in commits
+4. **Shell commands**: Add to `scripts/` directory (not in git, but documented in AGENTS.md)
+5. **Code changes**: Commit with `fix/feat #<issue>` message
+
+## Scripts Directory
+
+Store server/system commands in `scripts/` for reproducibility:
+- Restart commands
+- Log inspection
+- Process management
+
