@@ -204,9 +204,9 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 - **Symptom**: SSE endpoint returns no data for options charts
 - **Root Cause**: `tokens_nearest` is a dict `{ws_token: trading_symbol}`. SSE lookup was checking if symbol in dict keys (`if symbol in token_symbols`), but chart passes trading_symbol (dict value), not the ws_token key.
 - **Fix**: Check `if symbol in token_symbols.values()` instead of `if symbol in token_symbols`
-- **pre**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/test_sse_endpoint.sh
-- **commit**: https://github.com/ecomsense/scalper-uma/commit/dd3e57d
-- **post**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/verify_sse_stream.sh
+- **pre**: test_sse_endpoint.sh
+- **commit**: dd3e57d
+- **post**: verify_sse_stream.sh
 
 **Root Cause (2026-04-28):**
 1. `Wserver.ltp` and `Wserver.order_updates` were **class variables** (shared across instances)
@@ -224,17 +224,17 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 - **Symptom**: MA settings changed but not reflected in trading logic
 - **Root Cause**: O_SETG was cached in memory and not reloaded
 - **Fix**: Set `src.constants._loaded = False` after saving settings
-- **pre**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/check_server_responding.sh
-- **commit**: https://github.com/ecomsense/scalper-uma/commit/361f6c0
-- **post**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/verify_settings_reload.sh
+- **pre**: check_server_responding.sh
+- **commit**: 361f6c0
+- **post**: verify_settings_reload.sh
 
 ### Server Hung After Settings Change
 - **Symptom**: Server stops responding after changing settings
 - **Root Cause**: Stale app.pid file causes PID lock conflict
 - **Fix**: Delete app.pid before restart
-- **pre**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/check_server_responding.sh
-- **commit**: https://github.com/ecomsense/scalper-uma/commit/901114a
-- **post**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/verify_settings_reload.sh
+- **pre**: check_server_responding.sh
+- **commit**: 901114a
+- **post**: verify_settings_reload.sh
 
 ### Server Hung After Settings Change
 - **Symptom**: Server stops responding after changing settings and restarting
@@ -308,9 +308,9 @@ curl -s http://127.0.0.1:8000/api/logic/status
 For each documented issue:
 ```
 - issue: <description>
-  pre: <scripts/check_issue.sh>
-  commit: <git hash of fix>
-  post: <scripts/verify_fix.sh>
+  pre: check_issue.sh
+  commit: <git hash>
+  post: verify_fix.sh
 ```
 
 Example:
