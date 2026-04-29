@@ -206,3 +206,10 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Fix**: Simplified restartLogic to only stop_logic() + redirect to /. Let scheduler handle startup based on market hours
 - **pre**: check_server_responding.sh
 - **post**: verify_settings_reload.sh
+
+### Sleep Page Doesn't Auto-Start After Restart (During Market Hours)
+- **Symptom**: After restart button redirects to /, sleep page stays stuck showing countdown. Trading doesn't resume
+- **Root Cause**: `/logic` route checks `if within_schedule AND running` before serving logic.html. Sleep page only redirected if `logicData.running=true`. After restart, running=false, so no redirect
+- **Fix**: Sleep page now checks if `within_schedule && !running`, auto-calls POST `/api/logic/start`, waits 1s, then redirects to `/logic`
+- **pre**: check_restart_during_hours.sh
+- **post**: verify_auto_restart_resume.sh
