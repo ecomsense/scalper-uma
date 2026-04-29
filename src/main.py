@@ -138,8 +138,8 @@ class ScheduleConfig:
         self.enabled = True
         self.start_hour = 9
         self.start_minute = 15
-        self.end_hour = 15
-        self.end_minute = 31
+        self.end_hour = 23
+        self.end_minute = 55
         self.trading_days = [0, 1, 2, 3, 4]
         self.trading_day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
@@ -386,6 +386,11 @@ async def update_settings(request: Request, settings_data: dict[str, Any] = Body
         content = settings_data.get('content', '')
         with open(settings_path, 'w') as f:
             f.write(content)
+        
+        from src.constants import _loaded
+        import src.constants
+        src.constants._loaded = False
+        
         await stop_logic()
         return JSONResponse(content={'message': 'Settings saved. Trading stopped.', 'status': 'success'})
     except Exception as e:

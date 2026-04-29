@@ -254,6 +254,7 @@ window.addEventListener("DOMContentLoaded", () => {
 	fetch("/api/chart/settings")
 		.then(r => r.json())
 		.then(settings => {
+			console.log("MA Config loaded:", JSON.stringify(settings));
 			return fetch("/api/symbols").then(r => r.json()).then(symbols => ({ settings, symbols }));
 		})
 .then(({ settings, symbols }) => {

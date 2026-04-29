@@ -69,6 +69,9 @@ async def trading_session_start(app: Any) -> None:
         logging.info('✅ Broker API session created')
 
         settings = get_settings()
+        ma_list = settings.get("ma", [])
+        profit_val = settings.get("profit")
+        logging.info(f'⚙️ Settings loaded: ma={ma_list}, profit={profit_val}')
         index_token = f"{settings.get('exchange')}|{settings.get('token')}"
         
         from src.wserver import Wserver
