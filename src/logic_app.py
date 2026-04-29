@@ -131,6 +131,8 @@ async def trading_session_start(app: Any) -> None:
         task = asyncio.create_task(runner.run())
         _logic_state.runner_task = task
         
+        on_start(_logic_state.startup_data, _logic_state.app_data)
+        
         logging.info(f'Nearest symbols: {tokens_nearest}')
         logging.info('✅ Trading session started.')
 
@@ -143,6 +145,8 @@ async def trading_session_start(app: Any) -> None:
 async def trading_session_stop(app: Any) -> None:
     logging.info('Stopping trading session...')
 
+    on_stop(_logic_state.app_data if hasattr(_logic_state, 'app_data') else {})
+
     if _logic_state.runner_task:
         _logic_state.runner_task.cancel()
         try:
@@ -151,6 +155,13 @@ async def trading_session_stop(app: Any) -> None:
             logging.info('TickRunner task cancelled.')
         except Exception:
             pass
+
+    if getattr(_logic_state, 'ws', None) and hasattr(_logic_state.ws, 'close'):
+        try:
+            logging.info('Closing broker websocket...')
+            _logic_state.ws.close()
+        except Exception as e:
+            logging.error(f'Error closing websocket: {e}')
 
     _logic_state.reset()
     logging.info('✅ Trading session stopped.')
@@ -226,7 +237,13 @@ def create_logic_router() -> APIRouter:
         return await stop_logic()
 
     @router.post('/pause')
-    async def pause(reason: str = 'manual', duration: int = 60):
-        return await pause_logic(reason=reason, duration_seconds=duration)
+    
+    @router.post('/reset-all')
+    async def reset_all():
+        from src.api import Helper
+        Helper.reset()
+        _logic_state.startup_data = None
+        _logic_state.reset()
+        return {'status': 'reset_all_done'}
 
     return router
