@@ -204,10 +204,9 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 - **Symptom**: SSE endpoint returns no data for options charts
 - **Root Cause**: `tokens_nearest` is a dict `{ws_token: trading_symbol}`. SSE lookup was checking if symbol in dict keys (`if symbol in token_symbols`), but chart passes trading_symbol (dict value), not the ws_token key.
 - **Fix**: Check `if symbol in token_symbols.values()` instead of `if symbol in token_symbols`
-- **Location**: `src/main.py:560`
-- **pre**: scripts/test_sse_endpoint.sh
-- **commit**: dd3e57d
-- **post**: scripts/verify_sse_stream.sh
+- **pre**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/test_sse_endpoint.sh
+- **commit**: https://github.com/ecomsense/scalper-uma/commit/dd3e57d
+- **post**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/verify_sse_stream.sh
 
 **Root Cause (2026-04-28):**
 1. `Wserver.ltp` and `Wserver.order_updates` were **class variables** (shared across instances)
@@ -223,12 +222,19 @@ cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --ho
 
 ### Settings Not Reloading After Save
 - **Symptom**: MA settings changed but not reflected in trading logic
-- **Root Cause**: After saving settings.yml via API, O_SETG was cached in memory and not reloaded
-- **Fix**: Set `src.constants._loaded = False` after saving settings file
-- **Location**: `src/main.py:389-392`
-- **pre**: scripts/check_server_responding.sh
-- **commit**: 361f6c0
-- **post**: scripts/verify_settings_reload.sh
+- **Root Cause**: O_SETG was cached in memory and not reloaded
+- **Fix**: Set `src.constants._loaded = False` after saving settings
+- **pre**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/check_server_responding.sh
+- **commit**: https://github.com/ecomsense/scalper-uma/commit/361f6c0
+- **post**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/verify_settings_reload.sh
+
+### Server Hung After Settings Change
+- **Symptom**: Server stops responding after changing settings
+- **Root Cause**: Stale app.pid file causes PID lock conflict
+- **Fix**: Delete app.pid before restart
+- **pre**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/check_server_responding.sh
+- **commit**: https://github.com/ecomsense/scalper-uma/commit/901114a
+- **post**: https://github.com/ecomsense/scalper-uma/blob/main/scripts/verify_settings_reload.sh
 
 ### Server Hung After Settings Change
 - **Symptom**: Server stops responding after changing settings and restarting
