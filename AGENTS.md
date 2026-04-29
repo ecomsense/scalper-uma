@@ -225,3 +225,33 @@ curl -s http://127.0.0.1:8000/api/logic/status
   3. Sleep page auto-start handles restart during market hours
 - **pre**: check_settings_reload.sh
 - **post**: verify_settings_reset_flow.sh
+
+### MA Color Support
+- **Symptom**: Users found it difficult to identify MAs on charts when colors were random
+- **Solution**: Added optional `color` field to MA config in settings.yml
+- **Implementation**:
+  1. Added colorMap with 20+ English color names (red, green, blue, purple, orange, teal, etc.)
+  2. Chart.js checks if MA has user-defined color, falls back to random palette if color unknown
+  3. Example config:
+     ```yaml
+     ma:
+       - type: ema
+         period: 10
+         price: low
+         color: red
+       - type: ema
+         period: 20
+         price: close
+         color: green
+     ```
+- **Code**: `src/static/chart.js:42-99` (colorMap, getColorHex, getRandomColor functions)
+
+### Systemd Logging to data/log.txt
+- **Symptom**: FastAPI/Uvicorn logs were only in journalctl, not in application log file
+- **Solution**: Configure systemd to append stdout/stderr to data/log.txt
+- **Implementation**:
+  1. Updated factory/uma-scalper.service with StandardOutput/StandardError directives
+  2. Applied same changes to server's /home/uma/.config/systemd/user/fastapi_app.service
+  3. Systemd daemon-reload and restart service
+- **Result**: All logs (FastAPI startup, application logs, system events) now in single file: data/log.txt
+- **Code**: `factory/uma-scalper.service` (service template), `src/main.py` (logging config)
