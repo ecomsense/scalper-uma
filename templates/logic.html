@@ -187,29 +187,11 @@
       async function restartLogic() {
         try {
           await Promise.race([
-            fetch('/api/logic/reset-all', { method: 'POST' }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('reset timeout')), 3000))
-          ]);
-        } catch (e) {
-          console.error('Reset failed:', e);
-        }
-        await new Promise(r => setTimeout(r, 500));
-        try {
-          await Promise.race([
             fetch('/api/logic/stop', { method: 'POST' }),
             new Promise((_, reject) => setTimeout(() => reject(new Error('stop timeout')), 3000))
           ]);
         } catch (e) {
           console.error('Stop failed:', e);
-        }
-        await new Promise(r => setTimeout(r, 500));
-        try {
-          await Promise.race([
-            fetch('/api/logic/start', { method: 'POST' }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('start timeout')), 3000))
-          ]);
-        } catch (e) {
-          console.error('Start failed:', e);
         }
         window.location.href = '/';
       }
