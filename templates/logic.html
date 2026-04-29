@@ -166,6 +166,8 @@
            });
            // Reset Helper and startup_data
            await fetch('/api/admin/reset', { method: 'POST' });
+           // Wait 2s for reset to take effect (like backend restart endpoint)
+           await new Promise(resolve => setTimeout(resolve, 2000));
          } catch (e) {
            console.error('Settings save/reset failed:', e);
          }
