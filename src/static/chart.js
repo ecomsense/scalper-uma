@@ -66,7 +66,9 @@ window.addEventListener("DOMContentLoaded", () => {
 	function getColorHex(colorName) {
 		if (!colorName) return null;
 		const colorLower = colorName.toLowerCase().trim();
-		return colorMap[colorLower] || null;
+		const hex = colorMap[colorLower];
+		console.log(`[MA Color] Input: "${colorName}" -> Normalized: "${colorLower}" -> Hex: ${hex || 'NOT FOUND'}`);
+		return hex || null;
 	}
 
 	function calculateSMA(data, period, priceField) {
@@ -131,11 +133,16 @@ window.addEventListener("DOMContentLoaded", () => {
 		const maConfigs = settings && settings.ma ? settings.ma : [];
 		const maSeries = [];
 		
+		console.log('[MA Config] Loaded', maConfigs.length, 'MA configurations:', maConfigs);
+		
 		maConfigs.forEach((config, index) => {
 			// Use user-defined color if available, otherwise use default
 			let color = config.color ? getColorHex(config.color) : null;
 			if (!color) {
 				color = maColors[index % maColors.length];
+				console.log(`[MA Color] Index ${index}: Using default color ${color}`);
+			} else {
+				console.log(`[MA Color] Index ${index}: Using user color ${color}`);
 			}
 			const series = chart.addLineSeries({ 
 				color: color, 
