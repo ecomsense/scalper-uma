@@ -72,26 +72,31 @@ def check_pid_lock() -> bool:
     try:
         old_pid = int(LOCK_FILE.read_text().strip())
         os.kill(old_pid, 0)
-        logging.error(f'Another instance is running (PID: {old_pid}). Exiting.')
+        logging.warning(f'Another instance is running (PID: {old_pid}). Exiting.')
         return False
     except OSError:
-        logging.info(f'Stale lock file found (PID: {old_pid}). Proceeding.')
+        logging.info(f'Stale lock file found (PID: {old_pid}). Removing and proceeding.')
+        try:
+            LOCK_FILE.unlink()
+        except Exception:
+            pass
         return True
 
 
 def acquire_pid_lock() -> None:
-    LOCK_FILE.write_text(str(os.getpid()))
-    logging.info(f'PID lock acquired: {os.getpid()}')
+    try:
+        LOCK_FILE.write_text(str(os.getpid()))
+        logging.info(f'PID lock acquired: {os.getpid()}')
+    except Exception as e:
+        logging.error(f'Failed to acquire PID lock: {e}')
 
 
 def release_pid_lock() -> None:
     if LOCK_FILE.exists():
         try:
-            current_pid = int(LOCK_FILE.read_text().strip())
-            if current_pid == os.getpid():
-                LOCK_FILE.unlink()
-                logging.info('PID lock released')
-        except (ValueError, IOError):
+            LOCK_FILE.unlink()
+            logging.info('PID lock released')
+        except Exception:
             pass
 
 
@@ -257,8 +262,8 @@ async def lifespan(app: FastAPI):
     
     if _is_lock_enabled:
         if not check_pid_lock():
-            logging.error('Another instance is running. Exiting.')
-            sys.exit(1)
+            logging.warning('Another instance is running. Exiting cleanly.')
+            return
         acquire_pid_lock()
     
     if schedule_config.enabled:
