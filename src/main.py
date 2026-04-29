@@ -71,6 +71,8 @@ def check_pid_lock() -> bool:
         return True
     try:
         old_pid = int(LOCK_FILE.read_text().strip())
+        if old_pid == os.getpid():
+            return True
         os.kill(old_pid, 0)
         logging.error(f'Another instance is running (PID: {old_pid}). Exiting.')
         return False
