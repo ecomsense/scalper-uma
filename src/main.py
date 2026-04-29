@@ -582,10 +582,19 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
         logging.info(f'SSE connected for {symbol}, initial LTP: {ws.ltp.get(token_symbol)}')
 
         while True:
+            if not _logic_state.is_running():
+                logging.info(f'Trading stopped. Closing SSE stream for {symbol}.')
+                break
+
+            current_ws = _logic_state.ws
+            if current_ws is None:
+                await asyncio.sleep(0.5)
+                continue
+
             await asyncio.sleep(0.5)
 
             try:
-                price = ws.ltp.get(token_symbol)
+                price = current_ws.ltp.get(token_symbol)
                 if price is None:
                     continue
 
@@ -618,6 +627,9 @@ async def sse_candlestick_endpoint(symbol: str, request: Request) -> EventSource
 async def stream_all_orders(request: Request) -> EventSourceResponse:
     async def event_generator():
         while True:
+            if not _logic_state.is_running():
+                break
+
             ws = _logic_state.ws
             if ws and ws.order_updates:
                 order_msg = ws.order_updates.popleft()
@@ -646,8 +658,11 @@ app.include_router(logic_router, prefix='/api/logic')
 async def restart_trading_session(request: Request) -> JSONResponse:
     try:
         await stop_logic()
+        await asyncio.sleep(2.0)
+        from src.api import Helper
+        Helper.reset()
         await start_logic()
-        return JSONResponse(content={'message': 'Trading session restarted', 'status': 'success'})
+        return JSONResponse(content={'message': 'Trading session restarted cleanly', 'status': 'success'})
     except Exception as e:
         return JSONResponse(content={'message': f'Failed to restart: {e}', 'status': 'error'}, status_code=500)
 
