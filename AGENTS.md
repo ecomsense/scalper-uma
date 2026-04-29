@@ -200,11 +200,14 @@ pkill -9 -f uvicorn; sleep 2
 cd /home/uma/no_env/uma_scalper && .venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000 >> data/log.txt 2>&1 &
 ```
 
-### SSE Candlesticks Stopped After Restart
+### SSE Candlesticks Not Streaming
 - **Symptom**: SSE endpoint returns no data for options charts
 - **Root Cause**: `tokens_nearest` is a dict `{ws_token: trading_symbol}`. SSE lookup was checking if symbol in dict keys (`if symbol in token_symbols`), but chart passes trading_symbol (dict value), not the ws_token key.
 - **Fix**: Check `if symbol in token_symbols.values()` instead of `if symbol in token_symbols`
 - **Location**: `src/main.py:560`
+- **pre**: scripts/test_sse_endpoint.sh
+- **commit**: dd3e57d
+- **post**: scripts/verify_sse_stream.sh
 
 **Root Cause (2026-04-28):**
 1. `Wserver.ltp` and `Wserver.order_updates` were **class variables** (shared across instances)
@@ -265,11 +268,28 @@ curl -s http://127.0.0.1:8000/api/admin/logs | head -c 500
 
 1. **Check**: Search AGENTS.md and git history for existing issue
 2. **If exists**:
-   - Could be regression from another fix - trace what changed
+   - Could be regression from another fix - trace what changed with git log
    - Fix not fully documented - add to AGENTS.md
 3. **If new**: User opens GitHub issue, I reference issue # in commits
-4. **Shell commands**: Add to `scripts/` directory (not in git, but documented in AGENTS.md)
+4. **Shell commands**: Create in `scripts/` directory first (not in git), reference in AGENTS.md
 5. **Code changes**: Commit with `fix/feat #<issue>` message
+
+### Troubleshooting Format (in AGENTS.md)
+For each documented issue:
+```
+- issue: <description>
+  pre: <scripts/check_issue.sh>
+  commit: <git hash of fix>
+  post: <scripts/verify_fix.sh>
+```
+
+Example:
+```
+- SSE candlesticks not streaming
+  pre: scripts/test_sse_endpoint.sh
+  commit: dd3e57d
+  post: scripts/verify_sse_stream.sh
+```
 
 ## Scripts Directory
 
