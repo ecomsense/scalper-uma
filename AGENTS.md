@@ -184,3 +184,25 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Fix**: Set SKIP_PID_LOCK=1 in service Environment, use Restart=always
 - **pre**: check_server_responding.sh
 - **post**: verify_settings_reload.sh
+
+### Unclean Restart - Ghost Websocket References in SSE Streams
+- **Symptom**: Restart button calls stop/start but old websocket held in memory by SSE loops, broker login tangled
+- **Root Cause**: 
+  1. on_start() and on_stop() lifecycle hooks defined but never invoked
+  2. SSE endpoints cached ws outside while loop - old ws never garbage collected
+  3. Websocket TCP connection never explicitly closed on stop
+- **Fix**:
+  1. Added on_start() call after state initialized in trading_session_start()
+  2. Added on_stop() call before reset in trading_session_stop()
+  3. Added ws.close() in trading_session_stop() to close broker connection
+  4. SSE endpoints check if not _logic_state.is_running() to break and disconnect
+  5. Added 2s delay in restart endpoint + Helper.reset() for fresh broker login
+- **pre**: check_server_responding.sh
+- **post**: verify_settings_reload.sh
+
+### Restart Button Not Redirecting to Sleep Page
+- **Symptom**: Restart button hangs or doesn't redirect properly
+- **Root Cause**: Complex restart logic with multiple awaits, used reload() which reloads logic page not sleep page
+- **Fix**: Simplified restartLogic to only stop_logic() + redirect to /. Let scheduler handle startup based on market hours
+- **pre**: check_server_responding.sh
+- **post**: verify_settings_reload.sh
