@@ -213,3 +213,13 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Fix**: Sleep page now checks if `within_schedule && !running`, auto-calls POST `/api/logic/start`, waits 1s, then redirects to `/logic`
 - **pre**: check_restart_during_hours.sh
 - **post**: verify_auto_restart_resume.sh
+
+### Settings Save Doesn't Clear Session State
+- **Symptom**: After saving settings and restarting, old broker session and startup_data persist, causing login confusion
+- **Root Cause**: `saveAndRestart()` only saved settings and called `restartLogic()`, but didn't call `Helper.reset()` to clear session state
+- **Fix**: 
+  1. Created new endpoint `/api/admin/reset` that calls `Helper.reset()`
+  2. Modified `saveAndRestart()` to: save settings → call `/api/admin/reset` → call `restartLogic()` (stop + redirect to /)
+  3. Sleep page auto-start handles restart during market hours
+- **pre**: check_settings_reload.sh
+- **post**: verify_settings_reset_flow.sh
