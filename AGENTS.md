@@ -216,10 +216,12 @@ curl -s http://127.0.0.1:8000/api/logic/status
 
 ### Settings Save Doesn't Clear Session State
 - **Symptom**: After saving settings and restarting, old broker session and startup_data persist, causing login confusion
-- **Root Cause**: `saveAndRestart()` only saved settings and called `restartLogic()`, but didn't call `Helper.reset()` to clear session state
+- **Root Cause**: 
+  1. `saveAndRestart()` saved settings and called `restartLogic()`, but didn't call `Helper.reset()` to clear session state
+  2. Missing 2s delay between reset and stop caused old session to linger during stop transition
 - **Fix**: 
   1. Created new endpoint `/api/admin/reset` that calls `Helper.reset()`
-  2. Modified `saveAndRestart()` to: save settings → call `/api/admin/reset` → call `restartLogic()` (stop + redirect to /)
+  2. Modified `saveAndRestart()` to: save settings → reset → **wait 2s** → stop → redirect to /
   3. Sleep page auto-start handles restart during market hours
 - **pre**: check_settings_reload.sh
 - **post**: verify_settings_reset_flow.sh
