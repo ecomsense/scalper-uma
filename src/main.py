@@ -685,6 +685,16 @@ async def admin_stop_session(request: Request) -> JSONResponse:
         return JSONResponse(content={'message': f'Failed to stop: {e}', 'status': 'error'}, status_code=500)
 
 
+@app.post('/api/admin/reset')
+async def admin_reset_session(request: Request) -> JSONResponse:
+    try:
+        from src.api import Helper
+        Helper.reset()
+        return JSONResponse(content={'message': 'Session reset complete', 'status': 'success'})
+    except Exception as e:
+        return JSONResponse(content={'message': f'Failed to reset: {e}', 'status': 'error'}, status_code=500)
+
+
 if __name__ == '__main__':
     import uvicorn
     uvicorn.run(app, host='127.0.0.1', port=8000)

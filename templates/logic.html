@@ -154,20 +154,24 @@
           });
       }
 
-      async function saveAndRestart() {
-        closeSettingsModal();
-        const content = document.getElementById('settingsEditor').value;
-        try {
-          await fetch('/api/admin/settings', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content})
-          });
-        } catch (e) {
-          console.error('Settings save failed:', e);
-        }
-        restartLogic();
-      }
+       async function saveAndRestart() {
+         closeSettingsModal();
+         const content = document.getElementById('settingsEditor').value;
+         try {
+           // Save settings
+           await fetch('/api/admin/settings', {
+             method: 'POST',
+             headers: {'Content-Type': 'application/json'},
+             body: JSON.stringify({content})
+           });
+           // Reset Helper and startup_data
+           await fetch('/api/admin/reset', { method: 'POST' });
+         } catch (e) {
+           console.error('Settings save/reset failed:', e);
+         }
+         // Reuse restart logic (stop + redirect)
+         restartLogic();
+       }
 
       function closeSettingsModal() {
         document.getElementById('settingsModal').style.display = 'none';
