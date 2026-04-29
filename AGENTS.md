@@ -170,3 +170,10 @@ curl -s http://127.0.0.1:8000/api/logic/status
 
 **Lesson:** Ensure `is_running()` check is solid before starting new sessions.
 
+
+### PID Lock False Positive - Another instance for Same PID
+- **Symptom**: Another instance is running (PID: X) errors every 6 seconds even though only one process running
+- **Root Cause**: check_pid_lock() didnt check if old_pid == os.getpid() before os.kill()
+- **Fix**: Added if old_pid == os.getpid(): return True before os.kill in check_pid_lock()
+- **pre**: check_server_responding.sh
+- **post**: verify_settings_reload.sh
