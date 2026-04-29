@@ -177,3 +177,10 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Fix**: Added if old_pid == os.getpid(): return True before os.kill in check_pid_lock()
 - **pre**: check_server_responding.sh
 - **post**: verify_settings_reload.sh
+
+### Server Crashing with Another instance errors
+- **Symptom**: Service stuck in restart loop, Another instance is running errors every 6 seconds
+- **Root Cause**: Multiple issues - PID lock false positive, port 8000 occupied, user service cant specify User/Group
+- **Fix**: Set SKIP_PID_LOCK=1 in service Environment, use Restart=always
+- **pre**: check_server_responding.sh
+- **post**: verify_settings_reload.sh
