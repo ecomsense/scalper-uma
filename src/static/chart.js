@@ -63,12 +63,34 @@ window.addEventListener("DOMContentLoaded", () => {
 		silver: '#C0C0C0'
 	};
 	
-	function getColorHex(colorName) {
+	// Extended random color palette
+	const randomColorPalette = [
+		'#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8',
+		'#F7DC6F', '#BB8FCE', '#85C1E2', '#F8B739', '#52B788',
+		'#D62839', '#F77F00', '#06A77D', '#8338EC', '#FF006E',
+		'#FB5607', '#FFBE0B', '#8338EC', '#3A86FF', '#FB5607'
+	];
+	
+	function getRandomColor(seed) {
+		// Use seed to generate consistent random color for same MA
+		const index = Math.abs(seed) % randomColorPalette.length;
+		return randomColorPalette[index];
+	}
+	
+	function getColorHex(colorName, seed) {
 		if (!colorName) return null;
 		const colorLower = colorName.toLowerCase().trim();
 		const hex = colorMap[colorLower];
-		console.log(`[MA Color] Input: "${colorName}" -> Normalized: "${colorLower}" -> Hex: ${hex || 'NOT FOUND'}`);
-		return hex || null;
+		
+		if (hex) {
+			console.log(`[MA Color] Input: "${colorName}" -> Found: ${hex}`);
+			return hex;
+		} else {
+			// Color name not in map, generate random color based on seed
+			const randomColor = getRandomColor(seed);
+			console.log(`[MA Color] Input: "${colorName}" -> Not found in map, using random: ${randomColor}`);
+			return randomColor;
+		}
 	}
 
 	function calculateSMA(data, period, priceField) {
@@ -136,13 +158,14 @@ window.addEventListener("DOMContentLoaded", () => {
 		console.log('[MA Config] Loaded', maConfigs.length, 'MA configurations:', maConfigs);
 		
 		maConfigs.forEach((config, index) => {
-			// Use user-defined color if available, otherwise use default
-			let color = config.color ? getColorHex(config.color) : null;
-			if (!color) {
-				color = maColors[index % maColors.length];
-				console.log(`[MA Color] Index ${index}: Using default color ${color}`);
+			let color;
+			if (config.color) {
+				// Try to use user-defined color
+				color = getColorHex(config.color, index);
 			} else {
-				console.log(`[MA Color] Index ${index}: Using user color ${color}`);
+				// No color specified, use default palette
+				color = maColors[index % maColors.length];
+				console.log(`[MA Color] Index ${index}: No color specified, using default ${color}`);
 			}
 			const series = chart.addLineSeries({ 
 				color: color, 
