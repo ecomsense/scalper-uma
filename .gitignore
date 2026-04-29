@@ -146,6 +146,9 @@ cython_debug/
 *.tok
 poetry.lock
 
+# scripts (shell commands, not in git)
+scripts/
+
 node_modules/
 package.json
 package-lock.json
