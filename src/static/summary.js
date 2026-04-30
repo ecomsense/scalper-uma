@@ -74,7 +74,7 @@ function showPositionsModal() {
         const ltp = p.last_price || 0;
         const symbol = p.symbol || '';
         const actionBtn = qty > 0 
-            ? '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\')">Square</button>'
+            ? '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Square</button>'
             : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
         const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
         html += '<tr style="' + rowColor + '">';
@@ -135,9 +135,23 @@ function showOrdersModal() {
     document.getElementById('ordersModal').style.display = 'block';
 }
 
-function squareOff(symbol) {
-    console.log('Square off:', symbol);
-    alert('Square off for ' + symbol + ' - feature coming soon');
+function squareOff(symbol, qty, ltp, exchange) {
+    console.log('Square off:', symbol, 'qty:', qty, 'ltp:', ltp, 'price:', (ltp - 2));
+    fetch('/api/position/square', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            symbol: symbol,
+            quantity: qty,
+            ltp: ltp,
+            exchange: exchange
+        })
+    }).then(r => r.json()).then(d => {
+        alert(d.message || 'Square order placed');
+        closePositionsModal();
+    }).catch(e => {
+        alert('Error: ' + e);
+    });
 }
 
 function addPosition(symbol, ltp, quantity, exchange) {
