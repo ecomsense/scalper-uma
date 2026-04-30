@@ -99,12 +99,10 @@ function showOrdersModal() {
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
-            const dateObj = new Date(ts);
-            if (!isNaN(dateObj.getTime())) {
-                const h = String(dateObj.getHours()).padStart(2, '0');
-                const m = String(dateObj.getMinutes()).padStart(2, '0');
-                const s = String(dateObj.getSeconds()).padStart(2, '0');
-                time = `${h}:${m}:${s}`;
+            // Broker sends: "HH:MM:SS DD-MM-YYYY" - extract just time part before space
+            const parts = ts.split(' ');
+            if (parts.length >= 1 && parts[0].includes(':')) {
+                time = parts[0]; // Already in HH:MM:SS format
             } else {
                 time = ts;
             }
