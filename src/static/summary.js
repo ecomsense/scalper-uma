@@ -112,12 +112,16 @@ function showOrdersModal() {
         let cancelBtn = '';
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') {
             statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
-            cancelBtn = ' <button style="background:transparent;border:none;color:white;font-weight:bold;cursor:pointer;padding:0 4px;font-size:12px;" onclick="cancelOrder(\'' + orderId + '\')">X</button>';
+        } else if (status === 'COMPLETE') {
+            statusBg = 'background:#6c757d;color:white;border-radius:8px;padding:4px 8px;';
+        } else if (status === 'CANCELED') {
+            statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
+        } else if (status === 'REJECTED') {
+            statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
+        } else {
+            statusBg = 'background:#666;color:white;border-radius:8px;padding:4px 8px;';
         }
-        else if (status === 'COMPLETE') statusBg = 'background:#6c757d;color:white;border-radius:8px;padding:4px 8px;';
-        else if (status === 'CANCELED') statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
-        else if (status === 'REJECTED') statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
-        else statusBg = 'background:#666;color:white;border-radius:8px;padding:4px 8px;';
+        cancelBtn = ' <button style="background:transparent;border:none;color:white;font-weight:bold;cursor:pointer;padding:0 4px;font-size:12px;" onclick="cancelOrder(\'' + orderId + '\')">X</button>';
         const side = (o.side || '').trim().toUpperCase();
         let rowColor = side === 'B' ? '#1e7a1e' : (side === 'S' ? '#a93226' : '');
         const ts = o.broker_timestamp || '';
