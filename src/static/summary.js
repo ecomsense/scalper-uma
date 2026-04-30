@@ -95,7 +95,8 @@ function showOrdersModal() {
         const status = o.status || '';
         let bg = '';
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
-        else if (status === 'CANCELED' || status === 'REJECTED') bg = 'background:#ff4444;color:white;border-radius:8px;padding:4px 8px;';
+        else if (status === 'CANCELED') bg = 'background:#ffcc00;color:black;border-radius:8px;padding:4px 8px;';
+        else if (status === 'REJECTED') bg = 'background:#ff4444;color:white;border-radius:8px;padding:4px 8px;';
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
