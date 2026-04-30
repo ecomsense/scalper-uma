@@ -98,9 +98,9 @@ function showOrdersModal() {
         else if (status === 'CANCELED') bg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'REJECTED') bg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
         const side = (o.side || '').trim().toUpperCase();
-        let sideColor = '';
-        if (side === 'B') sideColor = 'color:#2d8a2d;font-weight:bold;';
-        else if (side === 'S') sideColor = 'color:#c0392b;font-weight:bold;';
+        let sideBg = '';
+        if (side === 'B') sideBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
+        else if (side === 'S') sideBg = 'background:#c0392b;color:white;border-radius:8px;padding:4px 8px;';
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
@@ -116,7 +116,7 @@ function showOrdersModal() {
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.cname || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + sideColor + '\u0022>' + (o.side || '') + '</td>';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + sideBg + '\u0022>' + (o.side || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + bg + '\u0022>' + status + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.price || '') + '</td>';
         html += '</tr>';
