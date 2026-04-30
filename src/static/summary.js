@@ -110,7 +110,11 @@ function showOrdersModal() {
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.cname || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.side || '') + '</td>';
+        const side = (o.side || '').trim().toUpperCase();
+        let sideStyle = '';
+        if (side === 'B') sideStyle = 'color:#2d8a2d;font-weight:bold;';
+        else if (side === 'S') sideStyle = 'color:#c0392b;font-weight:bold;';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + sideStyle + '\u0022>' + (o.side || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + bg + '\u0022>' + status + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.price || '') + '</td>';
         html += '</tr>';
