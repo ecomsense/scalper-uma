@@ -75,7 +75,7 @@ function showPositionsModal() {
         const symbol = p.symbol || '';
         const actionBtn = qty > 0 
             ? '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\')">Square</button>'
-            : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\')">Add</button>';
+            : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ')">Add</button>';
         const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
         html += '<tr style="' + rowColor + '">';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
@@ -140,9 +140,46 @@ function squareOff(symbol) {
     alert('Square off for ' + symbol + ' - feature coming soon');
 }
 
-function addPosition(symbol) {
-    console.log('Add position:', symbol);
-    alert('Add position for ' + symbol + ' - feature coming soon');
+function addPosition(symbol, ltp, quantity) {
+    console.log('Add position:', symbol, 'LTP:', ltp);
+    document.getElementById('buySymbol').textContent = symbol;
+    document.getElementById('buyLtp').textContent = ltp.toFixed(2);
+    document.getElementById('buyPrice').value = ltp.toFixed(2);
+    document.getElementById('buyExitPrice').value = (ltp * 0.95).toFixed(2);
+    document.getElementById('buyCostPrice').value = ltp.toFixed(2);
+    document.getElementById('buyQty').value = quantity || 65;
+    document.getElementById('buyOrderModal').style.display = 'block';
+}
+
+function closeBuyOrderModal() {
+    document.getElementById('buyOrderModal').style.display = 'none';
+}
+
+function submitBuyOrder() {
+    const symbol = document.getElementById('buySymbol').textContent;
+    const price = parseFloat(document.getElementById('buyPrice').value);
+    const quantity = parseInt(document.getElementById('buyQty').value);
+    const exit_price = parseFloat(document.getElementById('buyExitPrice').value);
+    const cost_price = parseFloat(document.getElementById('buyCostPrice').value);
+
+    fetch('/api/trade/buy', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            symbol: symbol,
+            quantity: quantity,
+            order_type: 'LIMIT',
+            price: price,
+            exit_price: exit_price,
+            cost_price: cost_price,
+            tag: 'manual'
+        })
+    }).then(r => r.json()).then(d => {
+        alert(d.message || 'Order placed');
+        closeBuyOrderModal();
+    }).catch(e => {
+        alert('Error: ' + e);
+    });
 }
 
 console.log('summary.js v12 - ready');
