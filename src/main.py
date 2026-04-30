@@ -575,6 +575,44 @@ async def add_position_order(request: Request, payload: dict[str, Any] = Body(..
         return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
 
 
+@app.post('/api/position/square')
+async def square_position(request: Request, payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    try:
+        from src.api import Helper
+        settings = get_settings()
+
+        symbol = payload.get('symbol', '').upper()
+        quantity = abs(payload.get('quantity', 0))
+        ltp = payload.get('ltp', 0)
+        exchange = payload.get('exchange', settings.get('option_exchange', 'NFO'))
+
+        if not symbol or quantity == 0:
+            return JSONResponse(content={'message': 'Symbol and quantity required', 'status': 'error'}, status_code=400)
+
+        sell_price = ltp - 2
+
+        order_details = {
+            'symbol': symbol,
+            'quantity': quantity,
+            'disclosed_quantity': 0,
+            'exchange': exchange,
+            'side': 'SELL',
+            'order_type': 'LIMIT',
+            'price': sell_price,
+            'trigger_price': 0,
+            'validity': 'DAY',
+        }
+
+        order_id = Helper.one_side(order_details)
+        if order_id:
+            return JSONResponse(content={'message': f'Sell order placed to square {symbol} at {sell_price}', 'status': 'success', 'order_id': order_id})
+        return JSONResponse(content={'message': 'Failed to square position', 'status': 'failed'}, status_code=500)
+
+    except Exception as e:
+        logging.error(f'Square position error: {e}')
+        return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
+
+
 # ============================================================
 # Routes - SSE Streaming
 # ============================================================
