@@ -97,26 +97,8 @@ function showOrdersModal() {
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') bg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED') bg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'REJECTED') bg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
-        const side = (o.side || '').trim().toUpperCase();
-        let sideBg = '';
-        if (side === 'B') sideBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
-        else if (side === 'S') sideBg = 'background:#c0392b;color:white;border-radius:8px;padding:4px 8px;';
-        const ts = o.broker_timestamp || '';
-        let time = '';
-        if (ts) {
-            // Broker sends: "HH:MM:SS DD-MM-YYYY" - extract just time part before space
-            const parts = ts.split(' ');
-            if (parts.length >= 1 && parts[0].includes(':')) {
-                time = parts[0]; // Already in HH:MM:SS format
-            } else {
-                time = ts;
-            }
-        }
-        html += '<tr>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.cname || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + sideBg + '\u0022>' + (o.side || '') + '</td>';
+const side = (o.side || '').trim().toUpperCase();
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.side || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + bg + '\u0022>' + status + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.price || '') + '</td>';
         html += '</tr>';
