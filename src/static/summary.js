@@ -95,6 +95,7 @@ function showOrdersModal() {
         const status = (o.status || '').trim().toUpperCase();
         let statusBg = '';
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
+        else if (status === 'COMPLETE') statusBg = 'background:#888888;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED') statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'REJECTED') statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
         const side = (o.side || '').trim().toUpperCase();
