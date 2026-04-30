@@ -68,13 +68,22 @@ function showPositionsModal() {
     }
 
     let html = '<table style=\u0022width:100%;border-collapse:collapse;\u0022>';
-    html += '<tr><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Symbol</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Qty</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>RPNL</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>M2M</th></tr>';
+    html += '<tr><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Symbol</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>LTP</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Qty</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>RPNL</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>M2M</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Action</th></tr>';
     positions.forEach(function(p) {
-        html += '<tr>';
+        const qty = p.quantity || 0;
+        const ltp = p.last_price || 0;
+        const symbol = p.symbol || '';
+        const actionBtn = qty > 0 
+            ? '<button style=\u0022background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;\u0022 onclick=\"squareOff(\\'' + symbol + '\\')\">Square</button>'
+            : '<button style=\u0022background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;\u0022 onclick=\"addPosition(\\'' + symbol + '\\')\">Add</button>';
+        const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
+        html += '<tr style=\"' + rowColor + '\">';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.cname || p.symbol || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.quantity || 0) + '</td>';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + ltp.toFixed(2) + '</td>';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + qty + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.rpnl || 0) + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.urmtom || 0) + '</td>';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + actionBtn + '</td>';
         html += '</tr>';
     });
     html += '</table>';
@@ -126,4 +135,14 @@ function showOrdersModal() {
     document.getElementById('ordersModal').style.display = 'block';
 }
 
-console.log('summary.js v11 - ready');
+function squareOff(symbol) {
+    console.log('Square off:', symbol);
+    alert('Square off for ' + symbol + ' - feature coming soon');
+}
+
+function addPosition(symbol) {
+    console.log('Add position:', symbol);
+    alert('Add position for ' + symbol + ' - feature coming soon');
+}
+
+console.log('summary.js v12 - ready');
