@@ -110,6 +110,11 @@ window.addEventListener("DOMContentLoaded", () => {
 		const multiplier = 2 / (period + 1);
 		let ema = null;
 		
+		// Debug: check first few data points
+		console.log(`[EMA] Calculating period=${period}, priceField=${priceField}`);
+		console.log(`[EMA] First data point:`, data[0]);
+		console.log(`[EMA] Has ${priceField}:`, priceField in (data[0] || {}));
+		
 		for (let i = 0; i < data.length; i++) {
 			const price = data[i][priceField];
 			if (i < period - 1) {
