@@ -258,9 +258,14 @@ curl -s http://127.0.0.1:8000/api/logic/status
 
 ### Orders Timestamp Shows Date Instead of Time
 - **Symptom**: Orders modal shows date (e.g., "2026-04-30") instead of time (e.g., "10:30:45")
-- **Root Cause**: JavaScript tried to extract time with string split, but broker timestamp format varies. If no space or T in timestamp, shows full date string
-- **Fix**: Use JavaScript `Date()` to parse timestamp, then `toLocaleTimeString()` to display as HH:MM:SS
-- **Code**: `src/static/summary.js:99-107` (new Date parsing, toLocaleTimeString)
+- **Root Cause**: 
+  1. JavaScript tried to extract time with string split, but broker timestamp format varies
+  2. toLocaleTimeString still included date in some locales
+- **Fix**: 
+  1. Use JavaScript `Date()` to parse timestamp
+  2. Extract time components manually: getHours(), getMinutes(), getSeconds() with padding
+  3. Format as HH:MM:SS without date
+- **Code**: `src/static/summary.js:99-108` (manual time extraction)
 - **pre**: check_server_responding.sh
 - **post**: verify_orders_time_display.sh
 
