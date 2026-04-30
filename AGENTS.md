@@ -286,5 +286,22 @@ curl -s http://127.0.0.1:8000/api/logic/status
   1. Call Helper.reset() in lifespan startup to force fresh broker login
   2. Add asyncio.wait_for with 2s timeout for stopping operations
   3. Call Helper.reset() after stopping to clear broker session
+- **How it works now**:
+  - **Restart button click**:
+    1. Frontend calls POST `/api/logic/stop`
+    2. Backend calls `trading_session_stop()`:
+       - Calls `on_stop()` lifecycle hook
+       - Cancels TickRunner task (with 2s timeout via asyncio.wait_for)
+       - Closes websocket via `_logic_state.ws.close()`
+       - Calls `_logic_state.reset()` and `Helper.reset()` to clear broker session
+    3. Frontend redirects to `/` (sleep page)
+  - **Next startup** (sleep page auto-start or manual):
+    1. `lifespan()` calls `Helper.reset()` on startup (forces fresh broker login)
+    2. Creates fresh websocket connection
+    3. Trading starts
+- **Log indicators**:
+  - `Session reset on startup - forcing fresh broker login` (at startup)
+  - `Broker session reset` (after stop)
+  - `Closing broker websocket...` (before stop completes)
 - **pre**: scripts/check_restart_button.sh
 - **post**: scripts/verify_restart_button.sh
