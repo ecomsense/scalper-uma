@@ -544,9 +544,11 @@ async def add_position_order(request: Request, payload: dict[str, Any] = Body(..
         settings = get_settings()
 
         symbol = payload.get('symbol', '').upper()
-        quantity = payload.get('quantity', 65)
+        quantity = payload.get('quantity', _logic_state.quantity)
         price = payload.get('price', 0)
         order_type = payload.get('order_type', 'LIMIT')
+        trigger_price = payload.get('trigger_price', 0)
+        validity = payload.get('validity', 'DAY')
 
         if not symbol:
             return JSONResponse(content={'message': 'Symbol required', 'status': 'error'}, status_code=400)
@@ -559,6 +561,8 @@ async def add_position_order(request: Request, payload: dict[str, Any] = Body(..
             'side': 'BUY',
             'order_type': order_type,
             'price': price,
+            'trigger_price': trigger_price,
+            'validity': validity,
         }
 
         order_id = Helper.one_side(order_details)
