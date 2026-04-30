@@ -190,6 +190,7 @@ function addPosition(symbol, ltp, quantity, exchange, product) {
     console.log('Add position:', symbol, 'LTP:', ltp, 'Exchange:', exchange, 'Product:', product);
     document.getElementById('buySymbol').textContent = symbol;
     document.getElementById('buyExchange').textContent = exchange || 'NFO';
+    document.getElementById('buyProduct').textContent = product || 'NRML';
     document.getElementById('buyPrice').value = ltp.toFixed(2);
     document.getElementById('buyQty').value = quantity || 65;
     document.getElementById('buyOrderModal').dataset.product = product || 'NRML';
