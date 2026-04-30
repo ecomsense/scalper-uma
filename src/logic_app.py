@@ -150,7 +150,7 @@ async def trading_session_stop(app: Any) -> None:
     if _logic_state.runner_task:
         _logic_state.runner_task.cancel()
         try:
-            await _logic_state.runner_task
+            await asyncio.wait_for(_logic_state.runner_task, timeout=2.0)
         except asyncio.CancelledError:
             logging.info('TickRunner task cancelled.')
         except Exception:
@@ -164,6 +164,11 @@ async def trading_session_stop(app: Any) -> None:
             logging.error(f'Error closing websocket: {e}')
 
     _logic_state.reset()
+    
+    from src.api import Helper
+    Helper.reset()
+    logging.info('Broker session reset')
+    
     logging.info('✅ Trading session stopped.')
 
 

@@ -257,6 +257,10 @@ def load_page_template(name: str) -> str:
 async def lifespan(app: FastAPI):
     app.state.logic = _logic_state
     
+    from src.api import Helper
+    Helper.reset()
+    logging.info('Session reset on startup - forcing fresh broker login')
+    
     if _is_lock_enabled:
         if not check_pid_lock():
             logging.error('Another instance is running. Exiting.')
