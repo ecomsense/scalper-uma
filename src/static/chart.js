@@ -170,6 +170,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const series = chart.addLineSeries({ 
 				color: color, 
 				lineWidth: 1,
+				priceLineVisible: false,
 				lastValueVisible: false,
 				crosshairMarkerVisible: false,
 			});
@@ -211,12 +212,16 @@ window.addEventListener("DOMContentLoaded", () => {
 				const priceField = config.price || 'close';
 				const type = config.type || 'sma';
 				
-				if (candleData.length < period) return;
+				if (candleData.length < period) {
+					console.log(`[MA] Skipping ${type} period=${period}, priceField=${priceField} - not enough data (${candleData.length} < ${period})`);
+					return;
+				}
 				
 				const data = type === 'ema' 
 					? calculateEMA(candleData, period, priceField)
 					: calculateSMA(candleData, period, priceField);
 				
+				console.log(`[MA] ${type} period=${period}, priceField=${priceField}:`, data.slice(0, 3), '... total:', data.length);
 				series.setData(data);
 			});
 		}
