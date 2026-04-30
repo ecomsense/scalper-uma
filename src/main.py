@@ -388,6 +388,8 @@ async def update_settings(request: Request, settings_data: dict[str, Any] = Body
         content = settings_data.get('content', '')
         with open(settings_path, 'w') as f:
             f.write(content)
+        from src.constants import load_env_settings
+        load_env_settings()
         await stop_logic()
         return JSONResponse(content={'message': 'Settings saved. Trading stopped.', 'status': 'success'})
     except Exception as e:
