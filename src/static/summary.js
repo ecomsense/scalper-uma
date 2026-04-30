@@ -73,9 +73,14 @@ function showPositionsModal() {
         const qty = p.quantity || 0;
         const ltp = p.last_price || 0;
         const symbol = p.symbol || '';
-        const actionBtn = qty > 0 
-            ? '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Square</button>'
-            : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
+        let actionBtn = '';
+        if (qty > 0) {
+            actionBtn = '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Square</button>';
+        } else if (qty < 0) {
+            actionBtn = '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="coverPosition(\'' + symbol + '\',' + Math.abs(qty) + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Cover</button>';
+        } else {
+            actionBtn = '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
+        }
         const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
         html += '<tr style="' + rowColor + '">';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
@@ -136,7 +141,7 @@ function showOrdersModal() {
 }
 
 function squareOff(symbol, qty, ltp, exchange) {
-    console.log('Square off:', symbol, 'qty:', qty, 'ltp:', ltp, 'price:', (ltp - 2));
+    console.log('Square off (long):', symbol, 'qty:', qty, 'ltp:', ltp, 'price:', (ltp - 2));
     fetch('/api/position/square', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -148,6 +153,27 @@ function squareOff(symbol, qty, ltp, exchange) {
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Square order placed');
+        closePositionsModal();
+    }).catch(e => {
+        alert('Error: ' + e);
+    });
+}
+
+function coverPosition(symbol, qty, ltp, exchange) {
+    console.log('Cover position (short):', symbol, 'qty:', qty, 'ltp:', ltp, 'price:', (ltp + 2));
+    fetch('/api/position/add', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            symbol: symbol,
+            quantity: qty,
+            price: ltp + 2,
+            order_type: 'LIMIT',
+            trigger_price: 0,
+            validity: 'DAY'
+        })
+    }).then(r => r.json()).then(d => {
+        alert(d.message || 'Cover order placed');
         closePositionsModal();
     }).catch(e => {
         alert('Error: ' + e);
