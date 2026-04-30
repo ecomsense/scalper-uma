@@ -6,46 +6,34 @@ import gc
 import json
 import logging
 import os
-import signal
 import sys
 from base64 import b64decode
-from contextlib import asynccontextmanager, suppress
+from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
-from functools import lru_cache
 from pathlib import Path
-from traceback import print_exc
 from typing import Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-from fastapi import Body, FastAPI, Header, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi import Body, FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pytz import timezone as tz
 from sse_starlette.sse import EventSourceResponse
 
 from src.constants import (
-    O_CNFG,
     O_FUTL,
     O_SETG,
     S_DATA,
     TRADE_JSON,
-    dct_sym,
-    logging,
 )
-from src.state import _logic_state, get_logic_state
+from src.state import _logic_state
 
 from src.logic_app import (
     create_logic_router,
     get_settings,
-    get_status,
-    load_template,
-    pause_logic,
     start_logic,
     stop_logic,
-    trading_session_start,
-    trading_session_stop,
 )
 
 
@@ -140,7 +128,7 @@ class ScheduleConfig:
         self.enabled = True
         self.start_hour = 9
         self.start_minute = 15
-        self.end_hour = 15
+        self.end_hour = 21
         self.end_minute = 31
         self.trading_days = [0, 1, 2, 3, 4]
         self.trading_day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
