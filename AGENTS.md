@@ -300,3 +300,21 @@ curl -s http://127.0.0.1:8000/api/logic/status
   - `Closing broker websocket...` (before stop completes)
 - **pre**: scripts/check_restart_button.sh
 - **post**: scripts/verify_restart_button.sh
+
+### Settings Not Reloading After App Restart
+- **Symptom**: Changed MA settings in settings.yml, restarted app, but new settings don't take effect
+- **Root Cause**: `logic_app.get_settings()` imported `O_SETG` directly from constants module. At import time, `O_SETG` is eagerly loaded and cached. Even after `load_env_settings()` is called, the direct import still returns stale cached values.
+- **Additional Issue**: `/api/chart/settings` endpoint also used `O_SETG` directly instead of `get_settings()`
+- **Fix**:
+  1. Changed `logic_app.get_settings()` to call `get_settings()` from constants which returns fresh values
+  2. Added 'ma' to returned settings dict so it's available for charts
+  3. Changed `/api/chart/settings` to use `get_settings()` from logic_app
+- **Code**: `src/logic_app.py:47-52`, `src/main.py:404-413`
+
+### Browser Caching Causes Wrong Page to Load
+- **Symptom**: After saving settings in logic page, user redirected to sleep page but sees logic page content (old scripts loading, wrong modals)
+- **Root Cause**: Browser caches HTML pages, especially when redirecting after POST requests
+- **Fix Applied**:
+  1. Added cache-busting version params to all static resources (`?v=2`, `?v=12`, `?v=60`)
+  2. Added timestamp to all `window.location.href` redirects (`?t=` + Date.now())
+- **Files**: `templates/logic.html`, `templates/sleeping.html`
