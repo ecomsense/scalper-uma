@@ -118,6 +118,39 @@
       </div>
     </div>
 
+    <!-- Buy Order Modal -->
+    <div id='buyOrderModal' class='modal'>
+      <div class='modal-content' style='max-width:400px;'>
+        <div class='modal-header'>
+          <h2>Place Buy Order</h2>
+          <span class='close' onclick='closeBuyOrderModal()'>&times;</span>
+        </div>
+        <div style='padding:20px;'>
+          <p><strong>Symbol:</strong> <span id='buySymbol'></span></p>
+          <p><strong>LTP:</strong> <span id='buyLtp'></span></p>
+          <div style='margin:10px 0;'>
+            <label>Quantity:</label>
+            <input type='number' id='buyQty' style='width:100%;padding:8px;margin-top:5px;' min='1' value='65'>
+          </div>
+          <div style='margin:10px 0;'>
+            <label>Price (Limit):</label>
+            <input type='number' id='buyPrice' style='width:100%;padding:8px;margin-top:5px;' step='0.05'>
+          </div>
+          <div style='margin:10px 0;'>
+            <label>Exit Price (Stop Loss):</label>
+            <input type='number' id='buyExitPrice' style='width:100%;padding:8px;margin-top:5px;' step='0.05'>
+          </div>
+          <div style='margin:10px 0;'>
+            <label>Cost Price (for target):</label>
+            <input type='number' id='buyCostPrice' style='width:100%;padding:8px;margin-top:5px;' step='0.05'>
+          </div>
+          <div style='text-align:center;margin-top:15px;'>
+            <button class='blue-btn' onclick='submitBuyOrder()'>Place Order</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src='/static/summary.js?v=12'></script>
     <script>
       function closePositionsModal() {
