@@ -145,9 +145,11 @@ function addPosition(symbol, ltp, quantity) {
     document.getElementById('buySymbol').textContent = symbol;
     document.getElementById('buyLtp').textContent = ltp.toFixed(2);
     document.getElementById('buyPrice').value = ltp.toFixed(2);
-    document.getElementById('buyExitPrice').value = (ltp * 0.95).toFixed(2);
-    document.getElementById('buyCostPrice').value = ltp.toFixed(2);
+    document.getElementById('buyTriggerPrice').value = ltp.toFixed(2);
     document.getElementById('buyQty').value = quantity || 65;
+    document.getElementById('buyOrderType').value = 'LIMIT';
+    document.getElementById('buyValidity').value = 'DAY';
+    toggleTriggerPrice();
     document.getElementById('buyOrderModal').style.display = 'block';
 }
 
@@ -155,10 +157,18 @@ function closeBuyOrderModal() {
     document.getElementById('buyOrderModal').style.display = 'none';
 }
 
+function toggleTriggerPrice() {
+    const orderType = document.getElementById('buyOrderType').value;
+    document.getElementById('triggerPriceDiv').style.display = (orderType === 'SL' || orderType === 'SL-M') ? 'block' : 'none';
+}
+
 function submitBuyOrder() {
     const symbol = document.getElementById('buySymbol').textContent;
-    const price = parseFloat(document.getElementById('buyPrice').value);
     const quantity = parseInt(document.getElementById('buyQty').value);
+    const price = parseFloat(document.getElementById('buyPrice').value) || 0;
+    const order_type = document.getElementById('buyOrderType').value;
+    const trigger_price = parseFloat(document.getElementById('buyTriggerPrice').value) || 0;
+    const validity = document.getElementById('buyValidity').value;
 
     fetch('/api/position/add', {
         method: 'POST',
@@ -167,7 +177,9 @@ function submitBuyOrder() {
             symbol: symbol,
             quantity: quantity,
             price: price,
-            order_type: 'LIMIT'
+            order_type: order_type,
+            trigger_price: trigger_price,
+            validity: validity
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Order placed');
