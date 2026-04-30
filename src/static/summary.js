@@ -67,22 +67,24 @@ function showPositionsModal() {
         return;
     }
 
-    let html = '<table class="modal-table"><tr class="modal-tr"><th class="modal-th">Symbol</th><th class="modal-th">LTP</th><th class="modal-th">Qty</th><th class="modal-th">RPNL</th><th class="modal-th">M2M</th><th class="modal-th">Action</th></tr>';
+    let html = '<table class="modal-table"><tr class="modal-tr"><th class="modal-th">Symbol</th><th class="modal-th">Exchange</th><th class="modal-th">LTP</th><th class="modal-th">Qty</th><th class="modal-th">RPNL</th><th class="modal-th">M2M</th><th class="modal-th">Action</th></tr>';
     positions.forEach(function(p) {
         const qty = p.quantity || 0;
         const ltp = p.last_price || 0;
         const symbol = p.symbol || '';
+        const exchange = p.exchange || 'NFO';
         let actionBtn = '';
         if (qty > 0) {
-            actionBtn = '<button class="btn-action btn-square" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Square</button>';
+            actionBtn = '<button class="btn-action btn-square" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + exchange + '\')">Square</button>';
         } else if (qty < 0) {
-            actionBtn = '<button class="btn-action btn-cover" onclick="coverPosition(\'' + symbol + '\',' + Math.abs(qty) + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Cover</button>';
+            actionBtn = '<button class="btn-action btn-cover" onclick="coverPosition(\'' + symbol + '\',' + Math.abs(qty) + ',' + ltp + ',\'' + exchange + '\')">Cover</button>';
         } else {
-            actionBtn = '<button class="btn-action btn-add" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
+            actionBtn = '<button class="btn-action btn-add" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + exchange + '\')">Add</button>';
         }
         const rowClass = qty > 0 ? 'row-sell' : (qty < 0 ? 'row-buy' : '');
         html += '<tr class="' + rowClass + '">';
         html += '<td class="modal-td">' + (p.cname || p.symbol || '') + '</td>';
+        html += '<td class="modal-td">' + exchange + '</td>';
         html += '<td class="modal-td">' + ltp.toFixed(2) + '</td>';
         html += '<td class="modal-td">' + qty + '</td>';
         html += '<td class="modal-td">' + (p.rpnl || 0) + '</td>';
