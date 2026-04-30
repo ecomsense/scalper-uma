@@ -93,10 +93,12 @@ function showOrdersModal() {
     html += '<tr><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Time</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>OrderId</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Symbol</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Side</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Status</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Price</th></tr>';
     orders.forEach(function(o) {
         const status = (o.status || '').trim().toUpperCase();
-        let bg = '';
-        if (status === 'OPEN' || status === 'TRIGGER_PENDING') bg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
-        else if (status === 'CANCELED') bg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
-        else if (status === 'REJECTED') bg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
+        let statusBg = '';
+        if (status === 'OPEN' || status === 'TRIGGER_PENDING') statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
+        else if (status === 'CANCELED') statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
+        else if (status === 'REJECTED') statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
+        const side = (o.side || '').trim().toUpperCase();
+        let rowColor = side === 'B' ? '#2d8a2b' : (side === 'S' ? '#c0392b' : '');
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
@@ -107,15 +109,12 @@ function showOrdersModal() {
                 time = ts;
             }
         }
+        html += '<tr style="color:' + rowColor + '">';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.cname || '') + '</td>';
-        const side = (o.side || '').trim().toUpperCase();
-        let sideStyle = '';
-        if (side === 'B') sideStyle = 'color:#2d8a2d;font-weight:bold;';
-        else if (side === 'S') sideStyle = 'color:#c0392b;font-weight:bold;';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + sideStyle + '\u0022>' + (o.side || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + bg + '\u0022>' + status + '</td>';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;font-weight:bold;\u0022>' + (o.side || '') + '</td>';
+        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + statusBg + '\u0022>' + status + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.price || '') + '</td>';
         html += '</tr>';
     });
