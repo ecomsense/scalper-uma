@@ -263,3 +263,9 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Code**: `src/static/summary.js:99-107` (new Date parsing, toLocaleTimeString)
 - **pre**: check_server_responding.sh
 - **post**: verify_orders_time_display.sh
+
+### MA Chart Shows Horizontal Price Lines
+- **Symptom**: Moving averages displayed unwanted horizontal lines on the right side of the chart, obstructing candlestick view
+- **Root Cause**: Line series in LightweightCharts shows price line by default
+- **Fix**: Added `priceLineVisible: false` to MA line series configuration in chart.js
+- **Code**: `src/static/chart.js:170-175` (line series config)
