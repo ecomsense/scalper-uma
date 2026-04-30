@@ -67,28 +67,27 @@ function showPositionsModal() {
         return;
     }
 
-    let html = '<table style="width:100%;border-collapse:collapse;">';
-    html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">LTP</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th><th style="border:1px solid #ddd;padding:8px;">Action</th></tr>';
+    let html = '<table class="modal-table"><tr class="modal-tr"><th class="modal-th">Symbol</th><th class="modal-th">LTP</th><th class="modal-th">Qty</th><th class="modal-th">RPNL</th><th class="modal-th">M2M</th><th class="modal-th">Action</th></tr>';
     positions.forEach(function(p) {
         const qty = p.quantity || 0;
         const ltp = p.last_price || 0;
         const symbol = p.symbol || '';
         let actionBtn = '';
         if (qty > 0) {
-            actionBtn = '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Square</button>';
+            actionBtn = '<button class="btn-action btn-square" onclick="squareOff(\'' + symbol + '\',' + qty + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Square</button>';
         } else if (qty < 0) {
-            actionBtn = '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="coverPosition(\'' + symbol + '\',' + Math.abs(qty) + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Cover</button>';
+            actionBtn = '<button class="btn-action btn-cover" onclick="coverPosition(\'' + symbol + '\',' + Math.abs(qty) + ',' + ltp + ',\'' + (p.exchange || 'NFO') + '\')">Cover</button>';
         } else {
-            actionBtn = '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
+            actionBtn = '<button class="btn-action btn-add" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
         }
-        const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
-        html += '<tr style="' + rowColor + '">';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + ltp.toFixed(2) + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + qty + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.rpnl || 0) + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.urmtom || 0) + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + actionBtn + '</td>';
+        const rowClass = qty > 0 ? 'row-sell' : (qty < 0 ? 'row-buy' : '');
+        html += '<tr class="' + rowClass + '">';
+        html += '<td class="modal-td">' + (p.cname || p.symbol || '') + '</td>';
+        html += '<td class="modal-td">' + ltp.toFixed(2) + '</td>';
+        html += '<td class="modal-td">' + qty + '</td>';
+        html += '<td class="modal-td">' + (p.rpnl || 0) + '</td>';
+        html += '<td class="modal-td">' + (p.urmtom || 0) + '</td>';
+        html += '<td class="modal-td">' + actionBtn + '</td>';
         html += '</tr>';
     });
     html += '</table>';
@@ -103,27 +102,21 @@ function showOrdersModal() {
         return;
     }
 
-    let html = '<table style="width:100%;border-collapse:collapse;">';
-    html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">OrderId</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
+    let html = '<table class="modal-table"><tr class="modal-tr"><th class="modal-th">Time</th><th class="modal-th">OrderId</th><th class="modal-th">Symbol</th><th class="modal-th">Side</th><th class="modal-th">Status</th><th class="modal-th">Price</th></tr>';
     orders.forEach(function(o) {
         const status = (o.status || '').trim().toUpperCase();
         const orderId = o.order_id || '';
-        let statusBg = '';
+        let statusClass = 'status-other';
         let cancelBtn = '';
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') {
-            statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
-        } else if (status === 'COMPLETE') {
-            statusBg = 'background:#6c757d;color:white;border-radius:8px;padding:4px 8px;';
-        } else if (status === 'CANCELED') {
-            statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
-        } else if (status === 'REJECTED') {
-            statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
-        } else {
-            statusBg = 'background:#666;color:white;border-radius:8px;padding:4px 8px;';
+            statusClass = 'status-open';
+            cancelBtn = ' <button class="cancel-btn" onclick="cancelOrder(\'' + orderId + '\')">X</button>';
         }
-        cancelBtn = ' <button style="background:transparent;border:none;color:white;font-weight:bold;cursor:pointer;padding:0 4px;font-size:12px;" onclick="cancelOrder(\'' + orderId + '\')">X</button>';
+        else if (status === 'COMPLETE') statusClass = 'status-complete';
+        else if (status === 'CANCELED') statusClass = 'status-cancelled';
+        else if (status === 'REJECTED') statusClass = 'status-rejected';
         const side = (o.side || '').trim().toUpperCase();
-        let rowColor = side === 'B' ? '#1e7a1e' : (side === 'S' ? '#a93226' : '');
+        const rowClass = side === 'B' ? 'row-buy' : (side === 'S' ? 'row-sell' : '');
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
@@ -134,14 +127,14 @@ function showOrdersModal() {
                 time = ts;
             }
         }
-        html += '<tr style="color:' + rowColor + '">';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + time + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.order_id || '') + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.cname || '') + '</td>';
-        let sideBg = side === 'B' ? 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;' : (side === 'S' ? 'background:#c0392b;color:white;border-radius:8px;padding:4px 8px;' : '');
-        html += '<td style="border:1px solid #ddd;padding:4px;' + sideBg + '">' + (o.side || '') + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;' + statusBg + '">' + status + cancelBtn + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.price || '') + '</td>';
+        const sideClass = side === 'B' ? 'side-buy' : (side === 'S' ? 'side-sell' : '');
+        html += '<tr class="' + rowClass + '">';
+        html += '<td class="modal-td">' + time + '</td>';
+        html += '<td class="modal-td">' + (o.order_id || '') + '</td>';
+        html += '<td class="modal-td">' + (o.cname || '') + '</td>';
+        html += '<td class="modal-td"><span class="side-badge ' + sideClass + '">' + (o.side || '') + '</span></td>';
+        html += '<td class="modal-td"><span class="status-badge ' + statusClass + '">' + status + cancelBtn + '</span></td>';
+        html += '<td class="modal-td">' + (o.price || '') + '</td>';
         html += '</tr>';
     });
     html += '</table>';
