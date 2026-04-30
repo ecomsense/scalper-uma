@@ -159,20 +159,15 @@ function submitBuyOrder() {
     const symbol = document.getElementById('buySymbol').textContent;
     const price = parseFloat(document.getElementById('buyPrice').value);
     const quantity = parseInt(document.getElementById('buyQty').value);
-    const exit_price = parseFloat(document.getElementById('buyExitPrice').value);
-    const cost_price = parseFloat(document.getElementById('buyCostPrice').value);
 
-    fetch('/api/trade/buy', {
+    fetch('/api/position/add', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             symbol: symbol,
             quantity: quantity,
-            order_type: 'LIMIT',
             price: price,
-            exit_price: exit_price,
-            cost_price: cost_price,
-            tag: 'manual'
+            order_type: 'LIMIT'
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Order placed');

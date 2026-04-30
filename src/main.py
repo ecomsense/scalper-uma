@@ -537,6 +537,40 @@ async def reset(symbol: str = '', ltp: float = 0) -> JSONResponse:
         return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
 
 
+@app.post('/api/position/add')
+async def add_position_order(request: Request, payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    try:
+        from src.api import Helper
+        settings = get_settings()
+
+        symbol = payload.get('symbol', '').upper()
+        quantity = payload.get('quantity', 65)
+        price = payload.get('price', 0)
+        order_type = payload.get('order_type', 'LIMIT')
+
+        if not symbol:
+            return JSONResponse(content={'message': 'Symbol required', 'status': 'error'}, status_code=400)
+
+        order_details = {
+            'symbol': symbol,
+            'quantity': quantity,
+            'disclosed_quantity': 0,
+            'exchange': settings.get('option_exchange', 'NFO'),
+            'side': 'BUY',
+            'order_type': order_type,
+            'price': price,
+        }
+
+        order_id = Helper.one_side(order_details)
+        if order_id:
+            return JSONResponse(content={'message': f'Buy order placed for {symbol}', 'status': 'success', 'order_id': order_id})
+        return JSONResponse(content={'message': 'Failed to place order', 'status': 'failed'}, status_code=500)
+
+    except Exception as e:
+        logging.error(f'Add position error: {e}')
+        return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
+
+
 # ============================================================
 # Routes - SSE Streaming
 # ============================================================
