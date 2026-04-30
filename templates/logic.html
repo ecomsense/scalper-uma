@@ -120,14 +120,14 @@
 
     <!-- Buy Order Modal -->
     <div id='buyOrderModal' class='modal'>
-      <div class='modal-content' style='max-width:500px;'>
+      <div class='modal-content' style='max-width:550px;'>
         <div class='modal-header'>
           <h2>Place Buy Order</h2>
           <span class='close' onclick='closeBuyOrderModal()'>&times;</span>
         </div>
         <div style='padding:20px;'>
           <p><strong>Symbol:</strong> <span id='buySymbol'></span> | <strong>Exchange:</strong> <span id='buyExchange'></span> | <strong>Prod:</strong> NRML | <strong>Type:</strong> LIMIT</p>
-          <div style='display:flex;gap:15px;margin-top:15px;'>
+          <div style='display:flex;gap:15px;margin-top:15px;align-items:flex-end;'>
             <div style='flex:1;'>
               <label>Quantity:</label>
               <input type='number' id='buyQty' style='width:100%;padding:8px;margin-top:5px;' min='1' value='65'>
@@ -136,9 +136,9 @@
               <label>Price:</label>
               <input type='number' id='buyPrice' style='width:100%;padding:8px;margin-top:5px;' step='0.05'>
             </div>
-          </div>
-          <div style='text-align:center;margin-top:20px;'>
-            <button class='blue-btn' onclick='submitBuyOrder()'>Place Order</button>
+            <div>
+              <button class='green-btn' onclick='submitBuyOrder()'>BUY</button>
+            </div>
           </div>
         </div>
       </div>
