@@ -274,3 +274,9 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Root Cause**: Line series in LightweightCharts shows price line by default
 - **Fix**: Added `priceLineVisible: false` to MA line series configuration in chart.js
 - **Code**: `src/static/chart.js:170-175` (line series config)
+
+### App Hangs After Restart Button Click
+- **Symptom**: After clicking restart button, app becomes unresponsive (API calls timeout). Sleep page stuck.
+- **Root Cause**: Unknown - similar issue seen before. Trading session stop doesn't complete cleanly
+- **Workaround**: Service auto-restarts or sleep page auto-starts after ~30s
+- **Status**: Needs investigation
