@@ -1,6 +1,9 @@
 log:
   show: True
   level: 10
+program:
+  start: "9:15"
+  stop: "15:15"
 base: NIFTY
 ma:
   - type: ema
