@@ -97,7 +97,15 @@ function showOrdersModal() {
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED' || status === 'REJECTED') bg = 'background:#ff4444;color:white;border-radius:8px;padding:4px 8px;';
         const ts = o.broker_timestamp || '';
-        const time = ts.includes(' ') ? ts.split(' ')[1] : (ts.includes('T') ? ts.split('T')[1] : ts);
+        let time = '';
+        if (ts) {
+            const dateObj = new Date(ts);
+            if (!isNaN(dateObj.getTime())) {
+                time = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            } else {
+                time = ts;
+            }
+        }
         html += '<tr>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
