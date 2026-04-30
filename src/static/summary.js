@@ -118,7 +118,8 @@ function showOrdersModal() {
         else if (status === 'CANCELED') statusClass = 'status-cancelled';
         else if (status === 'REJECTED') statusClass = 'status-rejected';
         const side = (o.side || '').trim().toUpperCase();
-        const rowClass = side === 'B' ? 'row-buy' : (side === 'S' ? 'row-sell' : '');
+        const sideClass = side === 'B' ? 'side-buy' : (side === 'S' ? 'side-sell' : '');
+        const cellClass = side === 'B' ? 'cell-buy' : (side === 'S' ? 'cell-sell' : '');
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
@@ -129,14 +130,13 @@ function showOrdersModal() {
                 time = ts;
             }
         }
-        const sideClass = side === 'B' ? 'side-buy' : (side === 'S' ? 'side-sell' : '');
-        html += '<tr class="' + rowClass + '">';
-        html += '<td class="modal-td">' + time + '</td>';
-        html += '<td class="modal-td">' + (o.order_id || '') + '</td>';
-        html += '<td class="modal-td">' + (o.cname || '') + '</td>';
+        html += '<tr>';
+        html += '<td class="modal-td"><span class="cell-badge ' + cellClass + '">' + time + '</span></td>';
+        html += '<td class="modal-td"><span class="cell-badge ' + cellClass + '">' + (o.order_id || '') + '</span></td>';
+        html += '<td class="modal-td"><span class="cell-badge ' + cellClass + '">' + (o.cname || '') + '</span></td>';
         html += '<td class="modal-td"><span class="side-badge ' + sideClass + '">' + (o.side || '') + '</span></td>';
         html += '<td class="modal-td"><span class="status-badge ' + statusClass + '">' + status + cancelBtn + '</span></td>';
-        html += '<td class="modal-td">' + (o.price || '') + '</td>';
+        html += '<td class="modal-td"><span class="cell-badge ' + cellClass + '">' + (o.price || '') + '</span></td>';
         html += '</tr>';
     });
     html += '</table>';

@@ -340,3 +340,8 @@ textarea {
 /* Row Colors */
 .row-buy { color: #1e7a1e; }
 .row-sell { color: #a93226; }
+
+/* Cell Badges */
+.cell-badge { border-radius: 8px; padding: 4px 8px; }
+.cell-buy { background: #2d8a2d; color: white; }
+.cell-sell { background: #c0392b; color: white; }
