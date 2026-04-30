@@ -95,11 +95,12 @@ function showOrdersModal() {
         const status = (o.status || '').trim().toUpperCase();
         let statusBg = '';
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
-        else if (status === 'COMPLETE') statusBg = 'background:#888888;color:white;border-radius:8px;padding:4px 8px;';
+        else if (status === 'COMPLETE') statusBg = 'background:#6c757d;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED') statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'REJECTED') statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
+        else statusBg = 'background:#666;color:white;border-radius:8px;padding:4px 8px;';
         const side = (o.side || '').trim().toUpperCase();
-        let rowColor = side === 'B' ? '#2d8a2b' : (side === 'S' ? '#c0392b' : '');
+        let rowColor = side === 'B' ? '#1e7a1e' : (side === 'S' ? '#a93226' : '');
         const ts = o.broker_timestamp || '';
         let time = '';
         if (ts) {
@@ -114,7 +115,8 @@ function showOrdersModal() {
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.cname || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;font-weight:bold;\u0022>' + (o.side || '') + '</td>';
+        let sideBg = side === 'B' ? 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;' : (side === 'S' ? 'background:#c0392b;color:white;border-radius:8px;padding:4px 8px;' : '');
+        html += '<td style=\u0022border:1px solid #ddd;padding:4px;' + sideBg + '\u0022>' + (o.side || '') + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + statusBg + '\u0022>' + status + '</td>';
         html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.price || '') + '</td>';
         html += '</tr>';
