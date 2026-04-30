@@ -77,14 +77,17 @@
 
         function loadLogs() {
             fetch('/api/admin/logs').then(r=>r.json()).then(d=>{
+                console.log('logs response:', d);
                 document.getElementById('logsEditor').value = d.content || '';
-            }).catch(e=>{});
+            }).catch(e=>{ console.error('logs error:', e); });
         }
 
         function loadSettings() {
             fetch('/api/admin/settings').then(r=>r.json()).then(d=>{
+                console.log('settings response:', d);
                 if(d.status==='success') document.getElementById('settingsEditor').value = d.content || '';
-            }).catch(e=>{});
+                else document.getElementById('settingsMsg').textContent = 'Error: ' + JSON.stringify(d);
+            }).catch(e=>{ console.error('settings error:', e); });
         }
 
         async function saveSettings() {
