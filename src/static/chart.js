@@ -110,11 +110,6 @@ window.addEventListener("DOMContentLoaded", () => {
 		const multiplier = 2 / (period + 1);
 		let ema = null;
 		
-		// Debug: check first few data points
-		console.log(`[EMA] Calculating period=${period}, priceField=${priceField}`);
-		console.log(`[EMA] First data point:`, data[0]);
-		console.log(`[EMA] Has ${priceField}:`, priceField in (data[0] || {}));
-		
 		for (let i = 0; i < data.length; i++) {
 			const price = data[i][priceField];
 			if (i < period - 1) {
@@ -160,17 +155,12 @@ window.addEventListener("DOMContentLoaded", () => {
 		const maConfigs = settings && settings.ma ? settings.ma : [];
 		const maSeries = [];
 		
-		console.log('[MA Config] Loaded', maConfigs.length, 'MA configurations:', maConfigs);
-		
 		maConfigs.forEach((config, index) => {
 			let color;
 			if (config.color) {
-				// Try to use user-defined color
 				color = getColorHex(config.color, index);
 			} else {
-				// No color specified, use default palette
 				color = maColors[index % maColors.length];
-				console.log(`[MA Color] Index ${index}: No color specified, using default ${color}`);
 			}
 			const series = chart.addLineSeries({ 
 				color: color, 
@@ -217,16 +207,12 @@ window.addEventListener("DOMContentLoaded", () => {
 				const priceField = config.price || 'close';
 				const type = config.type || 'sma';
 				
-				if (candleData.length < period) {
-					console.log(`[MA] Skipping ${type} period=${period}, priceField=${priceField} - not enough data (${candleData.length} < ${period})`);
-					return;
-				}
+				if (candleData.length < period) return;
 				
 				const data = type === 'ema' 
 					? calculateEMA(candleData, period, priceField)
 					: calculateSMA(candleData, period, priceField);
 				
-				console.log(`[MA] ${type} period=${period}, priceField=${priceField}:`, data.slice(0, 3), '... total:', data.length);
 				series.setData(data);
 			});
 		}
