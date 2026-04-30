@@ -67,23 +67,23 @@ function showPositionsModal() {
         return;
     }
 
-    let html = '<table style=\u0022width:100%;border-collapse:collapse;\u0022>';
-    html += '<tr><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Symbol</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>LTP</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Qty</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>RPNL</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>M2M</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Action</th></tr>';
+    let html = '<table style="width:100%;border-collapse:collapse;">';
+    html += '<tr><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">LTP</th><th style="border:1px solid #ddd;padding:8px;">Qty</th><th style="border:1px solid #ddd;padding:8px;">RPNL</th><th style="border:1px solid #ddd;padding:8px;">M2M</th><th style="border:1px solid #ddd;padding:8px;">Action</th></tr>';
     positions.forEach(function(p) {
         const qty = p.quantity || 0;
         const ltp = p.last_price || 0;
         const symbol = p.symbol || '';
         const actionBtn = qty > 0 
-            ? '<button style=\u0022background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;\u0022 onclick=\"squareOff(\\'' + symbol + '\\')\">Square</button>'
-            : '<button style=\u0022background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;\u0022 onclick=\"addPosition(\\'' + symbol + '\\')\">Add</button>';
+            ? '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\')">Square</button>'
+            : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\')">Add</button>';
         const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
-        html += '<tr style=\"' + rowColor + '\">';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.cname || p.symbol || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + ltp.toFixed(2) + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + qty + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.rpnl || 0) + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (p.urmtom || 0) + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + actionBtn + '</td>';
+        html += '<tr style="' + rowColor + '">';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + ltp.toFixed(2) + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + qty + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.rpnl || 0) + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.urmtom || 0) + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + actionBtn + '</td>';
         html += '</tr>';
     });
     html += '</table>';
@@ -98,8 +98,8 @@ function showOrdersModal() {
         return;
     }
 
-    let html = '<table style=\u0022width:100%;border-collapse:collapse;\u0022>';
-    html += '<tr><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Time</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>OrderId</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Symbol</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Side</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Status</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Price</th></tr>';
+    let html = '<table style="width:100%;border-collapse:collapse;">';
+    html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">OrderId</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
     orders.forEach(function(o) {
         const status = (o.status || '').trim().toUpperCase();
         let statusBg = '';
@@ -121,13 +121,13 @@ function showOrdersModal() {
             }
         }
         html += '<tr style="color:' + rowColor + '">';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + time + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.order_id || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.cname || '') + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + time + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.order_id || '') + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.cname || '') + '</td>';
         let sideBg = side === 'B' ? 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;' : (side === 'S' ? 'background:#c0392b;color:white;border-radius:8px;padding:4px 8px;' : '');
-        html += '<td style=\u0022border:1px solid #ddd;padding:4px;' + sideBg + '\u0022>' + (o.side || '') + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;' + statusBg + '\u0022>' + status + '</td>';
-        html += '<td style=\u0022border:1px solid #ddd;padding:8px;\u0022>' + (o.price || '') + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:4px;' + sideBg + '">' + (o.side || '') + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;' + statusBg + '">' + status + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.price || '') + '</td>';
         html += '</tr>';
     });
     html += '</table>';
