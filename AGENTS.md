@@ -257,15 +257,10 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Code**: `factory/uma-scalper.service` (service template), `src/main.py` (logging config)
 
 ### Orders Timestamp Shows Date Instead of Time
-- **Symptom**: Orders modal shows date (e.g., "2026-04-30") instead of time (e.g., "10:30:45")
-- **Root Cause**: 
-  1. JavaScript tried to extract time with string split, but broker timestamp format varies
-  2. toLocaleTimeString still included date in some locales
-- **Fix**: 
-  1. Use JavaScript `Date()` to parse timestamp
-  2. Extract time components manually: getHours(), getMinutes(), getSeconds() with padding
-  3. Format as HH:MM:SS without date
-- **Code**: `src/static/summary.js:99-108` (manual time extraction)
+- **Symptom**: Orders modal shows date (e.g., "30-04-2026") or "11:36:34 30-04-2026" instead of just time (e.g., "11:36:34")
+- **Root Cause**: Broker sends timestamp in format "HH:MM:SS DD-MM-YYYY" - JavaScript Date() can't parse this
+- **Fix**: Split by space and take first part (HH:MM:SS) - broker already sends time in correct format
+- **Code**: `src/static/summary.js:99-108` (split by space, extract time)
 - **pre**: check_server_responding.sh
 - **post**: verify_orders_time_display.sh
 
