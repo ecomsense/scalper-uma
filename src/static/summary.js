@@ -75,7 +75,7 @@ function showPositionsModal() {
         const symbol = p.symbol || '';
         const actionBtn = qty > 0 
             ? '<button style="background:#e67e22;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="squareOff(\'' + symbol + '\')">Square</button>'
-            : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ')">Add</button>';
+            : '<button style="background:#2d8a2d;color:white;border:none;padding:4px 8px;border-radius:4px;cursor:pointer" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + (p.exchange || 'NFO') + '\')">Add</button>';
         const rowColor = qty > 0 ? 'color:#e67e22;' : (qty < 0 ? 'color:#2d8a2d;' : '');
         html += '<tr style="' + rowColor + '">';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (p.cname || p.symbol || '') + '</td>';
@@ -140,16 +140,12 @@ function squareOff(symbol) {
     alert('Square off for ' + symbol + ' - feature coming soon');
 }
 
-function addPosition(symbol, ltp, quantity) {
-    console.log('Add position:', symbol, 'LTP:', ltp);
+function addPosition(symbol, ltp, quantity, exchange) {
+    console.log('Add position:', symbol, 'LTP:', ltp, 'Exchange:', exchange);
     document.getElementById('buySymbol').textContent = symbol;
-    document.getElementById('buyLtp').textContent = ltp.toFixed(2);
+    document.getElementById('buyExchange').textContent = exchange || 'NFO';
     document.getElementById('buyPrice').value = ltp.toFixed(2);
-    document.getElementById('buyTriggerPrice').value = ltp.toFixed(2);
     document.getElementById('buyQty').value = quantity || 65;
-    document.getElementById('buyOrderType').value = 'LIMIT';
-    document.getElementById('buyValidity').value = 'DAY';
-    toggleTriggerPrice();
     document.getElementById('buyOrderModal').style.display = 'block';
 }
 
@@ -157,18 +153,10 @@ function closeBuyOrderModal() {
     document.getElementById('buyOrderModal').style.display = 'none';
 }
 
-function toggleTriggerPrice() {
-    const orderType = document.getElementById('buyOrderType').value;
-    document.getElementById('triggerPriceDiv').style.display = (orderType === 'SL' || orderType === 'SL-M') ? 'block' : 'none';
-}
-
 function submitBuyOrder() {
     const symbol = document.getElementById('buySymbol').textContent;
     const quantity = parseInt(document.getElementById('buyQty').value);
     const price = parseFloat(document.getElementById('buyPrice').value) || 0;
-    const order_type = document.getElementById('buyOrderType').value;
-    const trigger_price = parseFloat(document.getElementById('buyTriggerPrice').value) || 0;
-    const validity = document.getElementById('buyValidity').value;
 
     fetch('/api/position/add', {
         method: 'POST',
@@ -177,9 +165,9 @@ function submitBuyOrder() {
             symbol: symbol,
             quantity: quantity,
             price: price,
-            order_type: order_type,
-            trigger_price: trigger_price,
-            validity: validity
+            order_type: 'LIMIT',
+            trigger_price: 0,
+            validity: 'DAY'
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Order placed');
