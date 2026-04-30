@@ -613,6 +613,20 @@ async def square_position(request: Request, payload: dict[str, Any] = Body(...))
         return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
 
 
+@app.post('/api/order/cancel')
+async def cancel_order(request: Request, payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    try:
+        from src.api import Helper
+        order_id = payload.get('order_id', '')
+        if not order_id:
+            return JSONResponse(content={'message': 'Order ID required', 'status': 'error'}, status_code=400)
+        Helper.api().order_cancel(order_id=order_id)
+        return JSONResponse(content={'message': f'Order {order_id} cancelled', 'status': 'success'})
+    except Exception as e:
+        logging.error(f'Cancel order error: {e}')
+        return JSONResponse(content={'message': str(e), 'status': 'error'}, status_code=500)
+
+
 # ============================================================
 # Routes - SSE Streaming
 # ============================================================
