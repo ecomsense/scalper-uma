@@ -107,8 +107,13 @@ function showOrdersModal() {
     html += '<tr><th style="border:1px solid #ddd;padding:8px;">Time</th><th style="border:1px solid #ddd;padding:8px;">OrderId</th><th style="border:1px solid #ddd;padding:8px;">Symbol</th><th style="border:1px solid #ddd;padding:8px;">Side</th><th style="border:1px solid #ddd;padding:8px;">Status</th><th style="border:1px solid #ddd;padding:8px;">Price</th></tr>';
     orders.forEach(function(o) {
         const status = (o.status || '').trim().toUpperCase();
+        const orderId = o.order_id || '';
         let statusBg = '';
-        if (status === 'OPEN' || status === 'TRIGGER_PENDING') statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
+        let cancelBtn = '';
+        if (status === 'OPEN' || status === 'TRIGGER_PENDING') {
+            statusBg = 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;';
+            cancelBtn = ' <button style="background:transparent;border:none;color:white;font-weight:bold;cursor:pointer;padding:0 4px;font-size:12px;" onclick="cancelOrder(\'' + orderId + '\')">X</button>';
+        }
         else if (status === 'COMPLETE') statusBg = 'background:#6c757d;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED') statusBg = 'background:#c9a227;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'REJECTED') statusBg = 'background:#e67e22;color:white;border-radius:8px;padding:4px 8px;';
@@ -131,7 +136,7 @@ function showOrdersModal() {
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.cname || '') + '</td>';
         let sideBg = side === 'B' ? 'background:#2d8a2d;color:white;border-radius:8px;padding:4px 8px;' : (side === 'S' ? 'background:#c0392b;color:white;border-radius:8px;padding:4px 8px;' : '');
         html += '<td style="border:1px solid #ddd;padding:4px;' + sideBg + '">' + (o.side || '') + '</td>';
-        html += '<td style="border:1px solid #ddd;padding:8px;' + statusBg + '">' + status + '</td>';
+        html += '<td style="border:1px solid #ddd;padding:8px;' + statusBg + '">' + status + cancelBtn + '</td>';
         html += '<td style="border:1px solid #ddd;padding:8px;">' + (o.price || '') + '</td>';
         html += '</tr>';
     });
@@ -212,6 +217,20 @@ function submitBuyOrder() {
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Order placed');
         closeBuyOrderModal();
+    }).catch(e => {
+        alert('Error: ' + e);
+    });
+}
+
+function cancelOrder(orderId) {
+    if (!confirm('Cancel order ' + orderId + '?')) return;
+    fetch('/api/order/cancel', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({order_id: orderId})
+    }).then(r => r.json()).then(d => {
+        alert(d.message || 'Order cancelled');
+        closeOrdersModal();
     }).catch(e => {
         alert('Error: ' + e);
     });
