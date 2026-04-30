@@ -44,10 +44,12 @@ def on_stop(app_data: dict) -> None:
 # ============================================================
 
 def get_settings() -> dict[str, Any]:
-    from src.constants import O_SETG, dct_sym
+    from src.constants import get_settings as get_settings_const, dct_sym
     
+    _, O_SETG = get_settings_const()
     base = O_SETG.get('base', 'NIFTY')
-    return O_SETG.get(base, {}) | dct_sym.get(base, {})
+    base_settings = O_SETG.get(base, {})
+    return {'ma': O_SETG.get('ma', [])} | base_settings | dct_sym.get(base, {})
 
 
 # ============================================================
