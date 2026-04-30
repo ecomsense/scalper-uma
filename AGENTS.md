@@ -282,9 +282,9 @@ curl -s http://127.0.0.1:8000/api/logic/status
   1. Power-option uses direct WebSocket instead of SSE (simpler architecture)
   2. Power-option deletes token on startup to force fresh login
   3. Power-option has simpler trading_session_stop
-- **Potential fixes**:
-  1. Make stop more resilient with asyncio.wait_for and timeout
-  2. Force fresh broker login on restart (delete token file)
-  3. Consider refactoring to use direct WebSocket like power-option
-- **Workaround**: Service auto-restarts or sleep page auto-starts after ~30s
-- **Status**: Needs investigation
+- **Fix Applied**:
+  1. Call Helper.reset() in lifespan startup to force fresh broker login
+  2. Add asyncio.wait_for with 2s timeout for stopping operations
+  3. Call Helper.reset() after stopping to clear broker session
+- **pre**: scripts/check_restart_button.sh
+- **post**: scripts/verify_restart_button.sh
