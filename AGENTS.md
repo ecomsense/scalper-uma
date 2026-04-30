@@ -301,6 +301,15 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **pre**: scripts/check_restart_button.sh
 - **post**: scripts/verify_restart_button.sh
 
+### Port Binding Error on Restart
+- **Symptom**: `[Errno 98] error while attempting to bind on address ('127.0.0.1', 8000): address already in use`
+- **Root Cause**: Old uvicorn/python processes not fully killed before new one starts. Systemd restart too fast.
+- **Fix**:
+  1. Kill all python/uvicorn processes: `pkill -9 -f uvicorn; pkill -9 -f 'python.*main'`
+  2. Kill port 8000: `fuser -k 8000/tcp`
+  3. Then start service
+- **Command**: `fuser -k 8000/tcp && systemctl --user restart fastapi_app.service`
+
 ### Settings Not Reloading After App Restart
 - **Symptom**: Changed MA settings in settings.yml, restarted app, but new settings don't take effect
 - **Root Cause**: `logic_app.get_settings()` imported `O_SETG` directly from constants module. At import time, `O_SETG` is eagerly loaded and cached. Even after `load_env_settings()` is called, the direct import still returns stale cached values.
