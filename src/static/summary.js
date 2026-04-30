@@ -80,7 +80,7 @@ function showPositionsModal() {
         } else if (qty < 0) {
             actionBtn = '<button class="btn-action btn-cover" onclick="coverPosition(\'' + symbol + '\',' + Math.abs(qty) + ',' + ltp + ',\'' + exchange + '\')">Cover</button>';
         } else {
-            actionBtn = '<button class="btn-action btn-add" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + exchange + '\')">Add</button>';
+            actionBtn = '<button class="btn-action btn-add" onclick="addPosition(\'' + symbol + '\',' + ltp + ',' + (p.ls || 65) + ',\'' + exchange + '\',\'' + product + '\')">Add</button>';
         }
         const rowClass = qty > 0 ? 'row-sell' : (qty < 0 ? 'row-buy' : '');
         html += '<tr class="' + rowClass + '">';
@@ -186,12 +186,13 @@ function coverPosition(symbol, qty, ltp, exchange) {
     });
 }
 
-function addPosition(symbol, ltp, quantity, exchange) {
-    console.log('Add position:', symbol, 'LTP:', ltp, 'Exchange:', exchange);
+function addPosition(symbol, ltp, quantity, exchange, product) {
+    console.log('Add position:', symbol, 'LTP:', ltp, 'Exchange:', exchange, 'Product:', product);
     document.getElementById('buySymbol').textContent = symbol;
     document.getElementById('buyExchange').textContent = exchange || 'NFO';
     document.getElementById('buyPrice').value = ltp.toFixed(2);
     document.getElementById('buyQty').value = quantity || 65;
+    document.getElementById('buyOrderModal').dataset.product = product || 'NRML';
     document.getElementById('buyOrderModal').style.display = 'block';
 }
 
@@ -203,6 +204,7 @@ function submitBuyOrder() {
     const symbol = document.getElementById('buySymbol').textContent;
     const quantity = parseInt(document.getElementById('buyQty').value);
     const price = parseFloat(document.getElementById('buyPrice').value) || 0;
+    const product = document.getElementById('buyOrderModal').dataset.product || 'NRML';
 
     fetch('/api/position/add', {
         method: 'POST',
@@ -213,7 +215,8 @@ function submitBuyOrder() {
             price: price,
             order_type: 'LIMIT',
             trigger_price: 0,
-            validity: 'DAY'
+            validity: 'DAY',
+            product: product
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Order placed');
