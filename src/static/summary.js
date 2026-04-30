@@ -101,7 +101,10 @@ function showOrdersModal() {
         if (ts) {
             const dateObj = new Date(ts);
             if (!isNaN(dateObj.getTime())) {
-                time = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                const h = String(dateObj.getHours()).padStart(2, '0');
+                const m = String(dateObj.getMinutes()).padStart(2, '0');
+                const s = String(dateObj.getSeconds()).padStart(2, '0');
+                time = `${h}:${m}:${s}`;
             } else {
                 time = ts;
             }
