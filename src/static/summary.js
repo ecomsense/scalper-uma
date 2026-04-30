@@ -92,7 +92,7 @@ function showOrdersModal() {
     let html = '<table style=\u0022width:100%;border-collapse:collapse;\u0022>';
     html += '<tr><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Time</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>OrderId</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Symbol</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Side</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Status</th><th style=\u0022border:1px solid #ddd;padding:8px;\u0022>Price</th></tr>';
     orders.forEach(function(o) {
-        const status = o.status || '';
+        const status = (o.status || '').trim().toUpperCase();
         let bg = '';
         if (status === 'OPEN' || status === 'TRIGGER_PENDING') bg = 'background:#44cc44;color:white;border-radius:8px;padding:4px 8px;';
         else if (status === 'CANCELED') bg = 'background:#ffcc00;color:black;border-radius:8px;padding:4px 8px;';
