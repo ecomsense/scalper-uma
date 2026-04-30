@@ -308,3 +308,35 @@ textarea {
 .clock { font-size: 2.5rem; font-weight: bold; color: #00d9ff; font-family: monospace; }
 .schedule-badge { display: inline-block; padding: 0.5rem 1rem; margin: 0.25rem; border-radius: 8px; background: rgba(255,255,255,0.1); }
 .schedule-badge.active { background: rgba(0,255,136,0.3); color: #00ff88; }
+
+/* Modal Tables */
+.modal-table { width: 100%; border-collapse: collapse; }
+.modal-th, .modal-td { border: 1px solid #ddd; padding: 8px; }
+.modal-th { background: #333; color: white; }
+
+/* Action Buttons */
+.btn-action { border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; color: white; }
+.btn-square { background: #e67e22; }
+.btn-cover, .btn-add { background: #2d8a2d; }
+.btn-action:hover { opacity: 0.8; }
+
+/* Cancel Button */
+.cancel-btn { background: transparent; border: none; color: white; font-weight: bold; cursor: pointer; padding: 0 4px; font-size: 12px; }
+.cancel-btn:hover { color: #ff4444; }
+
+/* Status Badges */
+.status-badge { border-radius: 8px; padding: 4px 8px; color: white; }
+.status-open, .status-trigger { background: #2d8a2d; }
+.status-complete { background: #6c757d; }
+.status-cancelled { background: #c9a227; }
+.status-rejected { background: #e67e22; }
+.status-other { background: #666; }
+
+/* Order Side Badges */
+.side-badge { border-radius: 8px; padding: 4px 8px; color: white; }
+.side-buy { background: #2d8a2d; }
+.side-sell { background: #c0392b; }
+
+/* Row Colors */
+.row-buy { color: #1e7a1e; }
+.row-sell { color: #a93226; }
