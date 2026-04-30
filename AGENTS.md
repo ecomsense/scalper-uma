@@ -255,3 +255,11 @@ curl -s http://127.0.0.1:8000/api/logic/status
   3. Systemd daemon-reload and restart service
 - **Result**: All logs (FastAPI startup, application logs, system events) now in single file: data/log.txt
 - **Code**: `factory/uma-scalper.service` (service template), `src/main.py` (logging config)
+
+### Orders Timestamp Shows Date Instead of Time
+- **Symptom**: Orders modal shows date (e.g., "2026-04-30") instead of time (e.g., "10:30:45")
+- **Root Cause**: JavaScript tried to extract time with string split, but broker timestamp format varies. If no space or T in timestamp, shows full date string
+- **Fix**: Use JavaScript `Date()` to parse timestamp, then `toLocaleTimeString()` to display as HH:MM:SS
+- **Code**: `src/static/summary.js:99-107` (new Date parsing, toLocaleTimeString)
+- **pre**: check_server_responding.sh
+- **post**: verify_orders_time_display.sh
