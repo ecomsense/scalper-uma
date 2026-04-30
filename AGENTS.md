@@ -310,6 +310,28 @@ curl -s http://127.0.0.1:8000/api/logic/status
   3. Then start service
 - **Command**: `fuser -k 8000/tcp && systemctl --user restart fastapi_app.service`
 
+### Positions Modal - Add/Square/Cover Actions
+- **Feature**: Positions modal now has action buttons based on position type
+- **Implementation**:
+  - qty > 0: Square button (sell at LTP-2)
+  - qty < 0: Cover button (buy at LTP+2)
+  - qty == 0: Add button (opens buy modal)
+- **Files**: `src/static/summary.js`, `templates/logic.html`, `src/main.py`
+- **Add**: Opens modal with symbol, exchange, product from position row
+
+### Buy Order Modal - Product Aware
+- **Feature**: Add button passes product type from position row to buy order
+- **Display**: Shows NFO:SYMBOL | NRML | LIMIT Order
+- **Backend**: /api/position/add accepts product field
+
+### Orders Modal - Cancel Button + Balloonified
+- **Feature**: 
+  - Cancel (X) button only for OPEN/TRIGGER_PENDING status
+  - All columns balloonified based on side (B=green, S=red)
+- **CSS**: Consolidated to style.css classes (.cell-buy, .cell-sell, etc.)
+- **pre**: check_orders_modal.sh
+- **post**: verify_orders_modal.sh
+
 ### Settings Not Reloading After App Restart
 - **Symptom**: Changed MA settings in settings.yml, restarted app, but new settings don't take effect
 - **Root Cause**: `logic_app.get_settings()` imported `O_SETG` directly from constants module. At import time, `O_SETG` is eagerly loaded and cached. Even after `load_env_settings()` is called, the direct import still returns stale cached values.
