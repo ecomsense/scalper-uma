@@ -277,6 +277,14 @@ curl -s http://127.0.0.1:8000/api/logic/status
 
 ### App Hangs After Restart Button Click
 - **Symptom**: After clicking restart button, app becomes unresponsive (API calls timeout). Sleep page stuck.
-- **Root Cause**: Unknown - similar issue seen before. Trading session stop doesn't complete cleanly
+- **Root Cause**: Trading session stop doesn't complete cleanly. SSE streams may not be cleaning up properly, or stale broker session causes blocking calls
+- **Learning from power-option**:
+  1. Power-option uses direct WebSocket instead of SSE (simpler architecture)
+  2. Power-option deletes token on startup to force fresh login
+  3. Power-option has simpler trading_session_stop
+- **Potential fixes**:
+  1. Make stop more resilient with asyncio.wait_for and timeout
+  2. Force fresh broker login on restart (delete token file)
+  3. Consider refactoring to use direct WebSocket like power-option
 - **Workaround**: Service auto-restarts or sleep page auto-starts after ~30s
 - **Status**: Needs investigation
