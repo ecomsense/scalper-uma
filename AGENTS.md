@@ -311,6 +311,15 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Command**: `/usr/bin/fuser -k -9 8000/tcp && sleep 1 && systemctl --user daemon-reload && systemctl --user restart fastapi_app.service`
 - **Files**: factory/uma-scalper.service
 
+### Systemd User Service Group Permission Error
+- **Symptom**: `Failed to determine supplementary groups: Operation not permitted` and `Failed at step GROUP spawning /bin/sh: Operation not permitted`
+- **Root Cause**: User=uma in service file causes systemd to try to set up supplementary groups, which fails for --user services.
+- **Fix**:
+  1. Remove `User=uma` line from service file (not needed for --user services)
+  2. Use `/usr/bin/sleep` directly instead of shell wrapper
+  3. Change `WantedBy=multi-user.target` to `WantedBy=default.target`
+- **Files**: factory/uma-scalper.service, ~/.config/systemd/user/fastapi_app.service
+
 ### Positions Modal - Add/Square/Cover Actions
 - **Feature**: Positions modal now has action buttons based on position type
 - **Implementation**:
