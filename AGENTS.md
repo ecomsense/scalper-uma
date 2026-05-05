@@ -302,13 +302,14 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **post**: scripts/verify_restart_button.sh
 
 ### Port Binding Error on Restart
-- **Symptom**: `[Errno 98] error while attempting to bind on address ('127.0.0.1', 8000): address already in use`
-- **Root Cause**: Old uvicorn/python processes not fully killed before new one starts. Systemd restart too fast.
+- **Symptom**: `[Errno 98] error while attempting to bind on address ('127.0.0.1', 8000): address already in use` + "fuser: not found" in logs
+- **Root Cause**: systemd user service uses minimal PATH, fuser not found. Old processes not killed properly, systemd restart too fast.
 - **Fix**:
-  1. Kill all python/uvicorn processes: `pkill -9 -f uvicorn; pkill -9 -f 'python.*main'`
-  2. Kill port 8000: `fuser -k 8000/tcp`
-  3. Then start service
-- **Command**: `fuser -k 8000/tcp && systemctl --user restart fastapi_app.service`
+  1. Use absolute path: `/usr/bin/fuser -k -9 8000/tcp` (SIGKILL ensures stuck processes die)
+  2. Add settling delay: `/usr/bin/sleep 1` to allow kernel to release port
+  3. Updated factory/uma-scalper.service with hardened ExecStartPre
+- **Command**: `/usr/bin/fuser -k -9 8000/tcp && sleep 1 && systemctl --user daemon-reload && systemctl --user restart fastapi_app.service`
+- **Files**: factory/uma-scalper.service
 
 ### Positions Modal - Add/Square/Cover Actions
 - **Feature**: Positions modal now has action buttons based on position type
