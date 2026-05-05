@@ -5,7 +5,6 @@ After=network.target
 [Service]
 Type=simple
 User=uma
-Group=uma
 WorkingDirectory=/home/uma/no_env/uma_scalper
 Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
 Environment=SKIP_PID_LOCK=1
