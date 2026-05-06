@@ -391,3 +391,9 @@ curl -s http://127.0.0.1:8000/api/logic/status
   1. Added cache-busting version params to all static resources (`?v=2`, `?v=12`, `?v=60`)
   2. Added timestamp to all `window.location.href` redirects (`?t=` + Date.now())
 - **Files**: `templates/logic.html`, `templates/sleeping.html`
+
+### Flattrade Websocket Not Closing Properly on Stop
+- **Symptom**: After restart, websocket errors "socket is already opened" - broker sees old session still active
+- **Root Cause**: Called `ws.close()` which is WebSocketApp's close, not broker's `close_websocket()`. Broker's internal state `__websocket_connected` stays True, so broker keeps old session alive.
+- **Fix**: Changed `_logic_state.ws.close()` to `_logic_state.ws.close_websocket()` in `src/logic_app.py:164`
+- **Code**: `src/logic_app.py:161-166`
