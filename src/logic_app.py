@@ -158,10 +158,10 @@ async def trading_session_stop(app: Any) -> None:
         except Exception:
             pass
 
-    if getattr(_logic_state, 'ws', None) and hasattr(_logic_state.ws, 'close'):
+    if getattr(_logic_state, 'ws', None) and hasattr(_logic_state.ws, 'close_websocket'):
         try:
             logging.info('Closing broker websocket...')
-            _logic_state.ws.close()
+            _logic_state.ws.close_websocket()
         except Exception as e:
             logging.error(f'Error closing websocket: {e}')
 
