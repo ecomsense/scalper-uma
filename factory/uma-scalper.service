@@ -4,21 +4,18 @@ After=network.target
 
 [Service]
 Type=simple
-# User=uma  <-- Remove this for --user services
 WorkingDirectory=/home/uma/no_env/uma_scalper
 Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
 Environment=SKIP_PID_LOCK=1
 
-# Hardened cleanup: kill process, wait for socket release
-ExecStartPre=/bin/sh -c '/usr/bin/fuser -k -9 8000/tcp 2>/dev/null || true'
-ExecStartPre=/usr/bin/sleep 1
+ExecStartPre=/bin/sh -c 'fuser -k 8000/tcp || true'
 
 ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
 
 StandardOutput=append:/home/uma/no_env/uma_scalper/data/log.txt
 StandardError=append:/home/uma/no_env/uma_scalper/data/log.txt
-Restart=on-failure
-RestartSec=30
+Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=default.target

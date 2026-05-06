@@ -301,6 +301,38 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **pre**: scripts/check_restart_button.sh
 - **post**: scripts/verify_restart_button.sh
 
+### Systemd Service Restart Loop at Midnight
+- **Symptom**: Service killed and stuck in restart loop around midnight every day. Systemd shows "Failed with result 'exit-code'" repeatedly.
+- **Root Cause**: Extra `ExecStartPre=/usr/bin/sleep 1` in server's service file caused systemd to think service was failing. Also had incorrect path for fuser command.
+- **Fix Applied**:
+  1. Removed unnecessary sleep from ExecStartPre
+  2. Used correct command: `/bin/sh -c 'fuser -k 8000/tcp || true'`
+  3. Set RestartSec=5 (was 30)
+- **Server Command**:
+  ```bash
+  cat > ~/.config/systemd/user/fastapi_app.service << 'EOF'
+  [Unit]
+  Description=UMA Scalper - Options Trading Bot
+  After=network.target
+
+  [Service]
+  Type=simple
+  WorkingDirectory=/home/uma/no_env/uma_scalper
+  Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
+  Environment=SKIP_PID_LOCK=1
+  ExecStartPre=/bin/sh -c 'fuser -k 8000/tcp || true'
+  ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+  StandardOutput=append:/home/uma/no_env/uma_scalper/data/log.txt
+  StandardError=append:/home/uma/no_env/uma_scalper/data/log.txt
+  Restart=always
+  RestartSec=5
+
+  [Install]
+  WantedBy=default.target
+  EOF
+  systemctl --user daemon-reload
+  ```
+
 ### Port Binding Error on Restart
 - **Symptom**: `[Errno 98] error while attempting to bind on address ('127.0.0.1', 8000): address already in use` + "fuser: not found" in logs
 - **Root Cause**: systemd user service uses minimal PATH, fuser not found. Old processes not killed properly, systemd restart too fast.
