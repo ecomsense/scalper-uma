@@ -1,4 +1,4 @@
-# Deployment: ln -sf /home/uma/no_env/uma_scalper/factory/uma-scalper.service ~/.config/systemd/user/fastapi_app.service
+# Deployment: ln -sf /home/uma/no_env/uma_scalper/factory/fastapi_app.service ~/.config/systemd/user/fastapi_app.service
 
 [Unit]
 Description=UMA Scalper - Options Trading Bot
