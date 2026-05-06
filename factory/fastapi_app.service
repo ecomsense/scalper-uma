@@ -18,7 +18,7 @@ ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app 
 StandardOutput=append:/home/uma/no_env/uma_scalper/data/log.txt
 StandardError=append:/home/uma/no_env/uma_scalper/data/log.txt
 Restart=on-failure
-RestartSec=30
+RestartSec=5
 
 [Install]
 WantedBy=default.target
