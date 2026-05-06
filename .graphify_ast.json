@@ -1,0 +1,4637 @@
+{
+  "nodes": [
+    {
+      "id": "factory_read_file_php",
+      "label": "read_file.php",
+      "file_type": "code",
+      "source_file": "factory/read_file.php",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_schemas_py",
+      "label": "schemas.py",
+      "file_type": "code",
+      "source_file": "src/schemas.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "schemas_sessionstatus",
+      "label": "SessionStatus",
+      "file_type": "code",
+      "source_file": "src/schemas.py",
+      "source_location": "L6"
+    },
+    {
+      "id": "basemodel",
+      "label": "BaseModel",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": ""
+    },
+    {
+      "id": "schemas_sessionresponse",
+      "label": "SessionResponse",
+      "file_type": "code",
+      "source_file": "src/schemas.py",
+      "source_location": "L12"
+    },
+    {
+      "id": "src_state_py",
+      "label": "state.py",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "state_logicstate",
+      "label": "LogicState",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L17"
+    },
+    {
+      "id": "state_logicstate_init",
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L18"
+    },
+    {
+      "id": "state_logicstate_is_running",
+      "label": ".is_running()",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L40"
+    },
+    {
+      "id": "state_logicstate_is_paused",
+      "label": ".is_paused()",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L43"
+    },
+    {
+      "id": "state_logicstate_reset",
+      "label": ".reset()",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L53"
+    },
+    {
+      "id": "state_get_logic_state",
+      "label": "get_logic_state()",
+      "file_type": "code",
+      "source_file": "src/state.py",
+      "source_location": "L71"
+    },
+    {
+      "id": "src_api_py",
+      "label": "api.py",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "api_login",
+      "label": "login()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L11"
+    },
+    {
+      "id": "api_helper",
+      "label": "Helper",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L32"
+    },
+    {
+      "id": "api_api",
+      "label": "api()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L38"
+    },
+    {
+      "id": "api_reset",
+      "label": "reset()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L54"
+    },
+    {
+      "id": "api_one_side",
+      "label": "one_side()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L60"
+    },
+    {
+      "id": "api_cancel_orders",
+      "label": "cancel_orders()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L82"
+    },
+    {
+      "id": "api_orders",
+      "label": "orders()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L105"
+    },
+    {
+      "id": "api_positions",
+      "label": "positions()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L109"
+    },
+    {
+      "id": "api_historical",
+      "label": "historical()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L113"
+    },
+    {
+      "id": "api_modify_order",
+      "label": "modify_order()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L134"
+    },
+    {
+      "id": "api_close_all_for_symbol",
+      "label": "close_all_for_symbol()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L145"
+    },
+    {
+      "id": "api_mtm",
+      "label": "mtm()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L198"
+    },
+    {
+      "id": "api_order_summary",
+      "label": "order_summary()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L213"
+    },
+    {
+      "id": "api_position_summary",
+      "label": "position_summary()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L229"
+    },
+    {
+      "id": "api_summary",
+      "label": "summary()",
+      "file_type": "code",
+      "source_file": "src/api.py",
+      "source_location": "L244"
+    },
+    {
+      "id": "src_strategy_py",
+      "label": "strategy.py",
+      "file_type": "code",
+      "source_file": "src/strategy.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "strategy_strategy",
+      "label": "Strategy",
+      "file_type": "code",
+      "source_file": "src/strategy.py",
+      "source_location": "L7"
+    },
+    {
+      "id": "strategy_strategy_init",
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/strategy.py",
+      "source_location": "L10"
+    },
+    {
+      "id": "strategy_strategy_find_trading_symbol_by_atm",
+      "label": ".find_trading_symbol_by_atm()",
+      "file_type": "code",
+      "source_file": "src/strategy.py",
+      "source_location": "L34"
+    },
+    {
+      "id": "src_constants_py",
+      "label": "constants.py",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "constants_yml_to_obj",
+      "label": "yml_to_obj()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "constants_read_yml",
+      "label": "read_yml()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L38"
+    },
+    {
+      "id": "constants_ensure_loaded",
+      "label": "_ensure_loaded()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L57"
+    },
+    {
+      "id": "constants_getattr",
+      "label": "__getattr__()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L65"
+    },
+    {
+      "id": "constants_get_settings",
+      "label": "get_settings()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L72"
+    },
+    {
+      "id": "constants_access_cnfg",
+      "label": "access_cnfg()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L78"
+    },
+    {
+      "id": "constants_access_setg",
+      "label": "access_setg()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L84"
+    },
+    {
+      "id": "constants_load_env_settings",
+      "label": "load_env_settings()",
+      "file_type": "code",
+      "source_file": "src/constants.py",
+      "source_location": "L90"
+    },
+    {
+      "id": "constants_rationale_73",
+      "label": "Lazy load settings - only reads config when first accessed.",
+      "file_type": "rationale",
+      "source_file": "src/constants.py",
+      "source_location": "L73"
+    },
+    {
+      "id": "constants_rationale_79",
+      "label": "Access O_CNFG. Use this for tests.",
+      "file_type": "rationale",
+      "source_file": "src/constants.py",
+      "source_location": "L79"
+    },
+    {
+      "id": "constants_rationale_85",
+      "label": "Access O_SETG. Use this for tests.",
+      "file_type": "rationale",
+      "source_file": "src/constants.py",
+      "source_location": "L85"
+    },
+    {
+      "id": "constants_rationale_91",
+      "label": "Reload settings from settings.yml.",
+      "file_type": "rationale",
+      "source_file": "src/constants.py",
+      "source_location": "L91"
+    },
+    {
+      "id": "src_main_py",
+      "label": "main.py",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "main_check_pid_lock",
+      "label": "check_pid_lock()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L57"
+    },
+    {
+      "id": "main_acquire_pid_lock",
+      "label": "acquire_pid_lock()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L72"
+    },
+    {
+      "id": "main_release_pid_lock",
+      "label": "release_pid_lock()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L77"
+    },
+    {
+      "id": "main_get_auth_credentials",
+      "label": "get_auth_credentials()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L95"
+    },
+    {
+      "id": "main_verify_basic_auth",
+      "label": "verify_basic_auth()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L106"
+    },
+    {
+      "id": "main_scheduleconfig",
+      "label": "ScheduleConfig",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L126"
+    },
+    {
+      "id": "main_scheduleconfig_init",
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L127"
+    },
+    {
+      "id": "main_scheduleconfig_is_within_schedule",
+      "label": ".is_within_schedule()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L136"
+    },
+    {
+      "id": "main_scheduleconfig_is_paused",
+      "label": ".is_paused()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L149"
+    },
+    {
+      "id": "main_scheduleconfig_pause_reason",
+      "label": ".pause_reason()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L152"
+    },
+    {
+      "id": "main_scheduleconfig_can_start",
+      "label": ".can_start()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L159"
+    },
+    {
+      "id": "main_scheduleconfig_time_until_start",
+      "label": ".time_until_start()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L162"
+    },
+    {
+      "id": "main_scheduleconfig_time_until_end",
+      "label": ".time_until_end()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L177"
+    },
+    {
+      "id": "main_scheduled_start",
+      "label": "scheduled_start()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L200"
+    },
+    {
+      "id": "main_scheduled_stop",
+      "label": "scheduled_stop()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L205"
+    },
+    {
+      "id": "main_watchdog_check",
+      "label": "watchdog_check()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L210"
+    },
+    {
+      "id": "main_get_memory_usage",
+      "label": "get_memory_usage()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L221"
+    },
+    {
+      "id": "main_load_page_template",
+      "label": "load_page_template()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L235"
+    },
+    {
+      "id": "main_lifespan",
+      "label": "lifespan()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L245"
+    },
+    {
+      "id": "main_auth_middleware",
+      "label": "auth_middleware()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L282"
+    },
+    {
+      "id": "main_root",
+      "label": "root()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L300"
+    },
+    {
+      "id": "main_logic_page",
+      "label": "logic_page()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L307"
+    },
+    {
+      "id": "main_schedule_info",
+      "label": "schedule_info()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L318"
+    },
+    {
+      "id": "main_memory_info",
+      "label": "memory_info()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L335"
+    },
+    {
+      "id": "main_get_logs",
+      "label": "get_logs()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L353"
+    },
+    {
+      "id": "main_get_settings_file",
+      "label": "get_settings_file()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L366"
+    },
+    {
+      "id": "main_update_settings",
+      "label": "update_settings()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L377"
+    },
+    {
+      "id": "main_get_admin_status",
+      "label": "get_admin_status()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L392"
+    },
+    {
+      "id": "main_get_chart_settings",
+      "label": "get_chart_settings()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L405"
+    },
+    {
+      "id": "main_get_available_symbols",
+      "label": "get_available_symbols()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L420"
+    },
+    {
+      "id": "main_get_summary",
+      "label": "get_summary()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L426"
+    },
+    {
+      "id": "main_get_orders",
+      "label": "get_orders()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L439"
+    },
+    {
+      "id": "main_get_historical_data",
+      "label": "get_historical_data()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L451"
+    },
+    {
+      "id": "main_place_buy_order",
+      "label": "place_buy_order()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L484"
+    },
+    {
+      "id": "main_reset",
+      "label": "reset()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L529"
+    },
+    {
+      "id": "main_add_position_order",
+      "label": "add_position_order()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L541"
+    },
+    {
+      "id": "main_square_position",
+      "label": "square_position()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L581"
+    },
+    {
+      "id": "main_cancel_order",
+      "label": "cancel_order()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L619"
+    },
+    {
+      "id": "main_sse_candlestick_endpoint",
+      "label": "sse_candlestick_endpoint()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L637"
+    },
+    {
+      "id": "main_stream_all_orders",
+      "label": "stream_all_orders()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L712"
+    },
+    {
+      "id": "main_restart_trading_session",
+      "label": "restart_trading_session()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L743"
+    },
+    {
+      "id": "main_admin_start_session",
+      "label": "admin_start_session()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L756"
+    },
+    {
+      "id": "main_admin_stop_session",
+      "label": "admin_stop_session()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L765"
+    },
+    {
+      "id": "main_admin_reset_session",
+      "label": "admin_reset_session()",
+      "file_type": "code",
+      "source_file": "src/main.py",
+      "source_location": "L774"
+    },
+    {
+      "id": "src_symbol_py",
+      "label": "symbol.py",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "symbol_get_exchange_token_map_finvasia",
+      "label": "get_exchange_token_map_finvasia()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L13"
+    },
+    {
+      "id": "symbol_get_exchange_token_map_flattrade",
+      "label": "get_exchange_token_map_flattrade()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L21"
+    },
+    {
+      "id": "symbol_symbol",
+      "label": "Symbol",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L45"
+    },
+    {
+      "id": "symbol_symbol_init",
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L61"
+    },
+    {
+      "id": "symbol_symbol_get_next_expiry",
+      "label": ".get_next_expiry()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L69"
+    },
+    {
+      "id": "symbol_symbol_get_lot_size",
+      "label": ".get_lot_size()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L91"
+    },
+    {
+      "id": "symbol_symbol_get_atm",
+      "label": ".get_atm()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L102"
+    },
+    {
+      "id": "symbol_symbol_get_tokens",
+      "label": ".get_tokens()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L113"
+    },
+    {
+      "id": "symbol_symbol_find_option_type",
+      "label": ".find_option_type()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L143"
+    },
+    {
+      "id": "symbol_symbol_find_closest_premium",
+      "label": ".find_closest_premium()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L153"
+    },
+    {
+      "id": "symbol_symbol_find_option_by_distance",
+      "label": ".find_option_by_distance()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L187"
+    },
+    {
+      "id": "symbol_symbol_find_wstoken_from_tradingsymbol",
+      "label": ".find_wstoken_from_tradingsymbol()",
+      "file_type": "code",
+      "source_file": "src/symbol.py",
+      "source_location": "L212"
+    },
+    {
+      "id": "symbol_rationale_46",
+      "label": "Class to get symbols from flattrade      Parameters     ----------     symbol :",
+      "file_type": "rationale",
+      "source_file": "src/symbol.py",
+      "source_location": "L46"
+    },
+    {
+      "id": "symbol_rationale_144",
+      "label": "Extracts option type from the CSV file if present.",
+      "file_type": "rationale",
+      "source_file": "src/symbol.py",
+      "source_location": "L144"
+    },
+    {
+      "id": "src_init_py",
+      "label": "__init__.py",
+      "file_type": "code",
+      "source_file": "src/__init__.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_wserver_py",
+      "label": "wserver.py",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "wserver_wserver",
+      "label": "Wserver",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L10"
+    },
+    {
+      "id": "wserver_wserver_init",
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L11"
+    },
+    {
+      "id": "wserver_wserver_open_callback",
+      "label": ".open_callback()",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L29"
+    },
+    {
+      "id": "wserver_wserver_event_handler_order_update",
+      "label": ".event_handler_order_update()",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L36"
+    },
+    {
+      "id": "wserver_wserver_event_handler_quote_update",
+      "label": ".event_handler_quote_update()",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L40"
+    },
+    {
+      "id": "wserver_wserver_subscribe",
+      "label": ".subscribe()",
+      "file_type": "code",
+      "source_file": "src/wserver.py",
+      "source_location": "L46"
+    },
+    {
+      "id": "src_tickrunner_py",
+      "label": "tickrunner.py",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "tickrunner_get_dict_from_list",
+      "label": "get_dict_from_list()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L12"
+    },
+    {
+      "id": "tickrunner_tickrunner",
+      "label": "TickRunner",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L31"
+    },
+    {
+      "id": "tickrunner_tickrunner_init",
+      "label": ".__init__()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L32"
+    },
+    {
+      "id": "tickrunner_tickrunner_load_trade_from_file",
+      "label": "._load_trade_from_file()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L47"
+    },
+    {
+      "id": "tickrunner_tickrunner_create",
+      "label": ".create()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L67"
+    },
+    {
+      "id": "tickrunner_tickrunner_is_trade",
+      "label": ".is_trade()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L76"
+    },
+    {
+      "id": "tickrunner_tickrunner_exit_trade",
+      "label": ".exit_trade()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L126"
+    },
+    {
+      "id": "tickrunner_tickrunner_run_state_machine",
+      "label": ".run_state_machine()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L175"
+    },
+    {
+      "id": "tickrunner_tickrunner_run",
+      "label": ".run()",
+      "file_type": "code",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L198"
+    },
+    {
+      "id": "src_logic_app_py",
+      "label": "logic_app.py",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "logic_app_load_template",
+      "label": "load_template()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L19"
+    },
+    {
+      "id": "logic_app_on_start",
+      "label": "on_start()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L30"
+    },
+    {
+      "id": "logic_app_on_stop",
+      "label": "on_stop()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L37"
+    },
+    {
+      "id": "logic_app_get_settings",
+      "label": "get_settings()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L46"
+    },
+    {
+      "id": "logic_app_trading_session_start",
+      "label": "trading_session_start()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L59"
+    },
+    {
+      "id": "logic_app_trading_session_stop",
+      "label": "trading_session_stop()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L147"
+    },
+    {
+      "id": "logic_app_start_logic",
+      "label": "start_logic()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L181"
+    },
+    {
+      "id": "logic_app_stop_logic",
+      "label": "stop_logic()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L194"
+    },
+    {
+      "id": "logic_app_pause_logic",
+      "label": "pause_logic()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L201"
+    },
+    {
+      "id": "logic_app_get_status",
+      "label": "get_status()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L216"
+    },
+    {
+      "id": "logic_app_create_logic_router",
+      "label": "create_logic_router()",
+      "file_type": "code",
+      "source_file": "src/logic_app.py",
+      "source_location": "L231"
+    },
+    {
+      "id": "src_static_chart_js",
+      "label": "chart.js",
+      "file_type": "code",
+      "source_file": "src/static/chart.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "chart_getrandomcolor",
+      "label": "getRandomColor()",
+      "file_type": "code",
+      "source_file": "src/static/chart.js",
+      "source_location": "L74"
+    },
+    {
+      "id": "chart_getcolorhex",
+      "label": "getColorHex()",
+      "file_type": "code",
+      "source_file": "src/static/chart.js",
+      "source_location": "L80"
+    },
+    {
+      "id": "chart_calculatesma",
+      "label": "calculateSMA()",
+      "file_type": "code",
+      "source_file": "src/static/chart.js",
+      "source_location": "L96"
+    },
+    {
+      "id": "chart_calculateema",
+      "label": "calculateEMA()",
+      "file_type": "code",
+      "source_file": "src/static/chart.js",
+      "source_location": "L108"
+    },
+    {
+      "id": "chart_setupchart",
+      "label": "setupChart()",
+      "file_type": "code",
+      "source_file": "src/static/chart.js",
+      "source_location": "L131"
+    },
+    {
+      "id": "src_static_summary_js",
+      "label": "summary.js",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "summary_dofetch",
+      "label": "doFetch()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L8"
+    },
+    {
+      "id": "summary_showpositionsmodal",
+      "label": "showPositionsModal()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L63"
+    },
+    {
+      "id": "summary_showordersmodal",
+      "label": "showOrdersModal()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L102"
+    },
+    {
+      "id": "summary_squareoff",
+      "label": "squareOff()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L149"
+    },
+    {
+      "id": "summary_coverposition",
+      "label": "coverPosition()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L168"
+    },
+    {
+      "id": "summary_addposition",
+      "label": "addPosition()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L189"
+    },
+    {
+      "id": "summary_closebuyordermodal",
+      "label": "closeBuyOrderModal()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L200"
+    },
+    {
+      "id": "summary_submitbuyorder",
+      "label": "submitBuyOrder()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L204"
+    },
+    {
+      "id": "summary_cancelorder",
+      "label": "cancelOrder()",
+      "file_type": "code",
+      "source_file": "src/static/summary.js",
+      "source_location": "L230"
+    },
+    {
+      "id": "tests_test_tickrunner_py",
+      "label": "test_tickrunner.py",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "test_tickrunner_clean_trade",
+      "label": "clean_trade()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L16"
+    },
+    {
+      "id": "test_tickrunner_mock_wserver",
+      "label": "mock_wserver()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L26"
+    },
+    {
+      "id": "test_tickrunner_tokens_nearest",
+      "label": "tokens_nearest()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L33"
+    },
+    {
+      "id": "test_tickrunner_setup_mocks",
+      "label": "setup_mocks()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L41"
+    },
+    {
+      "id": "test_tickrunner_testtickrunner",
+      "label": "TestTickRunner",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L56"
+    },
+    {
+      "id": "test_tickrunner_testtickrunner_test_create_clears_when_no_trade",
+      "label": ".test_create_clears_when_no_trade()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L57"
+    },
+    {
+      "id": "test_tickrunner_testtickrunner_test_is_trade_clears_when_entry_rejected",
+      "label": ".test_is_trade_clears_when_entry_rejected()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L64"
+    },
+    {
+      "id": "test_tickrunner_testtickrunner_test_exit_trade_completes_when_exit_filled",
+      "label": ".test_exit_trade_completes_when_exit_filled()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L83"
+    },
+    {
+      "id": "test_tickrunner_testtradejsonpersistence",
+      "label": "TestTradeJsonPersistence",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L108"
+    },
+    {
+      "id": "test_tickrunner_testtradejsonpersistence_test_trade_json_saved_after_entry",
+      "label": ".test_trade_json_saved_after_entry()",
+      "file_type": "code",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L109"
+    },
+    {
+      "id": "tests_conftest_py",
+      "label": "conftest.py",
+      "file_type": "code",
+      "source_file": "tests/conftest.py",
+      "source_location": "L1"
+    },
+    {
+      "id": "conftest_setup_modules",
+      "label": "setup_modules()",
+      "file_type": "code",
+      "source_file": "tests/conftest.py",
+      "source_location": "L14"
+    },
+    {
+      "id": "conftest_clean_trade",
+      "label": "clean_trade()",
+      "file_type": "code",
+      "source_file": "tests/conftest.py",
+      "source_location": "L48"
+    }
+  ],
+  "edges": [
+    {
+      "source": "src_schemas_py",
+      "target": "pydantic",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/schemas.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_schemas_py",
+      "target": "schemas_sessionstatus",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/schemas.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "schemas_sessionstatus",
+      "target": "basemodel",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "src/schemas.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_schemas_py",
+      "target": "schemas_sessionresponse",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/schemas.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "schemas_sessionresponse",
+      "target": "basemodel",
+      "relation": "inherits",
+      "confidence": "EXTRACTED",
+      "source_file": "src/schemas.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "datetime",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "src_tickrunner",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "src_wserver",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "state_logicstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "state_logicstate",
+      "target": "state_logicstate_init",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "state_logicstate",
+      "target": "state_logicstate_is_running",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "state_logicstate",
+      "target": "state_logicstate_is_paused",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L43",
+      "weight": 1.0
+    },
+    {
+      "source": "state_logicstate",
+      "target": "state_logicstate_reset",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "src_state_py",
+      "target": "state_get_logic_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/state.py",
+      "source_location": "L71",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "time",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "importlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "traceback",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_login",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_helper",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_api",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_reset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L54",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_one_side",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_cancel_orders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_orders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L105",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_positions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_historical",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_modify_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L134",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_close_all_for_symbol",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L145",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_mtm",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_order_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L213",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_position_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "api_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L244",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L281",
+      "weight": 1.0
+    },
+    {
+      "source": "src_api_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L283",
+      "weight": 1.0
+    },
+    {
+      "source": "api_api",
+      "target": "api_reset",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "api_api",
+      "target": "api_login",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "api_one_side",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "api_cancel_orders",
+      "target": "api_orders",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "api_cancel_orders",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L99",
+      "weight": 1.0
+    },
+    {
+      "source": "api_orders",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "api_positions",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L110",
+      "weight": 1.0
+    },
+    {
+      "source": "api_historical",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L118",
+      "weight": 1.0
+    },
+    {
+      "source": "api_modify_order",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L137",
+      "weight": 1.0
+    },
+    {
+      "source": "api_close_all_for_symbol",
+      "target": "api_cancel_orders",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "api_close_all_for_symbol",
+      "target": "api_positions",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L152",
+      "weight": 1.0
+    },
+    {
+      "source": "api_close_all_for_symbol",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L179",
+      "weight": 1.0
+    },
+    {
+      "source": "api_mtm",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "api_order_summary",
+      "target": "api_orders",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "api_position_summary",
+      "target": "api_positions",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L230",
+      "weight": 1.0
+    },
+    {
+      "source": "api_summary",
+      "target": "api_orders",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L246",
+      "weight": 1.0
+    },
+    {
+      "source": "api_summary",
+      "target": "api_positions",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/api.py",
+      "source_location": "L247",
+      "weight": 1.0
+    },
+    {
+      "source": "src_strategy_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/strategy.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_strategy_py",
+      "target": "src_symbol",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/strategy.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_strategy_py",
+      "target": "strategy_strategy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/strategy.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy",
+      "target": "strategy_strategy_init",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/strategy.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy",
+      "target": "strategy_strategy_find_trading_symbol_by_atm",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/strategy.py",
+      "source_location": "L34",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "os",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "toolkit_fileutils",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "toolkit_logger",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_yml_to_obj",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_read_yml",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L38",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_ensure_loaded",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_getattr",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L65",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_get_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_access_cnfg",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_access_setg",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L84",
+      "weight": 1.0
+    },
+    {
+      "source": "src_constants_py",
+      "target": "constants_load_env_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_read_yml",
+      "target": "constants_yml_to_obj",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_ensure_loaded",
+      "target": "constants_read_yml",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_getattr",
+      "target": "constants_ensure_loaded",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_get_settings",
+      "target": "constants_ensure_loaded",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_access_cnfg",
+      "target": "constants_ensure_loaded",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_access_setg",
+      "target": "constants_ensure_loaded",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L86",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_load_env_settings",
+      "target": "constants_ensure_loaded",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L94",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_rationale_73",
+      "target": "constants_get_settings",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_rationale_79",
+      "target": "constants_access_cnfg",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L79",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_rationale_85",
+      "target": "constants_access_setg",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L85",
+      "weight": 1.0
+    },
+    {
+      "source": "constants_rationale_91",
+      "target": "constants_load_env_settings",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/constants.py",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "asyncio",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "gc",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "json",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "logging",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "os",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "base64",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "contextlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "datetime",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "apscheduler_schedulers_asyncio",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "apscheduler_triggers_interval",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L17",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "fastapi",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L18",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "fastapi_responses",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "fastapi_staticfiles",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L20",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "pytz",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "sse_starlette_sse",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L22",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L24",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "src_state",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "src_logic_app",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_check_pid_lock",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_acquire_pid_lock",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L72",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_release_pid_lock",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_auth_credentials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L95",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_verify_basic_auth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_scheduleconfig",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_init",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_is_paused",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_pause_reason",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L152",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_can_start",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L159",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_time_until_start",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "main_scheduleconfig_time_until_end",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L177",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_scheduled_start",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_scheduled_stop",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L205",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_watchdog_check",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L210",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_memory_usage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L221",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_load_page_template",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L235",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_lifespan",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L245",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_auth_middleware",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L282",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_root",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L300",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_logic_page",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L307",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_schedule_info",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L318",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_memory_info",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L335",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_logs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L353",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_settings_file",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L366",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_update_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L377",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_admin_status",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L392",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_chart_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L405",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_available_symbols",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L420",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_summary",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L426",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_orders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L439",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_get_historical_data",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L451",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_place_buy_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L484",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_reset",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L529",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_add_position_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L541",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_square_position",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L581",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_cancel_order",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L619",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_sse_candlestick_endpoint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L637",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_stream_all_orders",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L712",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_restart_trading_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L743",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_admin_start_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L756",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_admin_stop_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L765",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "main_admin_reset_session",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L774",
+      "weight": 1.0
+    },
+    {
+      "source": "src_main_py",
+      "target": "uvicorn",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L784",
+      "weight": 1.0
+    },
+    {
+      "source": "main_verify_basic_auth",
+      "target": "main_get_auth_credentials",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig_is_within_schedule",
+      "target": "main_scheduleconfig_is_paused",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L139",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig_can_start",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig_time_until_start",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig_time_until_end",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L178",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduled_start",
+      "target": "main_scheduleconfig_can_start",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduled_stop",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L206",
+      "weight": 1.0
+    },
+    {
+      "source": "main_watchdog_check",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L211",
+      "weight": 1.0
+    },
+    {
+      "source": "main_lifespan",
+      "target": "main_reset",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L249",
+      "weight": 1.0
+    },
+    {
+      "source": "main_lifespan",
+      "target": "main_check_pid_lock",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L253",
+      "weight": 1.0
+    },
+    {
+      "source": "main_lifespan",
+      "target": "main_acquire_pid_lock",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L256",
+      "weight": 1.0
+    },
+    {
+      "source": "main_lifespan",
+      "target": "main_release_pid_lock",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L266",
+      "weight": 1.0
+    },
+    {
+      "source": "main_auth_middleware",
+      "target": "main_verify_basic_auth",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L283",
+      "weight": 1.0
+    },
+    {
+      "source": "main_root",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L301",
+      "weight": 1.0
+    },
+    {
+      "source": "main_root",
+      "target": "main_load_page_template",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L302",
+      "weight": 1.0
+    },
+    {
+      "source": "main_logic_page",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L308",
+      "weight": 1.0
+    },
+    {
+      "source": "main_logic_page",
+      "target": "main_load_page_template",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L309",
+      "weight": 1.0
+    },
+    {
+      "source": "main_schedule_info",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L323",
+      "weight": 1.0
+    },
+    {
+      "source": "main_schedule_info",
+      "target": "main_scheduleconfig_time_until_start",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L324",
+      "weight": 1.0
+    },
+    {
+      "source": "main_schedule_info",
+      "target": "main_scheduleconfig_time_until_end",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L325",
+      "weight": 1.0
+    },
+    {
+      "source": "main_schedule_info",
+      "target": "main_scheduleconfig_is_paused",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L327",
+      "weight": 1.0
+    },
+    {
+      "source": "main_schedule_info",
+      "target": "main_scheduleconfig_pause_reason",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L328",
+      "weight": 1.0
+    },
+    {
+      "source": "main_memory_info",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L342",
+      "weight": 1.0
+    },
+    {
+      "source": "main_memory_info",
+      "target": "main_scheduleconfig_time_until_end",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L343",
+      "weight": 1.0
+    },
+    {
+      "source": "main_memory_info",
+      "target": "main_get_memory_usage",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L344",
+      "weight": 1.0
+    },
+    {
+      "source": "main_get_admin_status",
+      "target": "main_scheduleconfig_is_within_schedule",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L400",
+      "weight": 1.0
+    },
+    {
+      "source": "main_restart_trading_session",
+      "target": "main_reset",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L748",
+      "weight": 1.0
+    },
+    {
+      "source": "main_admin_reset_session",
+      "target": "main_reset",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/main.py",
+      "source_location": "L777",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "datetime",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "traceback",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "pandas",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "toolkit_fileutils",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "symbol_get_exchange_token_map_finvasia",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "symbol_get_exchange_token_map_flattrade",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L21",
+      "weight": 1.0
+    },
+    {
+      "source": "src_symbol_py",
+      "target": "symbol_symbol",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_init",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L61",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_get_next_expiry",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_get_lot_size",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L91",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_get_atm",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_get_tokens",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L113",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_find_option_type",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_find_closest_premium",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_find_option_by_distance",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L187",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol",
+      "target": "symbol_symbol_find_wstoken_from_tradingsymbol",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_symbol_init",
+      "target": "symbol_get_exchange_token_map_flattrade",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_rationale_46",
+      "target": "symbol_symbol",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "symbol_rationale_144",
+      "target": "symbol_symbol_find_option_type",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/symbol.py",
+      "source_location": "L144",
+      "weight": 1.0
+    },
+    {
+      "source": "src_wserver_py",
+      "target": "time",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_wserver_py",
+      "target": "collections",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_wserver_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_wserver_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_wserver_py",
+      "target": "wserver_wserver",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "wserver_wserver",
+      "target": "wserver_wserver_init",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "wserver_wserver",
+      "target": "wserver_wserver_open_callback",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L29",
+      "weight": 1.0
+    },
+    {
+      "source": "wserver_wserver",
+      "target": "wserver_wserver_event_handler_order_update",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "wserver_wserver",
+      "target": "wserver_wserver_event_handler_quote_update",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L40",
+      "weight": 1.0
+    },
+    {
+      "source": "wserver_wserver",
+      "target": "wserver_wserver_subscribe",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "src_wserver_py",
+      "target": "helper",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L55",
+      "weight": 1.0
+    },
+    {
+      "source": "wserver_wserver_open_callback",
+      "target": "wserver_wserver_subscribe",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/wserver.py",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "asyncio",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "os",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "src_api",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "src_wserver",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L9",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "tickrunner_get_dict_from_list",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_tickrunner_py",
+      "target": "tickrunner_tickrunner",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L31",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_init",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L32",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_load_trade_from_file",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L47",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_create",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L67",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_is_trade",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L76",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_exit_trade",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L126",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_run_state_machine",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L175",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "tickrunner_tickrunner_run",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_init",
+      "target": "tickrunner_tickrunner_load_trade_from_file",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L45",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_create",
+      "target": "tickrunner_tickrunner_load_trade_from_file",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L69",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_is_trade",
+      "target": "tickrunner_get_dict_from_list",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_exit_trade",
+      "target": "tickrunner_get_dict_from_list",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L128",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_run",
+      "target": "tickrunner_tickrunner_run_state_machine",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "asyncio",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "datetime",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L6",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L7",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "typing",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "fastapi",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "src_api",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L13",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "src_state",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_load_template",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_on_start",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_on_stop",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L37",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_get_settings",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L46",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_trading_session_start",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L59",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_trading_session_stop",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L147",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_start_logic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_stop_logic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L194",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_pause_logic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_get_status",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L216",
+      "weight": 1.0
+    },
+    {
+      "source": "src_logic_app_py",
+      "target": "logic_app_create_logic_router",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L231",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "logic_app_get_settings",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L73",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "logic_app_on_start",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L136",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_stop",
+      "target": "logic_app_on_stop",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L150",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_start_logic",
+      "target": "logic_app_trading_session_start",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L185",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_stop_logic",
+      "target": "logic_app_trading_session_stop",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L198",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_pause_logic",
+      "target": "logic_app_trading_session_stop",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/logic_app.py",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_chart_js",
+      "target": "chart_getrandomcolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/chart.js",
+      "source_location": "L74",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_chart_js",
+      "target": "chart_getcolorhex",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/chart.js",
+      "source_location": "L80",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_chart_js",
+      "target": "chart_calculatesma",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/chart.js",
+      "source_location": "L96",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_chart_js",
+      "target": "chart_calculateema",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/chart.js",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_chart_js",
+      "target": "chart_setupchart",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/chart.js",
+      "source_location": "L131",
+      "weight": 1.0
+    },
+    {
+      "source": "chart_getcolorhex",
+      "target": "chart_getrandomcolor",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/chart.js",
+      "source_location": "L90",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_dofetch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L8",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_showpositionsmodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L63",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_showordersmodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L102",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_squareoff",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L149",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_coverposition",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_addposition",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L189",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_closebuyordermodal",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L200",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_submitbuyorder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L204",
+      "weight": 1.0
+    },
+    {
+      "source": "src_static_summary_js",
+      "target": "summary_cancelorder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "src/static/summary.js",
+      "source_location": "L230",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "pytest",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "unittest_mock",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "src_tickrunner",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L10",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "src_api",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L11",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "src_constants",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "test_tickrunner_clean_trade",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L16",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "test_tickrunner_mock_wserver",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L26",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "test_tickrunner_tokens_nearest",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L33",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "test_tickrunner_setup_mocks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L41",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "test_tickrunner_testtickrunner",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L56",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner",
+      "target": "test_tickrunner_testtickrunner_test_create_clears_when_no_trade",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L57",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner",
+      "target": "test_tickrunner_testtickrunner_test_is_trade_clears_when_entry_rejected",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner",
+      "target": "test_tickrunner_testtickrunner_test_exit_trade_completes_when_exit_filled",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L83",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_test_tickrunner_py",
+      "target": "test_tickrunner_testtradejsonpersistence",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L108",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtradejsonpersistence",
+      "target": "test_tickrunner_testtradejsonpersistence_test_trade_json_saved_after_entry",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L109",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "pytest",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L1",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "sys",
+      "relation": "imports",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L2",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L3",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "types",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L4",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "unittest_mock",
+      "relation": "imports_from",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L5",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "conftest_setup_modules",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tests_conftest_py",
+      "target": "conftest_clean_trade",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/conftest.py",
+      "source_location": "L48",
+      "weight": 1.0
+    },
+    {
+      "source": "state_logicstate",
+      "target": "tickrunner_tickrunner",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/state.py",
+      "source_location": "L10",
+      "weight": 0.8
+    },
+    {
+      "source": "state_logicstate",
+      "target": "wserver_wserver",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/state.py",
+      "source_location": "L11",
+      "weight": 0.8
+    },
+    {
+      "source": "strategy_strategy",
+      "target": "symbol_symbol",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/strategy.py",
+      "source_location": "L4",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L248",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L428",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L441",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L461",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L504",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L531",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L543",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L583",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L621",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L747",
+      "weight": 0.8
+    },
+    {
+      "source": "main_scheduleconfig",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/main.py",
+      "source_location": "L776",
+      "weight": 0.8
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L7",
+      "weight": 0.8
+    },
+    {
+      "source": "tickrunner_tickrunner",
+      "target": "wserver_wserver",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/tickrunner.py",
+      "source_location": "L9",
+      "weight": 0.8
+    },
+    {
+      "source": "test_tickrunner_testtickrunner",
+      "target": "tickrunner_tickrunner",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L10",
+      "weight": 0.8
+    },
+    {
+      "source": "test_tickrunner_testtradejsonpersistence",
+      "target": "tickrunner_tickrunner",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L10",
+      "weight": 0.8
+    },
+    {
+      "source": "test_tickrunner_testtickrunner",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L11",
+      "weight": 0.8
+    },
+    {
+      "source": "test_tickrunner_testtradejsonpersistence",
+      "target": "api_helper",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L11",
+      "weight": 0.8
+    },
+    {
+      "source": "api_login",
+      "target": "constants_access_cnfg",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/api.py",
+      "source_location": "L12",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy_init",
+      "target": "symbol_symbol",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/strategy.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy_init",
+      "target": "symbol_symbol_get_next_expiry",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/strategy.py",
+      "source_location": "L19",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy_init",
+      "target": "symbol_symbol_get_atm",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/strategy.py",
+      "source_location": "L28",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy_init",
+      "target": "symbol_symbol_get_tokens",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/strategy.py",
+      "source_location": "L30",
+      "weight": 1.0
+    },
+    {
+      "source": "strategy_strategy_find_trading_symbol_by_atm",
+      "target": "symbol_symbol_find_closest_premium",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/strategy.py",
+      "source_location": "L49",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduleconfig_can_start",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L160",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduled_start",
+      "target": "logic_app_start_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L202",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduled_stop",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L206",
+      "weight": 1.0
+    },
+    {
+      "source": "main_scheduled_stop",
+      "target": "logic_app_stop_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L207",
+      "weight": 1.0
+    },
+    {
+      "source": "main_watchdog_check",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L211",
+      "weight": 1.0
+    },
+    {
+      "source": "main_watchdog_check",
+      "target": "logic_app_start_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L212",
+      "weight": 1.0
+    },
+    {
+      "source": "main_watchdog_check",
+      "target": "logic_app_stop_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "main_root",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L301",
+      "weight": 1.0
+    },
+    {
+      "source": "main_logic_page",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L308",
+      "weight": 1.0
+    },
+    {
+      "source": "main_schedule_info",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L326",
+      "weight": 1.0
+    },
+    {
+      "source": "main_memory_info",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L337",
+      "weight": 1.0
+    },
+    {
+      "source": "main_update_settings",
+      "target": "constants_load_env_settings",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L384",
+      "weight": 1.0
+    },
+    {
+      "source": "main_update_settings",
+      "target": "logic_app_stop_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L385",
+      "weight": 1.0
+    },
+    {
+      "source": "main_get_admin_status",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L399",
+      "weight": 1.0
+    },
+    {
+      "source": "main_get_chart_settings",
+      "target": "logic_app_get_settings",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L407",
+      "weight": 1.0
+    },
+    {
+      "source": "main_get_summary",
+      "target": "api_summary",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L429",
+      "weight": 1.0
+    },
+    {
+      "source": "main_get_orders",
+      "target": "api_orders",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L442",
+      "weight": 1.0
+    },
+    {
+      "source": "main_get_historical_data",
+      "target": "api_historical",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L462",
+      "weight": 1.0
+    },
+    {
+      "source": "main_place_buy_order",
+      "target": "logic_app_get_settings",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L489",
+      "weight": 1.0
+    },
+    {
+      "source": "main_place_buy_order",
+      "target": "api_one_side",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L505",
+      "weight": 1.0
+    },
+    {
+      "source": "main_place_buy_order",
+      "target": "api_cancel_orders",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L515",
+      "weight": 1.0
+    },
+    {
+      "source": "main_reset",
+      "target": "api_close_all_for_symbol",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L533",
+      "weight": 1.0
+    },
+    {
+      "source": "main_add_position_order",
+      "target": "logic_app_get_settings",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L544",
+      "weight": 1.0
+    },
+    {
+      "source": "main_add_position_order",
+      "target": "api_one_side",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L570",
+      "weight": 1.0
+    },
+    {
+      "source": "main_square_position",
+      "target": "logic_app_get_settings",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L584",
+      "weight": 1.0
+    },
+    {
+      "source": "main_square_position",
+      "target": "api_one_side",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L608",
+      "weight": 1.0
+    },
+    {
+      "source": "main_cancel_order",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L625",
+      "weight": 1.0
+    },
+    {
+      "source": "main_restart_trading_session",
+      "target": "logic_app_stop_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L745",
+      "weight": 1.0
+    },
+    {
+      "source": "main_restart_trading_session",
+      "target": "logic_app_start_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L749",
+      "weight": 1.0
+    },
+    {
+      "source": "main_admin_start_session",
+      "target": "logic_app_start_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L758",
+      "weight": 1.0
+    },
+    {
+      "source": "main_admin_stop_session",
+      "target": "logic_app_stop_logic",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/main.py",
+      "source_location": "L767",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_get_dict_from_list",
+      "target": "api_orders",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/tickrunner.py",
+      "source_location": "L14",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_is_trade",
+      "target": "api_one_side",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/tickrunner.py",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_exit_trade",
+      "target": "api_modify_order",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/tickrunner.py",
+      "source_location": "L164",
+      "weight": 1.0
+    },
+    {
+      "source": "tickrunner_tickrunner_exit_trade",
+      "target": "api_close_all_for_symbol",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/tickrunner.py",
+      "source_location": "L165",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L62",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "api_api",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L70",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "wserver_wserver",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "strategy_strategy",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "wserver_wserver_subscribe",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L106",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "strategy_strategy_find_trading_symbol_by_atm",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L115",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "symbol_symbol_find_wstoken_from_tradingsymbol",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L119",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "tickrunner_tickrunner",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L122",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "symbol_symbol_get_lot_size",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L127",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_start",
+      "target": "tickrunner_tickrunner_run",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L133",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_trading_session_stop",
+      "target": "main_reset",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L168",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_start_logic",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L182",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_pause_logic",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L202",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_get_status",
+      "target": "state_logicstate_is_running",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L218",
+      "weight": 1.0
+    },
+    {
+      "source": "logic_app_get_status",
+      "target": "main_scheduleconfig_is_paused",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "src/logic_app.py",
+      "source_location": "L220",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner_test_create_clears_when_no_trade",
+      "target": "tickrunner_tickrunner",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner_test_is_trade_clears_when_entry_rejected",
+      "target": "tickrunner_tickrunner",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L77",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner_test_is_trade_clears_when_entry_rejected",
+      "target": "tickrunner_tickrunner_run_state_machine",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L78",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner_test_exit_trade_completes_when_exit_filled",
+      "target": "tickrunner_tickrunner",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L97",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtickrunner_test_exit_trade_completes_when_exit_filled",
+      "target": "tickrunner_tickrunner_run_state_machine",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L101",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtradejsonpersistence_test_trade_json_saved_after_entry",
+      "target": "tickrunner_tickrunner",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L123",
+      "weight": 1.0
+    },
+    {
+      "source": "test_tickrunner_testtradejsonpersistence_test_trade_json_saved_after_entry",
+      "target": "tickrunner_tickrunner_run_state_machine",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_tickrunner.py",
+      "source_location": "L124",
+      "weight": 1.0
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
