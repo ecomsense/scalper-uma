@@ -247,7 +247,9 @@ class Helper:
         positions = cls.positions()
 
         valid_orders = [o for o in orders if o and o.get("order_id")]
-        total_orders = len(valid_orders)
+
+        closed_statuses = ["CANCELED", "REJECTED"]
+        total_orders = len([o for o in valid_orders if o.get("status", "") not in closed_statuses])
 
         active_orders_count = 0
         for o in valid_orders:
