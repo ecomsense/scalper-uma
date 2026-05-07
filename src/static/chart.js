@@ -269,8 +269,10 @@ window.addEventListener("DOMContentLoaded", () => {
 			const prev = candles[candles.length - 2];
 			const ltp = curr.close;
 			const buyPrice = prev.high + 0.05;
-			const stopPrice = prev.low;
-			const targetPrice = buyPrice + profit;
+			const stopPrice = Math.min(prev.low, curr.low);
+      const risk = buyPrice - stopPrice;
+      const reward = risk * profit;
+			const targetPrice = buyPrice + reward;
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -290,13 +292,16 @@ window.addEventListener("DOMContentLoaded", () => {
 			const curr = candles[candles.length - 1];
 			const prev = candles[candles.length - 2];
 			const buyPrice = curr.close + 2;
-			const stopPrice = prev.low;
-			const targetPrice = buyPrice + profit;
+			const ltp = curr.close;
+			const stopPrice = Math.min(prev.low, curr.low);
+      const risk = curr.close - stopPrice;
+      const reward = risk * profit;
+			const targetPrice = curr.close + reward;
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
-					symbol, ltp: curr.close, price: curr.close + 2, order_type: "LMT",
+					symbol, ltp, price: curr.close + 2, order_type: "LMT",
 					exit_price: prev.low, cost_price: curr.close + 0.05
 				})
 			}).then(r => r.json()).then(data => {
