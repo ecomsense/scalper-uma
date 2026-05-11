@@ -499,6 +499,7 @@ async def place_buy_order(request: Request, payload: dict[str, Any] = Body(...))
 
         exit_price = payload.pop('exit_price')
         cost_price = payload.pop('cost_price')
+        target_price = payload.pop('target_price', None)
         order_details.update(payload)
 
         from src.api import Helper
@@ -506,9 +507,12 @@ async def place_buy_order(request: Request, payload: dict[str, Any] = Body(...))
         if order_id:
             order_details['entry_id'] = order_id
             order_details['exit_price'] = exit_price
-            order_details['target_price'] = cost_price + settings.get('profit', 5)
-            if order_details['tag'] != 'no_tag':
-                order_details['target_price'] = cost_price + (cost_price - exit_price)
+            if target_price:
+                order_details['target_price'] = target_price
+            else:
+                order_details['target_price'] = cost_price + settings.get('profit', 5)
+                if order_details['tag'] != 'no_tag':
+                    order_details['target_price'] = cost_price + (cost_price - exit_price)
 
             order_type = order_details.get('order_type', 'LIMIT')
             if order_type == 'SL':
