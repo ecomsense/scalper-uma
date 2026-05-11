@@ -278,7 +278,8 @@ window.addEventListener("DOMContentLoaded", () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					symbol, ltp, price: prev.high + 0.05, trigger_price: prev.high,
-					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05
+					order_type: "SL", exit_price: prev.low, cost_price: prev.high + 0.05,
+						target_price: targetPrice
 				})
 			});
 		};
@@ -302,7 +303,8 @@ window.addEventListener("DOMContentLoaded", () => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({
 					symbol, ltp, price: curr.close + 2, order_type: "LMT",
-					exit_price: prev.low, cost_price: curr.close + 0.05
+					exit_price: prev.low, cost_price: curr.close + 0.05,
+						target_price: targetPrice
 				})
 			}).then(r => r.json()).then(data => {
 				if (data.order && data.order.entry_id) {
