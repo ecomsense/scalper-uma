@@ -502,17 +502,15 @@ async def place_buy_order(request: Request, payload: dict[str, Any] = Body(...))
         target_price = payload.pop('target_price', None)
         order_details.update(payload)
 
+        if not target_price:
+            return JSONResponse(content={'message': 'No target_price from frontend', 'status': 'failed', 'order': order_details})
+
         from src.api import Helper
         order_id = Helper.one_side(order_details)
         if order_id:
             order_details['entry_id'] = order_id
             order_details['exit_price'] = exit_price
-            if target_price:
-                order_details['target_price'] = target_price
-            else:
-                order_details['target_price'] = cost_price + settings.get('profit', 5)
-                if order_details['tag'] != 'no_tag':
-                    order_details['target_price'] = cost_price + (cost_price - exit_price)
+            order_details['target_price'] = target_price
 
             order_type = order_details.get('order_type', 'LIMIT')
             if order_type == 'SL':
