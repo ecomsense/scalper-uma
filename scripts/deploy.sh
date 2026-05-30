@@ -1,11 +1,16 @@
 #!/bin/bash
-# Deploy to server - pull + restart in one command
+# Deploy to server - commit, push, pull + restart in one command
 set -e
 
 SERVER="uma@65.20.83.178"
 PROJECT="/home/uma/no_env/uma_scalper"
 
 echo "=== Deploy to Server ==="
+
+# Commit and push local changes
+git add -A
+git commit --allow-empty -m "${1:-auto: deploy}"
+git push
 
 # Kill ghost processes, pull, restart
 ssh $SERVER "cd $PROJECT && git pull && pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service"
