@@ -12,8 +12,8 @@ git add -A
 git commit --allow-empty -m "${1:-auto: deploy}"
 git push
 
-# Kill ghost processes, pull, restart
-ssh $SERVER "cd $PROJECT && git pull && pkill -f uvicorn && sleep 2 && systemctl --user start fastapi_app.service"
+# Pull and restart cleanly via systemd
+ssh $SERVER "cd $PROJECT && git pull && systemctl --user restart fastapi_app.service"
 
 # Wait for startup
 sleep 5
