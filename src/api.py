@@ -96,7 +96,7 @@ class Helper:
                         continue
                     if side and o.get("side") != side:
                         continue
-                    cls.api().order_cancel(order_id=o.get('order_id'))
+                    cls.api().order_cancel(order_id=o.get("order_id"))
                     logging.debug(f"Cancelled order {o.get('order_id')} for {symbol}")
         except Exception as e:
             logging.error(f"Error cancelling orders: {e}")
@@ -116,7 +116,7 @@ class Helper:
         logging.debug(f"historical: ENTER {exchange}|{token}")
         try:
             resp = cls.api().broker.get_time_price_series(
-                exchange=exchange, token=token
+                exchange=exchange, token=token, interval=interval
             )
             if resp is None:
                 logging.error(
@@ -192,7 +192,9 @@ class Helper:
                     "tag": "closesell",
                 }
                 resp = cls.api().order_place(**args)
-                logging.info(f"Close SELL {symbol} qty={quantity} @ {sell_price}: {resp}")
+                logging.info(
+                    f"Close SELL {symbol} qty={quantity} @ {sell_price}: {resp}"
+                )
 
     @classmethod
     def mtm(cls) -> float:
@@ -249,7 +251,9 @@ class Helper:
         valid_orders = [o for o in orders if o and o.get("order_id")]
 
         closed_statuses = ["CANCELED", "REJECTED"]
-        total_orders = len([o for o in valid_orders if o.get("status", "") not in closed_statuses])
+        total_orders = len(
+            [o for o in valid_orders if o.get("status", "") not in closed_statuses]
+        )
 
         active_orders_count = 0
         for o in valid_orders:
