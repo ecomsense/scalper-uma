@@ -42,7 +42,8 @@ from src.logic_app import (
 IST = tz("Asia/Kolkata")
 SCHEDULER = AsyncIOScheduler()
 STATIC_DIR = Path(__file__).parent / "static"
-CANDLESTICK_TIMEFRAME_SECONDS = 60
+HISTORY_INTERVAL = 3
+CANDLESTICK_TIMEFRAME_SECONDS = HISTORY_INTERVAL * 60
 
 
 # ============================================================
@@ -491,7 +492,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
         from src.api import Helper
 
-        historical_data = Helper.historical(exchange, token)
+        historical_data = Helper.historical(exchange, token, interval=HISTORY_INTERVAL)
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
@@ -534,7 +535,6 @@ async def place_buy_order(
         }
 
         exit_price = payload.pop("exit_price")
-        cost_price = payload.pop("cost_price")
         target_price = payload.pop("target_price", None)
         order_details.update(payload)
 
