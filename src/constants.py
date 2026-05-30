@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging as _py_logging
 from os import path
 from typing import Any
 
@@ -112,6 +113,7 @@ if O_SETG.get("log"):
 else:
     logging: Logger = Logger(20)
 
+_py_logging.getLogger('websocket').setLevel(_py_logging.WARNING)
 
 dct_sym: dict[str, dict[str, Any]] = {
     "NIFTY": {"diff": 50, "index": "Nifty 50", "exchange": "NSE", "token": "26000", "depth": 9},
