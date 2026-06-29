@@ -69,6 +69,7 @@
 
     <script>
         let scheduleData = null;
+        let starting = false;
 
         function openLogsModal() { document.getElementById('logsModal').style.display='block'; loadLogs(); }
         function closeLogsModal() { document.getElementById('logsModal').style.display='none'; }
@@ -128,16 +129,29 @@
                 
                 // If within schedule but not running, auto-start trading
                 if (scheduleData.within_schedule && !logicData.running) {
+                    if (starting) return; // prevent duplicate start calls
+                    starting = true;
                     try {
-                        await fetch('/api/logic/start', { method: 'POST' });
-                        // Brief delay to let trading start
-                        setTimeout(() => {
-                            window.location.href = '/logic?t=' + Date.now();
-                        }, 1000);
-                        return;
+                        const resp = await fetch('/api/logic/start', { method: 'POST' });
+                        const data = await resp.json();
+                        if (data.status === 'started' || data.status === 'already_running') {
+                            // Poll until running is confirmed, then redirect
+                            for (let i = 0; i < 30; i++) {
+                                const check = await fetch('/api/logic/status').then(r => r.json());
+                                if (check.running) {
+                                    window.location.href = '/logic?t=' + Date.now();
+                                    return;
+                                }
+                                await new Promise(r => setTimeout(r, 1000));
+                            }
+                            console.error('Trading not running after start, giving up');
+                            starting = false;
+                        }
                     } catch (e) {
                         console.error('Failed to start trading:', e);
+                        starting = false;
                     }
+                    return;
                 }
                 
                 // Update schedule time display
