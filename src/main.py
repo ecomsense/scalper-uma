@@ -23,6 +23,7 @@ from sse_starlette.sse import EventSourceResponse
 
 from src.constants import (
     O_FUTL,
+    O_SETG,
     S_DATA,
     TRADE_JSON,
 )
@@ -42,7 +43,7 @@ from src.logic_app import (
 IST = tz("Asia/Kolkata")
 SCHEDULER = AsyncIOScheduler()
 STATIC_DIR = Path(__file__).parent / "static"
-HISTORY_INTERVAL = 3
+HISTORY_INTERVAL = O_SETG.get("candlestick_interval", 3)
 CANDLESTICK_TIMEFRAME_SECONDS = HISTORY_INTERVAL * 60
 
 
@@ -434,7 +435,8 @@ async def get_chart_settings():
         settings = get_settings()
         ma = settings.get("ma", [])
         profit = settings.get("profit", 5)
-        return JSONResponse(content={"ma": ma, "profit": profit})
+        candlestick_interval = O_SETG.get("candlestick_interval", 3)
+        return JSONResponse(content={"ma": ma, "profit": profit, "candlestick_interval": candlestick_interval})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 

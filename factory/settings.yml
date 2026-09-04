@@ -4,6 +4,7 @@ log:
 program:
   start: "9:15"
   stop: "15:15"
+  candlestick_interval: 3
 base: NIFTY
 ma:
   - type: ema
