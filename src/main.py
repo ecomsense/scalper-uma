@@ -43,8 +43,14 @@ from src.logic_app import (
 IST = tz("Asia/Kolkata")
 SCHEDULER = AsyncIOScheduler()
 STATIC_DIR = Path(__file__).parent / "static"
-HISTORY_INTERVAL = O_SETG.get("candlestick_interval", 3)
-CANDLESTICK_TIMEFRAME_SECONDS = HISTORY_INTERVAL * 60
+
+
+def get_candlestick_interval() -> int:
+    return O_SETG.get("candlestick_interval", 3)
+
+
+def get_candlestick_timeframe_seconds() -> int:
+    return get_candlestick_interval() * 60
 
 
 # ============================================================
@@ -435,7 +441,7 @@ async def get_chart_settings():
         settings = get_settings()
         ma = settings.get("ma", [])
         profit = settings.get("profit", 5)
-        candlestick_interval = O_SETG.get("candlestick_interval", 3)
+        candlestick_interval = get_candlestick_interval()
         return JSONResponse(content={"ma": ma, "profit": profit, "candlestick_interval": candlestick_interval})
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
@@ -494,7 +500,7 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
         from src.api import Helper
 
-        historical_data = Helper.historical(exchange, token, interval=HISTORY_INTERVAL)
+        historical_data = Helper.historical(exchange, token, interval=get_candlestick_interval())
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
@@ -801,7 +807,7 @@ async def sse_candlestick_endpoint(
                 ist_now = datetime.now(IST)
                 current_timestamp_ist = int(ist_now.timestamp())
                 candle_time = current_timestamp_ist - (
-                    current_timestamp_ist % CANDLESTICK_TIMEFRAME_SECONDS
+                    current_timestamp_ist % get_candlestick_timeframe_seconds()
                 )
 
                 if last_sent_candle is None or candle_time > last_sent_candle["time"]:
