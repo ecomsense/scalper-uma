@@ -23,9 +23,9 @@ from sse_starlette.sse import EventSourceResponse
 
 from src.constants import (
     O_FUTL,
-    O_SETG,
     S_DATA,
     TRADE_JSON,
+    get_settings as _get_settings_const,
 )
 from src.state import _logic_state
 
@@ -46,6 +46,7 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 
 def get_candlestick_interval() -> int:
+    _, O_SETG = _get_settings_const()
     return O_SETG.get("candlestick_interval", 3)
 
 
@@ -136,8 +137,8 @@ class ScheduleConfig:
         self.enabled = True
         self.start_hour = 9
         self.start_minute = 15
-        self.end_hour = 21
-        self.end_minute = 31
+        self.end_hour = 23
+        self.end_minute = 55
         self.trading_days = [0, 1, 2, 3, 4]
         self.trading_day_names = ["Mon", "Tue", "Wed", "Thu", "Fri"]
 
@@ -408,15 +409,21 @@ async def update_settings(request: Request, settings_data: dict[str, Any] = Body
         with open(settings_path, "w") as f:
             f.write(content)
         from src.constants import load_env_settings
+        from src.constants import get_settings as _get_settings_const
 
+        before = _get_settings_const()[1].get("candlestick_interval", "N/A")
         load_env_settings()
+        after = _get_settings_const()[1].get("candlestick_interval", "N/A")
         await stop_logic()
         return JSONResponse(
-            content={"message": "Settings saved. Trading stopped.", "status": "success"}
+            content={
+                "message": f"Settings saved. Trading stopped. Before: {before}, After: {after}",
+                "status": "success",
+            }
         )
     except Exception as e:
         return JSONResponse(
-            content={"message": str(e), "status": "error"}, status_code=500
+            content={"message": f"Error: {str(e)}", "status": "error"}, status_code=500
         )
 
 
@@ -442,7 +449,13 @@ async def get_chart_settings():
         ma = settings.get("ma", [])
         profit = settings.get("profit", 5)
         candlestick_interval = get_candlestick_interval()
-        return JSONResponse(content={"ma": ma, "profit": profit, "candlestick_interval": candlestick_interval})
+        return JSONResponse(
+            content={
+                "ma": ma,
+                "profit": profit,
+                "candlestick_interval": candlestick_interval,
+            }
+        )
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
@@ -500,7 +513,9 @@ async def get_historical_data(symbol: str, request: Request) -> JSONResponse:
 
         from src.api import Helper
 
-        historical_data = Helper.historical(exchange, token, interval=get_candlestick_interval())
+        historical_data = Helper.historical(
+            exchange, token, interval=get_candlestick_interval()
+        )
 
         if not historical_data or len(historical_data) == 0:
             return JSONResponse(content={"data": []})
@@ -779,7 +794,7 @@ async def sse_candlestick_endpoint(
 
         if token_symbol not in ws.ltp:
             logging.error(
-                f"SSE timeout: {token_symbol} not in ws.ltp after {waited/2}s. LTP keys: {list(ws.ltp.keys())[:10]}"
+                f"SSE timeout: {token_symbol} not in ws.ltp after {waited / 2}s. LTP keys: {list(ws.ltp.keys())[:10]}"
             )
             return
 
