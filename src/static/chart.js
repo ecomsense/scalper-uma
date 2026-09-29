@@ -270,9 +270,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const ltp = curr.close;
 			const buyPrice = prev.high + 0.05;
 			const stopPrice = Math.min(prev.low, curr.low);
-      const risk = buyPrice - stopPrice;
-      const reward = risk * profit;
-			const targetPrice = buyPrice + reward;
+			const targetPrice = buyPrice + profit;
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -295,9 +293,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const buyPrice = curr.close + 2;
 			const ltp = curr.close;
 			const stopPrice = Math.min(prev.low, curr.low);
-      const risk = curr.close - stopPrice;
-      const reward = risk * profit;
-			const targetPrice = curr.close + reward;
+			const targetPrice = buyPrice + profit;
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
