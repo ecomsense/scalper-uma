@@ -95,6 +95,7 @@ async def trading_session_start(app: Any) -> None:
             logging.error(
                 f"❌ Failed to get LTP from websocket! ws.ltp={ws.ltp}, socket_opened={ws.socket_opened}"
             )
+            ws.close_websocket()
             return
 
         ltp_of_underlying = next(iter(ws.ltp.values()))
@@ -106,6 +107,7 @@ async def trading_session_start(app: Any) -> None:
 
         if not tokens:
             logging.warning("No tokens found for options")
+            ws.close_websocket()
             return
 
         all_tokens = [*tokens, index_token]
@@ -126,6 +128,11 @@ async def trading_session_start(app: Any) -> None:
         tokens_nearest: dict[str, str] = sgy.sym.find_wstoken_from_tradingsymbol(
             symbol_nearest_to_premium
         )
+
+        if not tokens_nearest:
+            logging.error("❌ No options found matching criteria (possibly no LTP received). Aborting start.")
+            ws.close_websocket()
+            return
 
         from src.tickrunner import TickRunner
 
