@@ -50,6 +50,14 @@ class Wserver:
         else:
             logging.warning("Websocket not opened, cannot subscribe")
 
+    def close_websocket(self) -> None:
+        if hasattr(self.api, "broker") and hasattr(self.api.broker, "close_websocket"):
+            self.api.broker.close_websocket()
+            logging.info("🔌 Websocket closed via broker.close_websocket()")
+        else:
+            logging.warning("🔌 broker.close_websocket not found")
+        self.socket_opened = False
+
 
 if __name__ == "__main__":
     from helper import Helper
