@@ -271,6 +271,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const buyPrice = prev.high + 0.05;
 			const stopPrice = Math.min(prev.low, curr.low);
 			const targetPrice = buyPrice + profit;
+			console.log(`[Trade: High] symbol=${symbol}, ltp=${ltp}, buyPrice=${buyPrice.toFixed(2)}, stopPrice=${stopPrice.toFixed(2)}, profit=${profit}, targetPrice=${targetPrice.toFixed(2)}`);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -294,6 +295,7 @@ window.addEventListener("DOMContentLoaded", () => {
 			const ltp = curr.close;
 			const stopPrice = Math.min(prev.low, curr.low);
 			const targetPrice = buyPrice + profit;
+			console.log(`[Trade: MKT] symbol=${symbol}, ltp=${ltp}, buyPrice=${buyPrice.toFixed(2)}, stopPrice=${stopPrice.toFixed(2)}, profit=${profit}, targetPrice=${targetPrice.toFixed(2)}`);
 			fetch("/api/trade/buy", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
