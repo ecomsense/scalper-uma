@@ -54,8 +54,8 @@ class TickRunner:
                     self.quantity = data.get("quantity", 0)
                     self.exchange = data.get("exchange", "")
                     self.tag = data.get("tag", "")
-                    self.exit_price = data.get("exit_price")
-                    self.target_price = data.get("target_price")
+                    self.exit_price = float(data.get("exit_price")) if data.get("exit_price") is not None else None
+                    self.target_price = float(data.get("target_price")) if data.get("target_price") is not None else None
                     if self.entry_id:
                         self.fn = "is_trade"
                         logging.info(
@@ -144,7 +144,7 @@ class TickRunner:
                 logging.info(
                     f"exit_trade: symbol={self.symbol} in tokens_nearest={self.symbol in self.tokens_nearest} in ltps={self.symbol in self.ltps}, ws_ltp_keys={ws_ltp_keys[:3]}..., ltp={ltp}"
                 )
-                if ltp and (ltp > self.target_price or ltp < self.exit_price):
+                if ltp and (ltp >= self.target_price or ltp <= self.exit_price):
                     sell_price = ltp - 0.5
                     logging.info(
                         f"Target reached for {self.exit_id}, modifying to LMT @ {sell_price}"
