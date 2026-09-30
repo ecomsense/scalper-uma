@@ -577,6 +577,7 @@ async def place_buy_order(
 
         order_id = Helper.one_side(order_details)
         if order_id:
+            logging.info(f"Order placed: {order_id}, target_price={target_price}, exit_price={exit_price}")
             order_details["entry_id"] = order_id
             order_details["exit_price"] = exit_price
             order_details["target_price"] = target_price

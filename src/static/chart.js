@@ -335,8 +335,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
 					const isBuy = msg.bs === "B";
 					const orderSymbol = msg.tsym;
-					const price = msg.price || msg.ltp;
-
+					const price = msg.prc || msg.price || msg.ltp || "MKT";
 					console.log((isBuy ? "BUY" : "SELL") + " " + orderSymbol + " @ " + price);
 
 					// Draw entry line on matching chart
