@@ -281,6 +281,9 @@ async def lifespan(app: FastAPI):
 
     yield
 
+    logging.info("Lifespan teardown: Stopping trading session if running...")
+    await stop_logic()
+
     if SCHEDULER.running:
         SCHEDULER.shutdown()
     release_pid_lock()
