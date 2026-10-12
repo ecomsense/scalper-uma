@@ -83,7 +83,7 @@ class Symbol:
         parsed.sort(key=lambda x: x[1])
 
         for exp_str, dt in parsed:
-            if dt.date() > today.date():
+            if dt.date() >= today.date():
                 return exp_str
 
         return parsed[0][0] if parsed else None
