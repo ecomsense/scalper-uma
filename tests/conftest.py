@@ -10,8 +10,14 @@ TRADE_JSON = PROJECT_ROOT / "data" / "trade.json"
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 
-@pytest.fixture(autouse=True)
-def setup_modules():
+def _install_mocks():
+    """Install mock src.* modules so test-module imports resolve without deps.
+
+    Must run at conftest import time (below): fixtures execute only after
+    test modules are imported, which is too late for top-level imports like
+    `from src.tickrunner import TickRunner` that pull in real src.constants
+    (needs `toolkit` + broker credential files).
+    """
     for mod_name in list(sys.modules.keys()):
         if mod_name.startswith("src."):
             del sys.modules[mod_name]
@@ -36,6 +42,14 @@ def setup_modules():
     mock_wserver = ModuleType("src.wserver")
     mock_wserver.Wserver = MagicMock()
     sys.modules["src.wserver"] = mock_wserver
+
+
+_install_mocks()
+
+
+@pytest.fixture(autouse=True)
+def setup_modules():
+    _install_mocks()
 
     yield
 
