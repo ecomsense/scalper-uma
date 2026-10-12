@@ -24,32 +24,46 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 
 def _install_stubs():
-    if "toolkit" not in sys.modules:
-        toolkit = ModuleType("toolkit")
-        fileutils_mod = ModuleType("toolkit.fileutils")
+    """Stub toolkit + src.constants, saving any real modules for restore."""
+    saved = {}
+    for name in ("toolkit", "toolkit.fileutils", "src.constants"):
+        if name in sys.modules:
+            saved[name] = sys.modules[name]
 
-        class FakeFileutils:
-            def is_file_not_2day(self, csvfile):
-                return False  # fixture CSV is always fresh -> no download
+    toolkit = ModuleType("toolkit")
+    fileutils_mod = ModuleType("toolkit.fileutils")
 
-        fileutils_mod.Fileutils = FakeFileutils
-        toolkit.fileutils = fileutils_mod
-        sys.modules["toolkit"] = toolkit
-        sys.modules["toolkit.fileutils"] = fileutils_mod
+    class FakeFileutils:
+        def is_file_not_2day(self, csvfile):
+            return False  # fixture CSV is always fresh -> no download
 
-    if "src.constants" not in sys.modules:
-        mock_const = ModuleType("src.constants")
-        mock_const.dct_sym = {
-            "NIFTY": {"diff": 50, "index": "Nifty 50", "exchange": "NSE", "token": "26000", "depth": 9},
-            "BANKNIFTY": {"diff": 100, "index": "Nifty Bank", "exchange": "NSE", "token": "26009", "depth": 25},
-        }
-        mock_const.logging = MagicMock()
-        sys.modules["src.constants"] = mock_const
+    fileutils_mod.Fileutils = FakeFileutils
+    toolkit.fileutils = fileutils_mod
+    sys.modules["toolkit"] = toolkit
+    sys.modules["toolkit.fileutils"] = fileutils_mod
+
+    mock_const = ModuleType("src.constants")
+    mock_const.dct_sym = {
+        "NIFTY": {"diff": 50, "index": "Nifty 50", "exchange": "NSE", "token": "26000", "depth": 9},
+        "BANKNIFTY": {"diff": 100, "index": "Nifty Bank", "exchange": "NSE", "token": "26009", "depth": 25},
+    }
+    mock_const.logging = MagicMock()
+    sys.modules["src.constants"] = mock_const
+    return saved
 
 
-_install_stubs()
+_saved_modules = _install_stubs()
 
 from src.symbol import Symbol  # noqa: E402  (after stubs)
+
+# Restore so sibling test modules (e.g. test_tickrunner) get pristine imports.
+# Symbol keeps working: it holds the stubs in its own module globals.
+for _name in ("src.symbol", "src.constants", "toolkit.fileutils", "toolkit"):
+    if _name in _saved_modules:
+        sys.modules[_name] = _saved_modules[_name]
+    else:
+        sys.modules.pop(_name, None)
+del _saved_modules
 
 
 EXP_FMT = "%d-%b-%Y"
