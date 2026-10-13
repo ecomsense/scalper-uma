@@ -54,6 +54,10 @@ def get_candlestick_timeframe_seconds() -> int:
     return get_candlestick_interval() * 60
 
 
+# Buffer added to LTP for exit orders (cover: ltp + buffer, square: ltp - buffer)
+EXIT_BUFFER = 3.00
+
+
 # ============================================================
 # PID Lock File
 # ============================================================
@@ -681,10 +685,15 @@ async def add_position_order(
         )
 
 
-@app.post("/api/position/cover")
-async def cover_position(
+@app.post("/api/position/exit")
+async def exit_position(
     request: Request, payload: dict[str, Any] = Body(...)
 ) -> JSONResponse:
+    """Unified exit endpoint. Frontend sends raw ltp + side only.
+
+    side=SELL (square long)  -> price = ltp - EXIT_BUFFER
+    side=BUY  (cover short)  -> price = ltp + EXIT_BUFFER
+    """
     try:
         from src.api import Helper
 
@@ -694,98 +703,55 @@ async def cover_position(
         quantity = abs(payload.get("quantity", 0))
         ltp = payload.get("ltp", 0)
         exchange = payload.get("exchange", settings.get("option_exchange", "NFO"))
+        side = payload.get("side", "").upper()
 
         if not symbol or quantity == 0:
             return JSONResponse(
                 content={"message": "Symbol and quantity required", "status": "error"},
                 status_code=400,
             )
-
-        buy_price = ltp + 2
-
-        order_details = {
-            "symbol": symbol,
-            "quantity": quantity,
-            "disclosed_quantity": 0,
-            "exchange": exchange,
-            "side": "BUY",
-            "order_type": "LIMIT",
-            "price": buy_price,
-            "trigger_price": 0,
-            "validity": "DAY",
-        }
-
-        order_id = Helper.one_side(order_details)
-        if order_id:
+        if side not in ("BUY", "SELL"):
             return JSONResponse(
-                content={
-                    "message": f"Buy order placed to cover {symbol} at {buy_price}",
-                    "status": "success",
-                    "order_id": order_id,
-                }
+                content={"message": "Side must be BUY or SELL", "status": "error"},
+                status_code=400,
             )
-        return JSONResponse(
-            content={"message": "Failed to cover position", "status": "failed"},
-            status_code=500,
-        )
-
-    except Exception as e:
-        logging.error(f"Cover position error: {e}")
-        return JSONResponse(
-            content={"message": str(e), "status": "error"}, status_code=500
-        )
-
-
-@app.post("/api/position/square")
-async def square_position(
-    request: Request, payload: dict[str, Any] = Body(...)
-) -> JSONResponse:
-    try:
-        from src.api import Helper
-
-        settings = get_settings()
-
-        symbol = payload.get("symbol", "").upper()
-        quantity = abs(payload.get("quantity", 0))
-        ltp = payload.get("ltp", 0)
-        exchange = payload.get("exchange", settings.get("option_exchange", "NFO"))
-
-        if not symbol or quantity == 0:
+        if not ltp:
             return JSONResponse(
-                content={"message": "Symbol and quantity required", "status": "error"},
+                content={"message": "LTP required", "status": "error"},
                 status_code=400,
             )
 
-        sell_price = ltp - 2
+        price = ltp + EXIT_BUFFER if side == "BUY" else ltp - EXIT_BUFFER
 
         order_details = {
             "symbol": symbol,
             "quantity": quantity,
             "disclosed_quantity": 0,
             "exchange": exchange,
-            "side": "SELL",
+            "side": side,
             "order_type": "LIMIT",
-            "price": sell_price,
+            "price": price,
             "trigger_price": 0,
             "validity": "DAY",
         }
 
         order_id = Helper.one_side(order_details)
         if order_id:
+            action = "cover" if side == "BUY" else "square"
             return JSONResponse(
                 content={
-                    "message": f"Sell order placed to square {symbol} at {sell_price}",
+                    "message": f"{side} order placed to {action} {symbol} at {price}",
                     "status": "success",
                     "order_id": order_id,
                 }
             )
         return JSONResponse(
-            content={"message": "Failed to square position", "status": "failed"},
+            content={"message": "Failed to place exit order", "status": "failed"},
             status_code=500,
         )
 
     except Exception as e:
-        logging.error(f"Square position error: {e}")
+        logging.error(f"Exit position error: {e}")
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
         )
