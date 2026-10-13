@@ -7,6 +7,10 @@ from typing import Any
 
 from src.constants import access_cnfg, logging
 
+# Single source of truth for exit-order pricing buffer.
+# Cover (BUY): ltp + EXIT_BUFFER. Square (SELL): ltp - EXIT_BUFFER.
+EXIT_BUFFER = 3.00
+
 
 def login() -> Any:
     O_CNFG = access_cnfg()
@@ -146,7 +150,6 @@ class Helper:
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
         logging.debug(f"close_all_for_symbol: {symbol}, ltp={ltp}")
-        exit_buffer = 3.00
         cls.cancel_orders(symbol)
         time.sleep(1)
         positions = cls.positions()
@@ -161,8 +164,8 @@ class Helper:
         for pos in open_positions:
             time.sleep(1)
             quantity = abs(pos["quantity"])
-            sell_price = ltp - exit_buffer
-            buy_price = ltp + exit_buffer
+            sell_price = ltp - EXIT_BUFFER
+            buy_price = ltp + EXIT_BUFFER
             if pos["quantity"] < 0:
                 args = {
                     "symbol": symbol,
