@@ -146,7 +146,7 @@ class Helper:
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
         logging.debug(f"close_all_for_symbol: {symbol}, ltp={ltp}")
-        slippage = 3.00
+        exit_buffer = 3.00
         cls.cancel_orders(symbol)
         time.sleep(1)
         positions = cls.positions()
@@ -161,8 +161,8 @@ class Helper:
         for pos in open_positions:
             time.sleep(1)
             quantity = abs(pos["quantity"])
-            sell_price = ltp - slippage
-            buy_price = ltp + slippage
+            sell_price = ltp - exit_buffer
+            buy_price = ltp + exit_buffer
             if pos["quantity"] < 0:
                 args = {
                     "symbol": symbol,
