@@ -80,9 +80,6 @@ class TickRunner:
                 logging.info(
                     f"Entry COMPLETE: {self.entry_id}, placing exit at {self.exit_price}"
                 )
-                logging.debug(
-                    f"[tickrunner] >>> EXIT ORDER: symbol={self.symbol}, side=SELL, order_type=SL, price={self.exit_price}, trigger={self.exit_price + 0.05}"
-                )
                 args = {
                     "symbol": self.symbol,
                     "exchange": self.exchange,
@@ -94,6 +91,9 @@ class TickRunner:
                     "trigger_price": self.exit_price + 0.05,
                     "tag": self.tag,
                 }
+                logging.info(
+                    f"[tickrunner] >>> SL EXIT ORDER: symbol={self.symbol}, args={args}"
+                )
                 exit_id = Helper.one_side(args)
                 if exit_id:
                     self.exit_id = exit_id
@@ -112,6 +112,10 @@ class TickRunner:
                         },
                     )
                     self.fn = "exit_trade"
+                else:
+                    logging.error(
+                        f"SL order FAILED: broker returned no order id for {self.symbol}, args={args}"
+                    )
             elif item and item.get("status", None) in ["REJECTED", "CANCELED"]:
                 logging.info(f"Entry {item.get('status')}: {self.entry_id}, clearing")
                 self.entry_id = ""
