@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SL Investigation — scalper-uma (2026-10-13)</title>
+<style>body{font-family:sans-serif;max-width:900px;margin:2em auto;line-height:1.5}code{background:#f4f4f4;padding:0 4px}pre{background:#f4f4f4;padding:1em;overflow:auto}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:4px 8px}.ruled{color:#888;text-decoration:line-through}.open{color:#060}</style>
+</head>
+<body>
+<h1>Case: customer claims stop-loss orders are not getting placed</h1>
+<p>Date: 2026-10-13 (Tue, trading day). Status: <strong>open, waiting on unfiltered log window</strong>.</p>
+
+<h2>1. Facts from the provided log excerpt (09:38:27–09:38:52)</h2>
+<ul>
+<li>Repeated <code>GET /api/summary 200</code> polls and <code>Using existing session</code> (broker session reused, no re-login).</li>
+<li>Repeated <code>ERROR:root:SSE symbol NIFTY13OCT26P22400 not in tokens_nearest values. Available: ['NIFTY13OCT26P22450', 'NIFTY13OCT26C22500']</code> — browser holds a stale chart symbol after re-selection. Frontend issue, separate from SL.</li>
+<li><strong>Absent from excerpt:</strong> <code>Order placed:</code>, <code>Loaded trade</code>, <code>TRADE CHECK</code>, <code>Entry ...</code>, <code>&gt;&gt;&gt; SL</code>. Excerpt may be filtered, so no conclusion drawn (per user instruction).</li>
+</ul>
+
+<h2>2. SL placement chain (code refs, branch <code>main</code>)</h2>
+<ol>
+<li>Frontend <code>src/static/chart.js:275-283,299-306</code> POSTs <code>/api/trade/buy</code> with <code>exit_price</code>, <code>target_price</code>.</li>
+<li><code>src/main.py:544-609</code> <code>place_buy_order</code> → <code>Helper.one_side</code> → on success writes <code>data/trade.json</code> with <code>entry_id/exit_price/target_price</code>.</li>
+<li><code>src/tickrunner.py:is_trade</code> polls broker order book via <code>get_dict_from_list(entry_id)</code>; on <code>COMPLETE</code> places SL SELL (<code>price=exit_price</code>, <code>trigger=exit_price+0.05</code>), sets <code>fn=exit_trade</code>.</li>
+<li><code>src/tickrunner.py:exit_trade</code> tracks the SL order to completion.</li>
+</ol>
+
+<h2>3. Hypotheses and rulings</h2>
+<table>
+<tr><th>#</th><th>Hypothesis</th><th>Ruling</th></tr>
+<tr><td>1</td><td class="ruled">Session restart wipes trade.json (logic_app.py:67), orphaning entry</td><td class="ruled">Ruled out by user ("it is fine")</td></tr>
+<tr><td>2</td><td class="ruled">Entry never filled, so no SL by design</td><td class="ruled">Ruled out — only completed buy trades in scope</td></tr>
+<tr><td>3</td><td class="ruled">Bracket-order assumption wrong for NSE</td><td class="ruled">Accepted — app manages SL/target itself</td></tr>
+<tr><td>4</td><td class="ruled">Type/KeyError (exit_price pop, None arithmetic)</td><td class="ruled">Ruled out — product mature, running months</td></tr>
+<tr><td>5</td><td>SL rejected then state cleared by exit_trade</td><td>User: rejection would show in order book (verify there)</td></tr>
+<tr><td>6</td><td>Single-slot trade.json overwritten by second buy / /api/position/add</td><td>User confirmed singleton design (accepted)</td></tr>
+<tr><td>7</td><td class="open">Broker failure at placement / order-book lookup miss — OPEN, decide from raw log only</td><td class="open">Needs unfiltered log window</td></tr>
+</table>
+
+<h2>4. Debug already shipped (<code>5feb27d</code>)</h2>
+<ul>
+<li><code>&gt;&gt;&gt; SL EXIT ORDER</code> with full args promoted to INFO (<code>src/tickrunner.py</code>).</li>
+<li>New <code>SL order FAILED: broker returned no order id</code> ERROR when <code>Helper.one_side</code> returns falsy (was silent; retries every 0.5s while entry stays COMPLETE).</li>
+<li>Tests 9/9 green. Server needs pull + restart (verify deployed before reading new logs).</li>
+</ul>
+
+<h2>5. Needed to continue (rule: facts from log.txt only, no speculation)</h2>
+<pre>sed -n '/&lt;start&gt;/,/&lt;end&gt;/p' data/log.txt   # 2 min before → 5 min after the buy click, UNFILTERED
+cat data/trade.json                              # content at incident time (if captured)</pre>
+<p>Plus: broker orderbook status of the entry (COMPLETE?), whether any SL order id exists, single vs multiple buys around that time.</p>
+<p>Interpretation key: <code>Order placed:</code>→buy ok; <code>Loaded trade</code>→runner picked it up; <code>TRADE CHECK</code>→polling; <code>Entry COMPLETE</code>→SL attempt follows; <code>SL order FAILED</code>/<code>helper error</code>→broker refused; absence of all trade lines→buy never persisted or runner not tracking.</p>
+</body>
+</html>
