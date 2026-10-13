@@ -636,6 +636,9 @@ async def add_position_order(
         symbol = payload.get("symbol", "").upper()
         quantity = payload.get("quantity", _logic_state.quantity)
         price = payload.get("price", 0)
+        ltp = payload.get("ltp", 0)
+        if not price and ltp:
+            price = ltp + 2
         order_type = payload.get("order_type", "LIMIT")
         trigger_price = payload.get("trigger_price", 0)
         validity = payload.get("validity", "DAY")
