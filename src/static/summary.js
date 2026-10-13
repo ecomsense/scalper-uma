@@ -167,16 +167,14 @@ function squareOff(symbol, qty, ltp, exchange) {
 
 function coverPosition(symbol, qty, ltp, exchange) {
     console.log('Cover position (short):', symbol, 'qty:', qty, 'ltp:', ltp);
-    fetch('/api/position/add', {
+    fetch('/api/position/cover', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             symbol: symbol,
             quantity: qty,
             ltp: ltp,
-            order_type: 'LIMIT',
-            trigger_price: 0,
-            validity: 'DAY'
+            exchange: exchange
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Cover order placed');

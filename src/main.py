@@ -636,9 +636,6 @@ async def add_position_order(
         symbol = payload.get("symbol", "").upper()
         quantity = payload.get("quantity", _logic_state.quantity)
         price = payload.get("price", 0)
-        ltp = payload.get("ltp", 0)
-        if not price and ltp:
-            price = ltp + 2
         order_type = payload.get("order_type", "LIMIT")
         trigger_price = payload.get("trigger_price", 0)
         validity = payload.get("validity", "DAY")
@@ -679,6 +676,61 @@ async def add_position_order(
 
     except Exception as e:
         logging.error(f"Add position error: {e}")
+        return JSONResponse(
+            content={"message": str(e), "status": "error"}, status_code=500
+        )
+
+
+@app.post("/api/position/cover")
+async def cover_position(
+    request: Request, payload: dict[str, Any] = Body(...)
+) -> JSONResponse:
+    try:
+        from src.api import Helper
+
+        settings = get_settings()
+
+        symbol = payload.get("symbol", "").upper()
+        quantity = abs(payload.get("quantity", 0))
+        ltp = payload.get("ltp", 0)
+        exchange = payload.get("exchange", settings.get("option_exchange", "NFO"))
+
+        if not symbol or quantity == 0:
+            return JSONResponse(
+                content={"message": "Symbol and quantity required", "status": "error"},
+                status_code=400,
+            )
+
+        buy_price = ltp + 2
+
+        order_details = {
+            "symbol": symbol,
+            "quantity": quantity,
+            "disclosed_quantity": 0,
+            "exchange": exchange,
+            "side": "BUY",
+            "order_type": "LIMIT",
+            "price": buy_price,
+            "trigger_price": 0,
+            "validity": "DAY",
+        }
+
+        order_id = Helper.one_side(order_details)
+        if order_id:
+            return JSONResponse(
+                content={
+                    "message": f"Buy order placed to cover {symbol} at {buy_price}",
+                    "status": "success",
+                    "order_id": order_id,
+                }
+            )
+        return JSONResponse(
+            content={"message": "Failed to cover position", "status": "failed"},
+            status_code=500,
+        )
+
+    except Exception as e:
+        logging.error(f"Cover position error: {e}")
         return JSONResponse(
             content={"message": str(e), "status": "error"}, status_code=500
         )
