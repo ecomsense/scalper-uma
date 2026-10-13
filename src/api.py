@@ -146,7 +146,7 @@ class Helper:
         cls, symbol: str, ltp: float, max_retries: int = 5
     ) -> None:
         logging.debug(f"close_all_for_symbol: {symbol}, ltp={ltp}")
-        slippage = 0.50
+        slippage = 3.00
         cls.cancel_orders(symbol)
         time.sleep(1)
         positions = cls.positions()
