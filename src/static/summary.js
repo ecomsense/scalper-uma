@@ -148,14 +148,15 @@ function showOrdersModal() {
 
 function squareOff(symbol, qty, ltp, exchange) {
     console.log('Square off (long):', symbol, 'qty:', qty, 'ltp:', ltp);
-    fetch('/api/position/square', {
+    fetch('/api/position/exit', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             symbol: symbol,
             quantity: qty,
             ltp: ltp,
-            exchange: exchange
+            exchange: exchange,
+            side: 'SELL'
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Square order placed');
@@ -167,14 +168,15 @@ function squareOff(symbol, qty, ltp, exchange) {
 
 function coverPosition(symbol, qty, ltp, exchange) {
     console.log('Cover position (short):', symbol, 'qty:', qty, 'ltp:', ltp);
-    fetch('/api/position/cover', {
+    fetch('/api/position/exit', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             symbol: symbol,
             quantity: qty,
             ltp: ltp,
-            exchange: exchange
+            exchange: exchange,
+            side: 'BUY'
         })
     }).then(r => r.json()).then(d => {
         alert(d.message || 'Cover order placed');
