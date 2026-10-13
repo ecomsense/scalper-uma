@@ -287,10 +287,17 @@ textarea {
   to { opacity: 0; }
 }
 
+/* Chart swipe dots (mobile only) */
+.chart-dots { display: none; justify-content: center; gap: 10px; padding: 4px 0 8px; }
+.chart-dots button { width: 10px; height: 10px; border-radius: 50%; border: none; background: #4a5568; padding: 0; cursor: pointer; }
+.chart-dots button.on { background: #fff; }
+
 /* Responsive */
 @media (max-width: 900px) {
   .chart-grid { flex-direction: column; align-items: stretch; gap: 0; }
-  .chart-container { max-width: 100%; flex: 1 1 auto; }
+  .chart-container { max-width: 100%; flex: 1 1 auto; display: none; }
+  .chart-container.active { display: flex; animation: slideIn 0.25s ease; }
+  .chart-dots { display: flex; }
 }
 
 /* Sleeping Page */
