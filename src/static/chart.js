@@ -135,6 +135,7 @@ window.addEventListener("DOMContentLoaded", () => {
 		const profit = settings?.profit || 5;
 
 		const chart = LightweightCharts.createChart(chartContainer, chartOptions);
+		chartRefs[containerId] = { chart, el: chartContainer };
 		const candleSeries = chart.addCandlestickSeries(candlestickOptions);
 		
 		// OHLC display
@@ -317,6 +318,78 @@ window.addEventListener("DOMContentLoaded", () => {
 		};
 	}
 
+	// Mobile swipe: one chart card at a time, swipe left/right to switch (wraps around)
+	const chartRefs = {};
+	let activeChartIndex = 0;
+
+	function isNarrow() {
+		return window.matchMedia('(max-width: 900px)').matches;
+	}
+
+	function resizeVisibleCharts() {
+		Object.keys(chartRefs).forEach((cid) => {
+			const ref = chartRefs[cid];
+			if (ref.el.offsetParent === null) return; // hidden card
+			const w = ref.el.clientWidth, h = ref.el.clientHeight;
+			if (w > 0 && h > 0) ref.chart.applyOptions({ width: w, height: h });
+		});
+	}
+
+	function updateDots() {
+		const dots = document.querySelectorAll('.chart-dots button');
+		dots.forEach((d, i) => d.classList.toggle('on', i === activeChartIndex));
+	}
+
+	function showChart(i) {
+		const cards = [document.getElementById('ceChartContainer'), document.getElementById('peChartContainer')].filter(Boolean);
+		if (!cards.length) return;
+		activeChartIndex = ((i % cards.length) + cards.length) % cards.length;
+		const narrow = isNarrow();
+		cards.forEach((card, idx) => card.classList.toggle('active', !narrow || idx === activeChartIndex));
+		requestAnimationFrame(resizeVisibleCharts);
+		updateDots();
+	}
+
+	function buildDots() {
+		if (document.querySelector('.chart-dots')) return;
+		const grid = document.querySelector('.chart-grid');
+		if (!grid) return;
+		const dots = document.createElement('div');
+		dots.className = 'chart-dots';
+		for (let i = 0; i < 2; i++) {
+			const b = document.createElement('button');
+			b.setAttribute('aria-label', i === 0 ? 'Show Call chart' : 'Show Put chart');
+			b.onclick = () => showChart(i);
+			dots.appendChild(b);
+		}
+		grid.after(dots);
+		updateDots();
+	}
+
+	function enableSwipe() {
+		const grid = document.querySelector('.chart-grid');
+		if (!grid) return;
+		let sx = null, sy = null;
+		grid.addEventListener('touchstart', (e) => {
+			const t = e.changedTouches[0];
+			sx = t.clientX; sy = t.clientY;
+		}, { passive: true });
+		grid.addEventListener('touchend', (e) => {
+			if (sx === null) return;
+			const t = e.changedTouches[0];
+			const dx = t.clientX - sx, dy = t.clientY - sy;
+			sx = sy = null;
+			if (!isNarrow()) return;
+			if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+				showChart(activeChartIndex + (dx < 0 ? 1 : -1));
+			}
+		}, { passive: true });
+	}
+
+	buildDots();
+	enableSwipe();
+	window.addEventListener('resize', () => showChart(activeChartIndex));
+
 	fetch("/api/chart/settings")
 		.then(r => r.json())
 		.then(settings => {
@@ -351,5 +424,6 @@ window.addEventListener("DOMContentLoaded", () => {
 			setupChart("chart-CE", symbols[1], { high: "buy-btn-CE", mktbuy: "mkt-btn-CE", reset: "sell-btn-CE" }, settings);
 			document.getElementById("chart-title-PE").textContent = symbols[0];
 			setupChart("chart-PE", symbols[0], { high: "buy-btn-PE", mktbuy: "mkt-btn-PE", reset: "sell-btn-PE" }, settings);
+			showChart(0);
 		});
 });
