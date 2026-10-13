@@ -54,10 +54,6 @@ def get_candlestick_timeframe_seconds() -> int:
     return get_candlestick_interval() * 60
 
 
-# Buffer added to LTP for exit orders (cover: ltp + buffer, square: ltp - buffer)
-EXIT_BUFFER = 3.00
-
-
 # ============================================================
 # PID Lock File
 # ============================================================
@@ -695,7 +691,7 @@ async def exit_position(
     side=BUY  (cover short)  -> price = ltp + EXIT_BUFFER
     """
     try:
-        from src.api import Helper
+        from src.api import EXIT_BUFFER, Helper
 
         settings = get_settings()
 
