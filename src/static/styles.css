@@ -298,6 +298,9 @@ textarea {
   .chart-container { max-width: 100%; flex: 1 1 auto; display: none; }
   .chart-container.active { display: flex; animation: slideIn 0.25s ease; }
   .chart-dots { display: flex; }
+  .chart-header { gap: 6px; }
+  .chart-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85em; }
+  .left-buttons, .right-buttons { flex-shrink: 0; }
 }
 
 /* Sleeping Page */
