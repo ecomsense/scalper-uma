@@ -68,7 +68,7 @@ variations of strategies should be possible. in that case, one strategy may pape
 `..\data\main.yml` will have tell when all the strategies should be started.
 ```
 start_time: 9:!5
-stop_time: 15:30
+stop_time: 21:30
 strategies:
   - strategy1
   - strategy5
