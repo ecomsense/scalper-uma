@@ -11,8 +11,16 @@ echo "=== UMA Scalper Setup ==="
 echo "Updating apt..."
 sudo apt update
 
-echo "Installing deps (nginx, htpasswd, fuser, venv)..."
-sudo apt install -y nginx apache2-utils psmisc python3-venv
+echo "Installing deps (nginx, htpasswd, fuser, venv, git, curl)..."
+sudo apt install -y nginx apache2-utils psmisc python3-venv git curl
+
+echo "Installing uv (Python version/package manager used by deploy.sh)..."
+if ! command -v uv >/dev/null 2>&1; then
+    curl -LsSf https://astral.sh/uv | sh
+    export PATH="$HOME/.local/bin:$PATH"
+else
+    echo "uv already installed: $(uv --version)"
+fi
 
 echo "Setting up nginx..."
 sudo cp "$APP_DIR/factory/nginx.conf" /etc/nginx/sites-available/uma-scalper
