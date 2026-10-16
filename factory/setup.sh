@@ -3,10 +3,12 @@
 # App runs as a systemd USER unit: fastapi_app.service (see factory/fastapi_app.service)
 set -e
 
-APP_DIR="/home/umazerouma/no_env/uma_scalper"
+# Resolve repo root from this script's own location (works wherever the repo is cloned)
+APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SERVICE="fastapi_app.service"
 
 echo "=== UMA Scalper Setup ==="
+echo "App dir: $APP_DIR"
 
 echo "Updating apt..."
 sudo apt update
@@ -23,7 +25,7 @@ else
 fi
 
 echo "Setting up nginx..."
-sudo cp "$APP_DIR/factory/nginx.conf" /etc/nginx/sites-available/uma-scalper
+sudo sed "s|/home/umazerouma/no_env/uma_scalper|$APP_DIR|g" "$APP_DIR/factory/nginx.conf" | sudo tee /etc/nginx/sites-available/uma-scalper >/dev/null
 sudo ln -sf /etc/nginx/sites-available/uma-scalper /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
@@ -37,9 +39,9 @@ else
   echo ".htpasswd already exists, skipping."
 fi
 
-echo "Linking user systemd service..."
+echo "Generating user systemd service..."
 mkdir -p ~/.config/systemd/user
-ln -sf "$APP_DIR/factory/fastapi_app.service" ~/.config/systemd/user/$SERVICE
+sed "s|/home/umazerouma/no_env/uma_scalper|$APP_DIR|g" "$APP_DIR/factory/fastapi_app.service" > ~/.config/systemd/user/$SERVICE
 systemctl --user daemon-reload
 
 echo "Enabling linger (start at boot without login)..."
