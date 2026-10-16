@@ -3,7 +3,7 @@
 set -e
 
 SERVER="ssh-alias"
-PROJECT="/home/uma/no_env/uma_scalper"
+PROJECT="/home/appuser/no_env/uma_scalper"
 
 echo "=== Deploy to Server ==="
 
