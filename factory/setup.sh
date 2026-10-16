@@ -24,6 +24,16 @@ else
     echo "uv already installed: $(uv --version)"
 fi
 
+HTPASSWD=/etc/nginx/uma-scalper.htpasswd
+if sudo test -f "$HTPASSWD"; then
+  echo "$HTPASSWD already exists, skipping."
+else
+  echo "Creating $HTPASSWD (nginx basic auth, root:www-data 640)..."
+  sudo htpasswd -c "$HTPASSWD" trader
+  sudo chown root:www-data "$HTPASSWD"
+  sudo chmod 640 "$HTPASSWD"
+fi
+
 echo "Setting up nginx..."
 sed "s|__APP_DIR__|$APP_DIR|g" "$APP_DIR/factory/nginx.conf" | sudo tee /etc/nginx/sites-available/uma-scalper >/dev/null
 sudo ln -sf /etc/nginx/sites-available/uma-scalper /etc/nginx/sites-enabled/
@@ -31,13 +41,6 @@ sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
-
-if [ ! -f "$APP_DIR/data/.htpasswd" ]; then
-  echo "Creating $APP_DIR/data/.htpasswd (nginx basic auth)..."
-  htpasswd -c "$APP_DIR/data/.htpasswd" trader
-else
-  echo ".htpasswd already exists, skipping."
-fi
 
 echo "Generating user systemd service..."
 mkdir -p ~/.config/systemd/user
