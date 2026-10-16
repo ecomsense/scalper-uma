@@ -43,7 +43,7 @@ Key settings:
 | Setting | Value |
 |---------|-------|
 | Start | 09:15 IST |
-| End | 15:31 IST |
+| End | 21:30 IST |
 | Days | Mon-Fri (0-4) |
 
 Configured in: `src/main.py` → `ScheduleConfig` class
