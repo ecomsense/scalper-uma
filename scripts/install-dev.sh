@@ -1,17 +1,30 @@
 #!/bin/bash
-# Setup dev environment - run once
+# Install the Debian packages this app/infra needs on a fresh server.
+# Run once, with sudo:  sudo ./scripts/install-dev.sh
+#
+# Python deps are NOT handled here - scripts/deploy.sh (uv, from pyproject.toml) covers those.
 set -e
 
-cd "$(dirname "$0")"
+echo "Installing Debian packages..."
 
-echo "Installing dev tools..."
+apt-get update
+apt-get install -y \
+    nginx \
+    apache2-utils \
+    psmisc \
+    git \
+    curl \
+    python3-venv \
+    build-essential \
+    pkg-config \
+    libssl-dev
 
-# Install uv if not present
-if ! command -v uv &> /dev/null; then
-    curl -LsSf https://astral.sh/uv | sh
+echo "Installing uv (Python version/package manager used by deploy.sh)..."
+if ! command -v uv >/dev/null 2>&1; then
+    # Install system-wide so it's on PATH for any user (not just root's home)
+    curl -LsSf https://astral.sh/uv | UV_INSTALL_DIR=/usr/local/bin sh
+else
+    echo "uv already installed: $(uv --version)"
 fi
-
-# Install hooks
-uv run pre-commit install
 
 echo "Done!"

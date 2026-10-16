@@ -26,12 +26,12 @@ systemctl --user status fastapi_app.service
 systemctl --user restart fastapi_app.service
 
 # View logs
-tail -f /home/uma/no_env/uma_scalper/data/log.txt
+tail -f /home/umazerouma/no_env/uma_scalper/data/log.txt
 ```
 
 ## Systemd Service
 
-Service file location: `/home/uma/.config/systemd/user/fastapi_app.service`
+Service file location: `/home/umazerouma/.config/systemd/user/fastapi_app.service`
 
 Key settings:
 - **Restart**: always (with 5s delay)
@@ -125,7 +125,7 @@ scripts/verify_settings_reset_flow.sh
 
 1. **Service not responding**: Check `systemctl --user status fastapi_app.service`
 2. **Port 8000 in use**: `netstat -tlnp | grep 8000` or `ss -tlnp | grep 8000`
-3. **Logs**: `tail -100 /home/uma/no_env/uma_scalper/data/log.txt`
+3. **Logs**: `tail -100 /home/umazerouma/no_env/uma_scalper/data/log.txt`
 4. **PID lock issues**: Already handled with SKIP_PID_LOCK=1
 
 ## Deployment Commands
@@ -135,5 +135,5 @@ scripts/verify_settings_reset_flow.sh
 git add -A && git commit -m 'message' && git push
 
 # Server pull & restart
-ssh uma@65.20.83.178 "cd /home/uma/no_env/uma_scalper && git pull && systemctl --user restart fastapi_app.service"
+ssh uma@65.20.83.178 "cd /home/umazerouma/no_env/uma_scalper && git pull && systemctl --user restart fastapi_app.service"
 ```

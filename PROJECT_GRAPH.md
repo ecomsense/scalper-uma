@@ -98,7 +98,7 @@ systemctl --user start fastapi_app.service
 pkill -f uvicorn && sleep 2
 
 # Pull and restart
-cd /home/uma/no_env/uma_scalper
+cd /home/umazerouma/no_env/uma_scalper
 git pull
 systemctl --user stop fastapi_app.service
 sleep 2

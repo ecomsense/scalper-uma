@@ -1,4 +1,4 @@
-# Deployment: ln -sf /home/uma/no_env/uma_scalper/factory/fastapi_app.service ~/.config/systemd/user/fastapi_app.service
+# Deployment: ln -sf /home/umazerouma/no_env/uma_scalper/factory/fastapi_app.service ~/.config/systemd/user/fastapi_app.service
 
 [Unit]
 Description=UMA Scalper - Options Trading Bot
@@ -6,17 +6,17 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/uma/no_env/uma_scalper
-Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
+WorkingDirectory=/home/umazerouma/no_env/uma_scalper
+Environment="PATH=/home/umazerouma/no_env/uma_scalper/.venv/bin"
 Environment="SKIP_PID_LOCK=1"
 
 ExecStartPre=/bin/sh -c '/usr/bin/fuser -k -9 8000/tcp 2>/dev/null || true'
 ExecStartPre=/usr/bin/sleep 1
 
-ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+ExecStart=/home/umazerouma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
 
-StandardOutput=append:/home/uma/no_env/uma_scalper/data/log.txt
-StandardError=append:/home/uma/no_env/uma_scalper/data/log.txt
+StandardOutput=append:/home/umazerouma/no_env/uma_scalper/data/log.txt
+StandardError=append:/home/umazerouma/no_env/uma_scalper/data/log.txt
 Restart=on-failure
 RestartSec=5
 

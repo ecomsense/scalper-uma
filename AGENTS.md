@@ -112,7 +112,7 @@ systemctl --user status fastapi_app.service
 systemctl --user restart fastapi_app.service
 
 # Logs
-tail -50 /home/uma/no_env/uma_scalper/data/log.txt
+tail -50 /home/umazerouma/no_env/uma_scalper/data/log.txt
 
 # Check API
 curl -s http://127.0.0.1:8000/api/schedule
@@ -251,7 +251,7 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Solution**: Configure systemd to append stdout/stderr to data/log.txt
 - **Implementation**:
   1. Updated factory/uma-scalper.service with StandardOutput/StandardError directives
-  2. Applied same changes to server's /home/uma/.config/systemd/user/fastapi_app.service
+  2. Applied same changes to server's /home/umazerouma/.config/systemd/user/fastapi_app.service
   3. Systemd daemon-reload and restart service
 - **Result**: All logs (FastAPI startup, application logs, system events) now in single file: data/log.txt
 - **Code**: `factory/uma-scalper.service` (service template), `src/main.py` (logging config)
@@ -317,13 +317,13 @@ curl -s http://127.0.0.1:8000/api/logic/status
 
   [Service]
   Type=simple
-  WorkingDirectory=/home/uma/no_env/uma_scalper
-  Environment="PATH=/home/uma/no_env/uma_scalper/.venv/bin"
+  WorkingDirectory=/home/umazerouma/no_env/uma_scalper
+  Environment="PATH=/home/umazerouma/no_env/uma_scalper/.venv/bin"
   Environment=SKIP_PID_LOCK=1
   ExecStartPre=/bin/sh -c 'fuser -k 8000/tcp || true'
-  ExecStart=/home/uma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
-  StandardOutput=append:/home/uma/no_env/uma_scalper/data/log.txt
-  StandardError=append:/home/uma/no_env/uma_scalper/data/log.txt
+  ExecStart=/home/umazerouma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+  StandardOutput=append:/home/umazerouma/no_env/uma_scalper/data/log.txt
+  StandardError=append:/home/umazerouma/no_env/uma_scalper/data/log.txt
   Restart=always
   RestartSec=5
 

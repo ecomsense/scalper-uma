@@ -3,7 +3,7 @@
 set -e
 
 SERVER="uma@65.20.83.178"
-PROJECT="/home/uma/no_env/uma_scalper"
+PROJECT="/home/umazerouma/no_env/uma_scalper"
 
 echo "=== Deploy to Server ==="
 

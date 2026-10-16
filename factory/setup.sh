@@ -3,7 +3,7 @@
 # App runs as a systemd USER unit: fastapi_app.service (see factory/fastapi_app.service)
 set -e
 
-APP_DIR="/home/uma/no_env/uma_scalper"
+APP_DIR="/home/umazerouma/no_env/uma_scalper"
 SERVICE="fastapi_app.service"
 
 echo "=== UMA Scalper Setup ==="

@@ -13,11 +13,11 @@
 ## 1. Orientation
 
 - Local dev checkout: `/home/pannet1/programs/python/github.com/ecomsense/scalper-uma`, branch `main`.
-- Server: `65.20.83.178`, user `uma`, app dir `/home/uma/no_env/uma_scalper`.
+- Server: `65.20.83.178`, user `uma`, app dir `/home/umazerouma/no_env/uma_scalper`.
 - Runtime: systemd **user** unit `fastapi_app.service` (`factory/fastapi_app.service`): uvicorn `src.main:app` on `127.0.0.1:8000`, `SKIP_PID_LOCK=1`, `ExecStartPre` kills `:8000` via `fuser` + `sleep 1`, stdout/stderr appended to `data/log.txt`, `Restart=on-failure`.
 - Proxy: nginx (`factory/nginx.conf`) → `127.0.0.1:8000`, basic-auth file `data/.htpasswd` (path referenced in `src/constants.py:13`, enforced by nginx, not FastAPI). Direct-app auth via `HTTP_AUTH` env (`src/main.py:104`).
 - Python: `pyproject.toml` requires `>=3.10`, `.python-version` pins `3.10`. Trixie system python is newer — **rebuild `.venv` with `uv sync`**, never copy the bullseye venv.
-- Config resolution (`src/constants.py:17-36`, no values here): broker credential file sits **outside** the repo at parent dir (`scalper-uma` → `uma_scalper.yml`, i.e. `/home/uma/no_env/uma_scalper.yml`); runtime settings at `data/settings.yml`, seeded from `factory/settings.yml` on first run. `load_env_settings()` reloads both without restarting FastAPI.
+- Config resolution (`src/constants.py:17-36`, no values here): broker credential file sits **outside** the repo at parent dir (`scalper-uma` → `uma_scalper.yml`, i.e. `/home/umazerouma/no_env/uma_scalper.yml`); runtime settings at `data/settings.yml`, seeded from `factory/settings.yml` on first run. `load_env_settings()` reloads both without restarting FastAPI.
 - Session TTL: `Helper` in `src/api.py:35` expires broker session after 7h and reconnects.
 
 ## 2. Architecture (from AGENTS.md)
