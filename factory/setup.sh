@@ -25,7 +25,7 @@ else
 fi
 
 echo "Setting up nginx..."
-sudo sed "s|/home/umazerouma/no_env/uma_scalper|$APP_DIR|g" "$APP_DIR/factory/nginx.conf" | sudo tee /etc/nginx/sites-available/uma-scalper >/dev/null
+sed "s|__APP_DIR__|$APP_DIR|g" "$APP_DIR/factory/nginx.conf" | sudo tee /etc/nginx/sites-available/uma-scalper >/dev/null
 sudo ln -sf /etc/nginx/sites-available/uma-scalper /etc/nginx/sites-enabled/
 sudo rm -f /etc/nginx/sites-enabled/default
 sudo nginx -t
@@ -41,7 +41,7 @@ fi
 
 echo "Generating user systemd service..."
 mkdir -p ~/.config/systemd/user
-sed "s|/home/umazerouma/no_env/uma_scalper|$APP_DIR|g" "$APP_DIR/factory/fastapi_app.service" > ~/.config/systemd/user/$SERVICE
+sed "s|__APP_DIR__|$APP_DIR|g" "$APP_DIR/factory/fastapi_app.service" > ~/.config/systemd/user/$SERVICE
 systemctl --user daemon-reload
 
 echo "Enabling linger (start at boot without login)..."

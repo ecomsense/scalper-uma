@@ -1,4 +1,5 @@
-# Deployment: ln -sf /home/umazerouma/no_env/uma_scalper/factory/fastapi_app.service ~/.config/systemd/user/fastapi_app.service
+# Deployment: factory/setup.sh substitutes __APP_DIR__ with the resolved repo path.
+# A placeholder keeps this template location-independent (repo can be cloned anywhere).
 
 [Unit]
 Description=UMA Scalper - Options Trading Bot
@@ -6,17 +7,17 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/home/umazerouma/no_env/uma_scalper
-Environment="PATH=/home/umazerouma/no_env/uma_scalper/.venv/bin"
+WorkingDirectory=__APP_DIR__
+Environment="PATH=__APP_DIR__/.venv/bin"
 Environment="SKIP_PID_LOCK=1"
 
 ExecStartPre=/bin/sh -c '/usr/bin/fuser -k -9 8000/tcp 2>/dev/null || true'
 ExecStartPre=/usr/bin/sleep 1
 
-ExecStart=/home/umazerouma/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+ExecStart=__APP_DIR__/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
 
-StandardOutput=append:/home/umazerouma/no_env/uma_scalper/data/log.txt
-StandardError=append:/home/umazerouma/no_env/uma_scalper/data/log.txt
+StandardOutput=append:__APP_DIR__/data/log.txt
+StandardError=append:__APP_DIR__/data/log.txt
 Restart=on-failure
 RestartSec=5
 
