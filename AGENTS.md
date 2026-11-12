@@ -139,6 +139,15 @@ Every recurring operation on the remote is already scripted here. Run scripts, d
 
 Rule: if a check isn't scripted yet, write a `scripts/check_*.sh` (pre) or `scripts/verify_*.sh` (post) instead of running bare commands. Record it in this table.
 
+### Remote debugging loop (how agents work on the server)
+
+1. **Run a script remotely**: `ssh uma "cd <app-dir> && scripts/<script>.sh"` — or `ssh uma "systemctl --user status fastapi_app.service"` for status/log tails.
+2. **Inspect the output** — exit code, script verdict, error lines.
+3. **Fix locally → commit → push** (code changes are never made on the remote directly).
+4. **Re-run remotely** and repeat until the script passes. Loop: run → inspect → fix → re-run.
+
+Never edit files or run one-off commands on the remote; the remote only ever executes committed scripts and systemd commands.
+
 ## Responsive Design
 
 - **< 900px**: Charts stack vertically, no gap between them
