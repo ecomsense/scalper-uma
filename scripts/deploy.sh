@@ -1,6 +1,7 @@
 #!/bin/bash
 # Deploy - RUN THIS ON THE REMOTE SERVER (not locally).
-# Updates the toolkit dependency, pulls latest code, syncs deps (uv), restarts the app.
+# Remote's only job: pull what was pushed (code + uv.lock bumps, incl. toolkit)
+# and sync the venv to the pushed lockfile. No package resolution happens here.
 set -e
 
 SERVICE="fastapi_app.service"
@@ -17,15 +18,7 @@ UV="$(command -v uv || echo "$HOME/.local/bin/uv")"
 echo "--- git pull ---"
 git pull
 
-echo "--- toolkit: latest (uv.lock updated here so the commit is ready to push back) ---"
-"$UV" update toolkit || echo "WARN: uv update toolkit failed, deploying with locked rev"
-if ! git diff --quiet uv.lock; then
-    git add uv.lock
-    git commit -m "auto: bump toolkit lock on server"
-    git push || echo "WARN: could not push lock bump (no push access on server?) - deploy continues with local lock"
-fi
-
-echo "--- uv sync ---"
+echo "--- uv sync (installs exactly the pushed uv.lock, incl. git deps like toolkit) ---"
 "$UV" sync --frozen
 
 echo "--- restart $SERVICE ---"
