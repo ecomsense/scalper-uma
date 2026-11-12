@@ -28,10 +28,22 @@ HTPASSWD=/etc/nginx/uma-scalper.htpasswd
 if sudo test -f "$HTPASSWD"; then
   echo "$HTPASSWD already exists, skipping."
 else
-  echo "Creating $HTPASSWD (nginx basic auth, root:www-data 640)..."
-  sudo htpasswd -c "$HTPASSWD" trader
-  sudo chown root:www-data "$HTPASSWD"
-  sudo chmod 640 "$HTPASSWD"
+  echo ""
+  echo "Basic-auth credentials are NOT set by this script (no passwords in code)."
+  echo "Run this command manually now, on the remote server:"
+  echo ""
+  echo "    sudo htpasswd -c $HTPASSWD <username-of-your-choice>"
+  echo ""
+  echo "Then fix ownership/permissions:"
+  echo ""
+  echo "    sudo chown root:www-data $HTPASSWD && sudo chmod 640 $HTPASSWD"
+  echo ""
+  read -r -p "Press [Enter] once done, or 's' to skip nginx auth setup (nginx will 401 until the file exists): " ans
+  if [ "$ans" != "s" ] && sudo test -f "$HTPASSWD"; then
+    echo "htpasswd file found - continuing."
+  elif [ "$ans" != "s" ]; then
+    echo "WARNING: $HTPASSWD still missing - nginx basic auth will reject all requests until you create it." >&2
+  fi
 fi
 
 echo "Setting up nginx..."
