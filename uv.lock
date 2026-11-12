@@ -1782,8 +1782,8 @@ wheels = [
 
 [[package]]
 name = "toolkit"
-version = "0.0.0"
-source = { git = "https://github.com/pannet1/toolkit#3cf9d6b395e7fc2168a4290dbe9a8965b6fcd9f4" }
+version = "1.1.6"
+source = { git = "https://github.com/pannet1/toolkit#227e4dd376218f3a0b2fe52642d788ae40876e61" }
 
 [[package]]
 name = "typer"
