@@ -10,7 +10,6 @@ from toolkit.logger import Logger
 O_FUTL = Fileutils()
 S_DATA = str(path.abspath("./data"))
 S_LOG = str(path.abspath("./data/log.txt"))
-HTPASSWD_FILE = str(path.abspath("./data/.htpasswd"))
 TRADE_JSON = str(path.abspath("./data/trade.json"))
 
 
