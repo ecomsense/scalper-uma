@@ -121,6 +121,25 @@ curl -s http://127.0.0.1:8000/api/schedule
 curl -s http://127.0.0.1:8000/api/logic/status
 ```
 
+## Scripted Operations - agents run THESE, never ad-hoc commands
+
+Every recurring operation on the remote is already scripted here. Run scripts, don't improvise commands (this keeps agent actions auditable and prevents arbitrary remote execution).
+
+| Situation | Script |
+|-----------|--------|
+| Deploy latest code to remote | `scripts/deploy.sh` (run ON the remote) |
+| Local fast checks, no network | `scripts/dev-check.sh` |
+| Is server responding? (pre-test) | `scripts/check_server_responding.sh` |
+| Restart button pre/post test | `scripts/check_restart_button.sh` → test → `scripts/verify_restart_button.sh` |
+| Restart during market hours | `scripts/check_restart_during_hours.sh` → test → `scripts/verify_auto_restart_resume.sh` |
+| Settings reload pre/post | `scripts/check_settings_reload.sh` → test → `scripts/verify_settings_reload.sh` / `scripts/verify_settings_reset_flow.sh` |
+| SSE candlesticks | `scripts/test_sse_endpoint.sh` / `scripts/verify_sse_stream.sh` |
+| Websocket close pre/post | `scripts/check_websocket_close.sh` → test → `scripts/verify_websocket_close.sh` |
+| Orders modal pre/post | `scripts/check_orders_modal.sh` → `scripts/verify_orders_modal.sh` (if present) |
+| Port binding issue | `scripts/fix-port-binding.sh` |
+
+Rule: if a check isn't scripted yet, write a `scripts/check_*.sh` (pre) or `scripts/verify_*.sh` (post) instead of running bare commands. Record it in this table.
+
 ## Responsive Design
 
 - **< 900px**: Charts stack vertically, no gap between them
