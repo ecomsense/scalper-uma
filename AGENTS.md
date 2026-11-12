@@ -135,7 +135,6 @@ Every recurring operation on the remote is already scripted here. Run scripts, d
 | Settings reload pre/post | `scripts/check_settings_reload.sh` → test → `scripts/verify_settings_reload.sh` / `scripts/verify_settings_reset_flow.sh` |
 | SSE candlesticks | `scripts/test_sse_endpoint.sh` / `scripts/verify_sse_stream.sh` |
 | Websocket close pre/post | `scripts/check_websocket_close.sh` → test → `scripts/verify_websocket_close.sh` |
-| Orders modal pre/post | `scripts/check_orders_modal.sh` → `scripts/verify_orders_modal.sh` (if present) |
 | Port binding issue | `scripts/fix-port-binding.sh` |
 
 Rule: if a check isn't scripted yet, write a `scripts/check_*.sh` (pre) or `scripts/verify_*.sh` (post) instead of running bare commands. Record it in this table.
