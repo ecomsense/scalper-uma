@@ -101,7 +101,9 @@
 
 ## Server
 
-**IP**: SERVER-IP | **User**: uma
+**Access**: SSH via alias `uma` (see `~/.ssh/config` - never hardcode user/IP here)
+**Deploy**: run `scripts/deploy.sh` on the remote server itself (pulls, `uv sync --frozen`, restarts)
+**Project dir**: resolved from the systemd unit - `systemctl --user show fastapi_app.service -p WorkingDirectory --value`
 
 ### Commands
 ```bash
@@ -112,7 +114,7 @@ systemctl --user status fastapi_app.service
 systemctl --user restart fastapi_app.service
 
 # Logs
-tail -50 /home/appuser/no_env/uma_scalper/data/log.txt
+tail -50 data/log.txt   # from the app dir
 
 # Check API
 curl -s http://127.0.0.1:8000/api/schedule
@@ -250,11 +252,11 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Symptom**: FastAPI/Uvicorn logs were only in journalctl, not in application log file
 - **Solution**: Configure systemd to append stdout/stderr to data/log.txt
 - **Implementation**:
-  1. Updated factory/uma-scalper.service with StandardOutput/StandardError directives
-  2. Applied same changes to server's /home/appuser/.config/systemd/user/fastapi_app.service
+  1. Updated factory/fastapi_app.service with StandardOutput/StandardError directives
+  2. Applied same changes to the server's ~/.config/systemd/user/fastapi_app.service
   3. Systemd daemon-reload and restart service
 - **Result**: All logs (FastAPI startup, application logs, system events) now in single file: data/log.txt
-- **Code**: `factory/uma-scalper.service` (service template), `src/main.py` (logging config)
+- **Code**: `factory/fastapi_app.service` (service template), `src/main.py` (logging config)
 
 ### Orders Timestamp Shows Date Instead of Time
 - **Symptom**: Orders modal shows date (e.g., "30-04-2026") or "11:36:34 30-04-2026" instead of just time (e.g., "11:36:34")
@@ -308,7 +310,7 @@ curl -s http://127.0.0.1:8000/api/logic/status
   1. Removed unnecessary sleep from ExecStartPre
   2. Used correct command: `/bin/sh -c 'fuser -k 8000/tcp || true'`
   3. Set RestartSec=5 (was 30)
-- **Server Command**:
+- **Server Command** (paths as `$APP_DIR` = the unit's WorkingDirectory; live template lives in `factory/fastapi_app.service`):
   ```bash
   cat > ~/.config/systemd/user/fastapi_app.service << 'EOF'
   [Unit]
@@ -317,13 +319,13 @@ curl -s http://127.0.0.1:8000/api/logic/status
 
   [Service]
   Type=simple
-  WorkingDirectory=/home/appuser/no_env/uma_scalper
-  Environment="PATH=/home/appuser/no_env/uma_scalper/.venv/bin"
+  WorkingDirectory=$APP_DIR
+  Environment="PATH=$APP_DIR/.venv/bin"
   Environment=SKIP_PID_LOCK=1
-  ExecStartPre=/bin/sh -c 'fuser -k 8000/tcp || true'
-  ExecStart=/home/appuser/no_env/uma_scalper/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
-  StandardOutput=append:/home/appuser/no_env/uma_scalper/data/log.txt
-  StandardError=append:/home/appuser/no_env/uma_scalper/data/log.txt
+  ExecStartPre=/usr/bin/fuser -k -9 8000/tcp 2>/dev/null || true
+  ExecStart=$APP_DIR/.venv/bin/python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+  StandardOutput=append:$APP_DIR/data/log.txt
+  StandardError=append:$APP_DIR/data/log.txt
   Restart=always
   RestartSec=5
 
@@ -339,9 +341,9 @@ curl -s http://127.0.0.1:8000/api/logic/status
 - **Fix**:
   1. Use absolute path: `/usr/bin/fuser -k -9 8000/tcp` (SIGKILL ensures stuck processes die)
   2. Add settling delay: `/usr/bin/sleep 1` to allow kernel to release port
-  3. Updated factory/uma-scalper.service with hardened ExecStartPre
+  3. Updated factory/fastapi_app.service with hardened ExecStartPre
 - **Command**: `/usr/bin/fuser -k -9 8000/tcp && sleep 1 && systemctl --user daemon-reload && systemctl --user restart fastapi_app.service`
-- **Files**: factory/uma-scalper.service
+- **Files**: factory/fastapi_app.service
 
 ### Systemd User Service Group Permission Error
 - **Symptom**: `Failed to determine supplementary groups: Operation not permitted` and `Failed at step GROUP spawning /bin/sh: Operation not permitted`
@@ -350,7 +352,7 @@ curl -s http://127.0.0.1:8000/api/logic/status
   1. Remove `User=uma` line from service file (not needed for --user services)
   2. Use `/usr/bin/sleep` directly instead of shell wrapper
   3. Change `WantedBy=multi-user.target` to `WantedBy=default.target`
-- **Files**: factory/uma-scalper.service, ~/.config/systemd/user/fastapi_app.service
+- **Files**: factory/fastapi_app.service, ~/.config/systemd/user/fastapi_app.service
 
 ### Positions Modal - Add/Square/Cover Actions
 - **Feature**: Positions modal now has action buttons based on position type
